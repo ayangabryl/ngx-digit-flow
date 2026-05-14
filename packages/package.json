@@ -1,6 +1,6 @@
 {
   "name": "ngx-digit-flow",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Slot-machine digit animations for Angular 17+. Zero dependencies. Signals-first. SSR-safe. Built on Web Animations API.",
   "keywords": ["angular", "animation", "digit", "number", "counter", "odometer", "slot-machine", "waapi", "signals", "number-flow"],
   "license": "MIT",
