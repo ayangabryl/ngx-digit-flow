@@ -28,8 +28,12 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
             </button>
           }
           <div class="ddemo-tabs" role="tablist">
-            <button role="tab" [class.active]="tab() === 'preview'" (click)="tab.set('preview')">Preview</button>
-            <button role="tab" [class.active]="tab() === 'code'"    (click)="tab.set('code')">Code</button>
+            <button role="tab" [class.active]="tab() === 'preview'" (click)="tab.set('preview')">
+              Preview
+            </button>
+            <button role="tab" [class.active]="tab() === 'code'" (click)="tab.set('code')">
+              Code
+            </button>
           </div>
         </div>
       </div>
@@ -46,122 +50,130 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
       }
     </div>
   `,
-  styles: [`
-    .ddemo {
-      border: 1px solid oklch(91% 0.005 265);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-bottom: 20px;
-      background: oklch(99.5% 0.002 265);
-    }
+  styles: [
+    `
+      .ddemo {
+        border: 1px solid oklch(91% 0.005 265);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        background: oklch(99.5% 0.002 265);
+      }
 
-    .ddemo-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 11px 16px;
-      border-bottom: 1px solid oklch(93% 0.004 265);
-      background: oklch(98.5% 0.003 265);
-    }
+      .ddemo-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 16px;
+        border-bottom: 1px solid oklch(93% 0.004 265);
+        background: oklch(98.5% 0.003 265);
+      }
 
-    .ddemo-label {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--dim);
-    }
+      .ddemo-label {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--dim);
+      }
 
-    .ddemo-head-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+      .ddemo-head-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .copy-btn {
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 3px 10px;
-      border: 1px solid oklch(88% 0.005 265);
-      border-radius: 100px;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.12s;
-    }
-    .copy-btn:hover { color: var(--ink); border-color: oklch(70% 0.005 265); }
+      .copy-btn {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 10px;
+        border: 1px solid oklch(88% 0.005 265);
+        border-radius: 100px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+      .copy-btn:hover {
+        color: var(--ink);
+        border-color: oklch(70% 0.005 265);
+      }
 
-    .ddemo-tabs {
-      display: flex;
-      gap: 2px;
-      background: oklch(93% 0.004 265);
-      border-radius: 100px;
-      padding: 3px;
-    }
+      .ddemo-tabs {
+        display: flex;
+        gap: 2px;
+        background: oklch(93% 0.004 265);
+        border-radius: 100px;
+        padding: 3px;
+      }
 
-    .ddemo-tabs button {
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 4px 10px;
-      border: none;
-      border-radius: 100px;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.12s;
-    }
+      .ddemo-tabs button {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 4px 10px;
+        border: none;
+        border-radius: 100px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.12s;
+      }
 
-    .ddemo-tabs button.active {
-      background: oklch(99.5% 0.002 265);
-      color: var(--ink);
-      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.08);
-    }
+      .ddemo-tabs button.active {
+        background: oklch(99.5% 0.002 265);
+        color: var(--ink);
+        box-shadow: 0 1px 3px oklch(0% 0 0 / 0.08);
+      }
 
-    /* Preview: tall centered stage for the number */
-    .ddemo-preview {
-      padding: 40px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 120px;
-    }
+      /* Preview: tall centered stage for the number */
+      .ddemo-preview {
+        padding: 40px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 120px;
+      }
 
-    /* Controls: compact row below, separated by a hairline */
-    .ddemo-controls {
-      border-top: 1px solid oklch(93% 0.004 265);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      background: oklch(98.8% 0.002 265);
-    }
+      /* Controls: compact row below, separated by a hairline */
+      .ddemo-controls {
+        border-top: 1px solid oklch(93% 0.004 265);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        background: oklch(98.8% 0.002 265);
+      }
 
-    .ddemo-code {
-      margin: 0;
-      padding: 20px 24px;
-      font-family: var(--mono);
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--ink);
-      overflow-x: auto;
-      white-space: pre;
-    }
-  `],
+      .ddemo-code {
+        margin: 0;
+        padding: 20px 24px;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.65;
+        color: var(--ink);
+        overflow-x: auto;
+        white-space: pre;
+      }
+    `,
+  ],
 })
 export class DocsDemoComponent {
-  label  = input.required<string>();
-  code   = input.required<string>();
-  tab    = signal<'preview' | 'code'>('preview');
+  label = input.required<string>();
+  code = input.required<string>();
+  tab = signal<'preview' | 'code'>('preview');
   copied = signal(false);
 
   private doc = inject(DOCUMENT);
 
   copy(): void {
-    this.doc.defaultView?.navigator.clipboard.writeText(this.code()).then(() => {
-      this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 1800);
-    }).catch(() => {});
+    this.doc.defaultView?.navigator.clipboard
+      .writeText(this.code())
+      .then(() => {
+        this.copied.set(true);
+        setTimeout(() => this.copied.set(false), 1800);
+      })
+      .catch(() => {});
   }
 }
 
@@ -173,7 +185,6 @@ export class DocsDemoComponent {
   imports: [DigitFlowComponent, DigitFlowGroupDirective, DocsDemoComponent],
   template: `
     <div class="docs-page">
-
       <nav class="docs-sidebar">
         <p class="sidebar-title">On this page</p>
         <ul class="sidebar-nav">
@@ -184,14 +195,14 @@ export class DocsDemoComponent {
                 [class.active]="activeSection() === item.id"
                 [href]="'#' + item.id"
                 (click)="navTo(item.id, $event)"
-              >{{ item.label }}</a>
+                >{{ item.label }}</a
+              >
             </li>
           }
         </ul>
       </nav>
 
       <div class="docs-content">
-
         <h1 class="docs-title">Documentation</h1>
 
         <!-- Installation -->
@@ -224,8 +235,8 @@ export class DocsDemoComponent {
         <section class="docs-section" id="format-options" data-section="format-options">
           <h2 class="section-heading">Format Options</h2>
           <p class="section-desc">
-            Pass any <code>Intl.NumberFormatOptions</code> to <code>[format]</code>.
-            Digits animate individually — currency symbols and separators FLIP into position.
+            Pass any <code>Intl.NumberFormatOptions</code> to <code>[format]</code>. Digits animate
+            individually — currency symbols and separators FLIP into position.
           </p>
 
           <docs-demo label="Currency" [code]="codeCurrency">
@@ -311,9 +322,9 @@ export class DocsDemoComponent {
         <section class="docs-section" id="animated-toggle" data-section="animated-toggle">
           <h2 class="section-heading">Animated Toggle</h2>
           <p class="section-desc">
-            Set <code>[animated]="false"</code> to disable all animations — useful when
-            the user prefers reduced motion or for server-side rendering snapshots.
-            The component respects <code>prefers-reduced-motion</code> automatically.
+            Set <code>[animated]="false"</code> to disable all animations — useful when the user
+            prefers reduced motion or for server-side rendering snapshots. The component respects
+            <code>prefers-reduced-motion</code> automatically.
           </p>
 
           <docs-demo label="[animated] toggle" [code]="codeAnimated">
@@ -321,8 +332,12 @@ export class DocsDemoComponent {
               <ngx-digit-flow [value]="animVal()" [animated]="isAnimated()" [duration]="900" />
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="animVal.update(v => v + 1)">+1</button>
-              <button class="demo-btn" [class.active]="isAnimated()" (click)="isAnimated.update(v => !v)">
+              <button class="demo-btn" (click)="animVal.update((v) => v + 1)">+1</button>
+              <button
+                class="demo-btn"
+                [class.active]="isAnimated()"
+                (click)="isAnimated.update((v) => !v)"
+              >
                 animated: {{ isAnimated() }}
               </button>
             </div>
@@ -334,8 +349,8 @@ export class DocsDemoComponent {
           <h2 class="section-heading">Group Directive</h2>
           <p class="section-desc">
             Wrap multiple <code>ngx-digit-flow</code> instances in
-            <code>[ngxDigitFlowGroup]</code> to declare that they form a logical unit
-            (e.g. hours:minutes:seconds). Angular schedules their renders together.
+            <code>[ngxDigitFlowGroup]</code> to declare that they form a logical unit (e.g.
+            hours:minutes:seconds). Angular schedules their renders together.
           </p>
 
           <docs-demo label="ngxDigitFlowGroup — clock" [code]="codeGroup">
@@ -354,8 +369,8 @@ export class DocsDemoComponent {
           <h2 class="section-heading">Outputs</h2>
           <p class="section-desc">
             <code>(animationsStart)</code> fires when any animation begins.
-            <code>(animationsFinish)</code> fires when all running animations complete.
-            Both are debounced across rapid value changes.
+            <code>(animationsFinish)</code> fires when all running animations complete. Both are
+            debounced across rapid value changes.
           </p>
 
           <docs-demo label="(animationsFinish)" [code]="codeOutputs">
@@ -397,11 +412,21 @@ export class DocsDemoComponent {
               </div>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">overshoot spring</span>
-                <ngx-digit-flow [value]="easingVal()" [duration]="600" [format]="currencyFmt" [spinEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'" />
+                <ngx-digit-flow
+                  [value]="easingVal()"
+                  [duration]="600"
+                  [format]="currencyFmt"
+                  [spinEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'"
+                />
               </div>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">linear</span>
-                <ngx-digit-flow [value]="easingVal()" [duration]="600" [format]="currencyFmt" [spinEasing]="'linear'" />
+                <ngx-digit-flow
+                  [value]="easingVal()"
+                  [duration]="600"
+                  [format]="currencyFmt"
+                  [spinEasing]="'linear'"
+                />
               </div>
             </div>
             <div slot="controls">
@@ -409,7 +434,10 @@ export class DocsDemoComponent {
             </div>
           </docs-demo>
 
-          <docs-demo label="flipEasing — layout shift on digit count change" [code]="codeFlipEasing">
+          <docs-demo
+            label="flipEasing — layout shift on digit count change"
+            [code]="codeFlipEasing"
+          >
             <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">spring (default)</span>
@@ -417,7 +445,12 @@ export class DocsDemoComponent {
               </div>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">overshoot spring</span>
-                <ngx-digit-flow [value]="flipVal()" [duration]="900" [format]="currencyFmt" [flipEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'" />
+                <ngx-digit-flow
+                  [value]="flipVal()"
+                  [duration]="900"
+                  [format]="currencyFmt"
+                  [flipEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'"
+                />
               </div>
             </div>
             <div slot="controls">
@@ -434,8 +467,8 @@ export class DocsDemoComponent {
         <section class="docs-section" id="trend" data-section="trend">
           <h2 class="section-heading">Trend</h2>
           <p class="section-desc">
-            By default the reel scrolls in the direction of the value delta.
-            Use <code>[trend]="1"</code> to always scroll upward (even when value decreases),
+            By default the reel scrolls in the direction of the value delta. Use
+            <code>[trend]="1"</code> to always scroll upward (even when value decreases),
             <code>[trend]="-1"</code> for always downward, or pass a function for custom logic.
           </p>
 
@@ -444,11 +477,29 @@ export class DocsDemoComponent {
               <ngx-digit-flow [value]="trendVal()" [duration]="900" [trend]="trendMode()" />
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="trendVal.update(v => v - 1)">−1</button>
-              <button class="demo-btn" (click)="trendVal.update(v => v + 1)">+1</button>
-              <button class="demo-btn" [class.active]="trendMode() === undefined" (click)="trendMode.set(undefined)">auto</button>
-              <button class="demo-btn" [class.active]="trendMode() === 1" (click)="trendMode.set(1)">always up</button>
-              <button class="demo-btn" [class.active]="trendMode() === -1" (click)="trendMode.set(-1)">always down</button>
+              <button class="demo-btn" (click)="trendVal.update((v) => v - 1)">−1</button>
+              <button class="demo-btn" (click)="trendVal.update((v) => v + 1)">+1</button>
+              <button
+                class="demo-btn"
+                [class.active]="trendMode() === undefined"
+                (click)="trendMode.set(undefined)"
+              >
+                auto
+              </button>
+              <button
+                class="demo-btn"
+                [class.active]="trendMode() === 1"
+                (click)="trendMode.set(1)"
+              >
+                always up
+              </button>
+              <button
+                class="demo-btn"
+                [class.active]="trendMode() === -1"
+                (click)="trendMode.set(-1)"
+              >
+                always down
+              </button>
             </div>
           </docs-demo>
         </section>
@@ -457,26 +508,35 @@ export class DocsDemoComponent {
         <section class="docs-section" id="continuous" data-section="continuous">
           <h2 class="section-heading">Continuous Mode</h2>
           <p class="section-desc">
-            <code>[continuous]="true"</code> animates through every intermediate integer between
-            old and new value — up to 15 steps. Useful for score counters and live feeds where
-            the reel should tick rather than jump.
+            <code>[continuous]="true"</code> keeps the update to one smooth animation, then loops
+            unchanged lower-place digits so the reel visually ticks through intermediate values.
+            Useful for score counters and live feeds where the lower digits should stay alive.
           </p>
 
           <docs-demo label="continuous" [code]="codeContinuous">
             <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">continuous: false</span>
-                <ngx-digit-flow [value]="contVal()" [duration]="500" [format]="{ maximumFractionDigits: 0 }" />
+                <ngx-digit-flow
+                  [value]="contVal()"
+                  [duration]="500"
+                  [format]="{ maximumFractionDigits: 0 }"
+                />
               </div>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">continuous: true</span>
-                <ngx-digit-flow [value]="contVal()" [duration]="500" [continuous]="true" [format]="{ maximumFractionDigits: 0 }" />
+                <ngx-digit-flow
+                  [value]="contVal()"
+                  [duration]="500"
+                  [continuous]="true"
+                  [format]="{ maximumFractionDigits: 0 }"
+                />
               </div>
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="contVal.update(v => v + 3)">+3</button>
-              <button class="demo-btn" (click)="contVal.update(v => v + 7)">+7</button>
-              <button class="demo-btn" (click)="contVal.update(v => v + 12)">+12</button>
+              <button class="demo-btn" (click)="contVal.update((v) => v + 3)">+3</button>
+              <button class="demo-btn" (click)="contVal.update((v) => v + 7)">+7</button>
+              <button class="demo-btn" (click)="contVal.update((v) => v + 12)">+12</button>
               <button class="demo-btn" (click)="contVal.set(0)">Reset</button>
             </div>
           </docs-demo>
@@ -494,11 +554,21 @@ export class DocsDemoComponent {
             <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">stagger: 0</span>
-                <ngx-digit-flow [value]="staggerVal()" [duration]="700" [stagger]="0" [format]="{ useGrouping: true }" />
+                <ngx-digit-flow
+                  [value]="staggerVal()"
+                  [duration]="700"
+                  [stagger]="0"
+                  [format]="{ useGrouping: true }"
+                />
               </div>
               <div class="demo-dur-item">
                 <span class="demo-dur-label">stagger: 60 ms</span>
-                <ngx-digit-flow [value]="staggerVal()" [duration]="700" [stagger]="60" [format]="{ useGrouping: true }" />
+                <ngx-digit-flow
+                  [value]="staggerVal()"
+                  [duration]="700"
+                  [stagger]="60"
+                  [format]="{ useGrouping: true }"
+                />
               </div>
             </div>
             <div slot="controls">
@@ -511,8 +581,8 @@ export class DocsDemoComponent {
         <section class="docs-section" id="color-flash" data-section="color-flash">
           <h2 class="section-heading">Color Flash</h2>
           <p class="section-desc">
-            <code>[colorOnIncrease]</code> and <code>[colorOnDecrease]</code> flash a CSS color
-            on the host element when the value changes direction, then fade back to the inherited
+            <code>[colorOnIncrease]</code> and <code>[colorOnDecrease]</code> flash a CSS color on
+            the host element when the value changes direction, then fade back to the inherited
             color. Useful for stock tickers, scores, and live metrics.
           </p>
 
@@ -527,10 +597,10 @@ export class DocsDemoComponent {
               />
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="colorVal.update(v => v - 50)">−50</button>
-              <button class="demo-btn" (click)="colorVal.update(v => v - 10)">−10</button>
-              <button class="demo-btn" (click)="colorVal.update(v => v + 10)">+10</button>
-              <button class="demo-btn" (click)="colorVal.update(v => v + 50)">+50</button>
+              <button class="demo-btn" (click)="colorVal.update((v) => v - 50)">−50</button>
+              <button class="demo-btn" (click)="colorVal.update((v) => v - 10)">−10</button>
+              <button class="demo-btn" (click)="colorVal.update((v) => v + 10)">+10</button>
+              <button class="demo-btn" (click)="colorVal.update((v) => v + 50)">+50</button>
             </div>
           </docs-demo>
         </section>
@@ -556,7 +626,9 @@ export class DocsDemoComponent {
                 </thead>
                 <tbody>
                   <!-- Core -->
-                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Core</span></td></tr>
+                  <tr class="api-group-row">
+                    <td colspan="4"><span class="api-group-divider">Core</span></td>
+                  </tr>
                   <tr>
                     <td><code>value</code></td>
                     <td><code>number</code></td>
@@ -566,7 +638,9 @@ export class DocsDemoComponent {
                   <tr>
                     <td><code>format</code></td>
                     <td><code>Intl.NumberFormatOptions</code></td>
-                    <td><code>{{ '{}' }}</code></td>
+                    <td>
+                      <code>{{ '{}' }}</code>
+                    </td>
                     <td>Options forwarded to <code>Intl.NumberFormat</code>.</td>
                   </tr>
                   <tr>
@@ -594,7 +668,9 @@ export class DocsDemoComponent {
                     <td>Enables or disables all animations.</td>
                   </tr>
                   <!-- Timing -->
-                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Timing</span></td></tr>
+                  <tr class="api-group-row">
+                    <td colspan="4"><span class="api-group-divider">Timing</span></td>
+                  </tr>
                   <tr>
                     <td><code>duration</code></td>
                     <td><code>number</code></td>
@@ -611,7 +687,10 @@ export class DocsDemoComponent {
                     <td><code>transformTiming</code></td>
                     <td><code>DigitFlowTiming</code></td>
                     <td><code>duration+flipEasing</code></td>
-                    <td>Full WAAPI timing for the FLIP layout animation. Overrides <code>duration</code> and <code>flipEasing</code>.</td>
+                    <td>
+                      Full WAAPI timing for the FLIP layout animation. Overrides
+                      <code>duration</code> and <code>flipEasing</code>.
+                    </td>
                   </tr>
                   <tr>
                     <td><code>spinTiming</code></td>
@@ -626,38 +705,61 @@ export class DocsDemoComponent {
                     <td>Full WAAPI timing for fade-in and fade-out animations.</td>
                   </tr>
                   <!-- Animation style -->
-                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Animation style</span></td></tr>
+                  <tr class="api-group-row">
+                    <td colspan="4"><span class="api-group-divider">Animation style</span></td>
+                  </tr>
                   <tr>
                     <td><code>spinEasing</code></td>
                     <td><code>string</code></td>
                     <td><code>spring</code></td>
-                    <td>CSS easing for the digit spin — each digit scrolls vertically on a 0–9 reel. Defaults to a damped spring.</td>
+                    <td>
+                      CSS easing for the digit spin — each digit scrolls vertically on a 0–9 reel.
+                      Defaults to a damped spring.
+                    </td>
                   </tr>
                   <tr>
                     <td><code>flipEasing</code></td>
                     <td><code>string</code></td>
                     <td><code>spring</code></td>
-                    <td>CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10). Defaults to the same damped spring as spinEasing.</td>
+                    <td>
+                      CSS easing for the FLIP animation — digits slide horizontally when the digit
+                      count changes (e.g. 9→10). Defaults to a smooth ease-out curve.
+                    </td>
                   </tr>
                   <tr>
                     <td><code>trend</code></td>
                     <td><code>number | (oldValue, value) =&gt; number</code></td>
                     <td><code>auto</code></td>
-                    <td>Controls reel direction. Use <code>1</code>, <code>-1</code>, <code>0</code>, or a custom function.</td>
+                    <td>
+                      Controls reel direction. Use <code>1</code>, <code>-1</code>, <code>0</code>,
+                      or a custom function.
+                    </td>
                   </tr>
                   <!-- Features -->
-                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Features</span></td></tr>
+                  <tr class="api-group-row">
+                    <td colspan="4"><span class="api-group-divider">Features</span></td>
+                  </tr>
                   <tr>
                     <td><code>continuous</code></td>
                     <td><code>boolean</code></td>
                     <td><code>false</code></td>
-                    <td>Ticker mode: animates through every intermediate integer value (max 15 steps).</td>
+                    <td>
+                      Ticker mode: visually ticks through intermediate values by looping unchanged
+                      lower-place digits.
+                    </td>
                   </tr>
                   <tr>
                     <td><code>digits</code></td>
-                    <td><code>Record&lt;number, {{ '{' }} max?: number {{ '}' }}&gt;</code></td>
-                    <td><code>{{ '{}' }}</code></td>
-                    <td>Configures digit reel ranges by decimal position, useful for clocks and countdowns.</td>
+                    <td>
+                      <code>Record&lt;number, {{ '{' }} max?: number {{ '}' }}&gt;</code>
+                    </td>
+                    <td>
+                      <code>{{ '{}' }}</code>
+                    </td>
+                    <td>
+                      Configures digit reel ranges by decimal position, useful for clocks and
+                      countdowns.
+                    </td>
                   </tr>
                   <tr>
                     <td><code>respectMotionPreference</code></td>
@@ -669,19 +771,28 @@ export class DocsDemoComponent {
                     <td><code>stagger</code></td>
                     <td><code>number</code></td>
                     <td><code>0</code></td>
-                    <td>Milliseconds of delay between each element's animation. Creates a cascade effect.</td>
+                    <td>
+                      Milliseconds of delay between each element's animation. Creates a cascade
+                      effect.
+                    </td>
                   </tr>
                   <tr>
                     <td><code>colorOnIncrease</code></td>
                     <td><code>string</code></td>
                     <td><code>undefined</code></td>
-                    <td>CSS color flashed on the host when value increases (e.g. <code>"#4ade80"</code>).</td>
+                    <td>
+                      CSS color flashed on the host when value increases (e.g.
+                      <code>"#4ade80"</code>).
+                    </td>
                   </tr>
                   <tr>
                     <td><code>colorOnDecrease</code></td>
                     <td><code>string</code></td>
                     <td><code>undefined</code></td>
-                    <td>CSS color flashed on the host when value decreases (e.g. <code>"#f87171"</code>).</td>
+                    <td>
+                      CSS color flashed on the host when value decreases (e.g.
+                      <code>"#f87171"</code>).
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -724,412 +835,465 @@ export class DocsDemoComponent {
           </div>
           <pre class="code-block">{{ codeGroupImport }}</pre>
         </section>
-
       </div>
     </div>
   `,
-  styles: [`
-    :host { display: block; }
-
-    .docs-page {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: 56px;
-      max-width: 1060px;
-      margin: 0 auto;
-      padding: 48px 32px 80px;
-      align-items: start;
-    }
-
-    /* Sidebar */
-    .docs-sidebar {
-      position: sticky;
-      top: 72px;
-    }
-
-    .sidebar-title {
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--dim);
-      margin: 0 0 12px;
-    }
-
-    .sidebar-nav {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .sidebar-link {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      text-decoration: none;
-      padding: 5px 10px;
-      border-radius: 6px;
-      transition: color 0.12s, background 0.12s;
-    }
-    .sidebar-link:hover { color: var(--ink); background: oklch(95% 0.003 265); }
-    .sidebar-link.active { color: var(--ink); font-weight: 500; background: oklch(94% 0.004 265); }
-
-    .docs-content {
-      min-width: 0;
-    }
-
-    .docs-title {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin: 0 0 40px;
-    }
-
-    .docs-section {
-      margin-bottom: 48px;
-    }
-
-    .section-heading {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin: 0 0 12px;
-      padding-top: 8px;
-    }
-
-    .sub-heading {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ink);
-      margin: 24px 0 10px;
-    }
-
-    .section-desc {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.6;
-      margin: 0 0 16px;
-    }
-
-    .section-desc code {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--ink);
-      background: oklch(94% 0.004 265);
-      padding: 1px 5px;
-      border-radius: 4px;
-    }
-
-    .code-block {
-      margin: 0 0 16px;
-      padding: 18px 20px;
-      border: 1px solid oklch(91% 0.005 265);
-      border-radius: 10px;
-      background: oklch(98.5% 0.003 265);
-      font-family: var(--mono);
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--ink);
-      overflow-x: auto;
-      white-space: pre;
-    }
-
-    /* Demo helpers (inside docs-demo slots) */
-    .demo-number-wrap {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
-    }
-
-    /* controls slot: flex row, handled by ddemo-controls in docs-demo */
-    [slot='controls'] {
-      display: contents; /* let ddemo-controls own the layout */
-    }
-
-    .demo-btn {
-      font-family: var(--mono);
-      font-size: 12px;
-      padding: 7px 14px;
-      border: 1px solid oklch(88% 0.005 265);
-      border-radius: 100px;
-      background: transparent;
-      color: var(--ink);
-      cursor: pointer;
-      transition: background 0.12s, border-color 0.12s;
-    }
-    .demo-btn:hover { background: oklch(95% 0.003 265); }
-    .demo-btn.active {
-      background: var(--ink);
-      color: var(--bg);
-      border-color: var(--ink);
-    }
-
-    /* Duration demo */
-    .demo-dur-grid {
-      display: flex;
-      gap: 32px;
-      align-items: flex-end;
-    }
-
-    .demo-dur-item {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: flex-start;
-    }
-
-    .demo-dur-label {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--dim);
-    }
-
-    .demo-dur-item ngx-digit-flow {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-
-    /* Clock demo */
-    .demo-clock {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-
-    .clock-sep {
-      color: var(--dim);
-      margin: 0 2px;
-    }
-
-    /* Output demo */
-    .demo-output-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .output-log {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      min-height: 60px;
-    }
-
-    .output-entry {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      animation: fadeIn 0.2s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* API table */
-    .api-group {
-      margin-bottom: 28px;
-    }
-
-    .api-group-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .api-component-name {
-      font-family: var(--mono);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink);
-    }
-
-    .api-kind-badge {
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 2px 7px;
-      border-radius: 4px;
-      background: oklch(93% 0.015 255);
-      color: oklch(42% 0.18 255);
-    }
-
-    .api-kind-badge--out {
-      background: oklch(93% 0.015 145);
-      color: oklch(40% 0.15 145);
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      overflow-y: hidden;
-      border: 1px solid oklch(90% 0.006 265);
-      border-radius: 10px;
-      background: oklch(99.2% 0.001 265);
-      box-shadow: 0 1px 0 oklch(100% 0 0) inset;
-    }
-
-    .api-table {
-      width: 100%;
-      min-width: 760px;
-      border-collapse: separate;
-      border-spacing: 0;
-      table-layout: fixed;
-      font-size: 13px;
-    }
-
-    .api-table th {
-      text-align: left;
-      padding: 11px 16px;
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 700;
-      color: oklch(49% 0.015 265);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: oklch(96.8% 0.004 265);
-      border-bottom: 1px solid oklch(89% 0.006 265);
-      white-space: nowrap;
-    }
-
-    .api-table--inputs th:first-child { width: 20%; }
-    .api-table--inputs th:nth-child(2) { width: 29%; }
-    .api-table--inputs th:nth-child(3) { width: 16%; }
-    .api-table--inputs th:last-child { width: 35%; }
-    .api-table--outputs { min-width: 560px; }
-    .api-table--outputs th:first-child { width: 28%; }
-    .api-table--outputs th:nth-child(2) { width: 18%; }
-    .api-table--outputs th:last-child { width: 54%; }
-
-    .api-table td {
-      text-align: left;
-      padding: 13px 16px;
-      border-bottom: 1px solid oklch(94% 0.004 265);
-      vertical-align: top;
-      color: oklch(28% 0.005 265);
-      line-height: 1.55;
-      background: oklch(99.6% 0.001 265);
-    }
-
-    .api-table tbody tr:not(.api-group-row):hover td {
-      background: oklch(98.5% 0.006 255);
-    }
-
-    .api-table tr:last-child td { border-bottom: none; }
-
-    .api-table td:first-child code {
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 600;
-      color: oklch(38% 0.12 255);
-      background: oklch(94% 0.015 255);
-      padding: 2px 6px;
-      border-radius: 5px;
-    }
-
-    .api-table td:not(:first-child) code {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--ink);
-      background: oklch(95% 0.003 265);
-      padding: 1px 5px;
-      border-radius: 4px;
-      white-space: normal;
-      overflow-wrap: anywhere;
-    }
-
-    .badge-req {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      color: oklch(50% 0.17 30);
-      background: oklch(95% 0.07 30);
-      padding: 2px 7px;
-      border-radius: 4px;
-    }
-
-    .api-group-row td {
-      padding: 18px 16px 7px !important;
-      background:
-        linear-gradient(90deg, oklch(96% 0.018 255), transparent 72%),
-        oklch(99.6% 0.001 265) !important;
-      border-bottom: 1px solid oklch(91.5% 0.006 265) !important;
-    }
-
-    .api-group-divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--sans);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: oklch(42% 0.12 255);
-    }
-
-    .api-group-divider::after {
-      content: '';
-      height: 1px;
-      flex: 1;
-      background: oklch(88% 0.02 255);
-    }
-
-    @media (max-width: 900px) {
-      .docs-page {
-        grid-template-columns: 1fr;
+  styles: [
+    `
+      :host {
+        display: block;
       }
+
+      .docs-page {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 56px;
+        max-width: 1060px;
+        margin: 0 auto;
+        padding: 48px 32px 80px;
+        align-items: start;
+      }
+
+      /* Sidebar */
       .docs-sidebar {
-        position: static;
+        position: sticky;
+        top: 72px;
+      }
+
+      .sidebar-title {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--dim);
+        margin: 0 0 12px;
+      }
+
+      .sidebar-nav {
+        list-style: none;
+        margin: 0;
+        padding: 0;
         display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .sidebar-link {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        transition:
+          color 0.12s,
+          background 0.12s;
+      }
+      .sidebar-link:hover {
+        color: var(--ink);
+        background: oklch(95% 0.003 265);
+      }
+      .sidebar-link.active {
+        color: var(--ink);
+        font-weight: 500;
+        background: oklch(94% 0.004 265);
+      }
+
+      .docs-content {
+        min-width: 0;
+      }
+
+      .docs-title {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0 0 40px;
+      }
+
+      .docs-section {
+        margin-bottom: 48px;
+      }
+
+      .section-heading {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0 0 12px;
+        padding-top: 8px;
+      }
+
+      .sub-heading {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink);
+        margin: 24px 0 10px;
+      }
+
+      .section-desc {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.6;
+        margin: 0 0 16px;
+      }
+
+      .section-desc code {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--ink);
+        background: oklch(94% 0.004 265);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+
+      .code-block {
+        margin: 0 0 16px;
+        padding: 18px 20px;
+        border: 1px solid oklch(91% 0.005 265);
+        border-radius: 10px;
+        background: oklch(98.5% 0.003 265);
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.65;
+        color: var(--ink);
+        overflow-x: auto;
+        white-space: pre;
+      }
+
+      /* Demo helpers (inside docs-demo slots) */
+      .demo-number-wrap {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      /* controls slot: flex row, handled by ddemo-controls in docs-demo */
+      [slot='controls'] {
+        display: contents; /* let ddemo-controls own the layout */
+      }
+
+      .demo-btn {
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 7px 14px;
+        border: 1px solid oklch(88% 0.005 265);
+        border-radius: 100px;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+        transition:
+          background 0.12s,
+          border-color 0.12s;
+      }
+      .demo-btn:hover {
+        background: oklch(95% 0.003 265);
+      }
+      .demo-btn.active {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+
+      /* Duration demo */
+      .demo-dur-grid {
+        display: flex;
+        gap: 32px;
+        align-items: flex-end;
+      }
+
+      .demo-dur-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+      }
+
+      .demo-dur-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--dim);
+      }
+
+      .demo-dur-item ngx-digit-flow {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      /* Clock demo */
+      .demo-clock {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .clock-sep {
+        color: var(--dim);
+        margin: 0 2px;
+      }
+
+      /* Output demo */
+      .demo-output-wrap {
+        display: flex;
+        flex-direction: column;
         align-items: center;
         gap: 16px;
-        flex-wrap: wrap;
       }
-      .sidebar-title { margin: 0; white-space: nowrap; }
-      .sidebar-nav { flex-direction: row; flex-wrap: wrap; }
-    }
 
-    @media (max-width: 600px) {
-      .docs-page { padding: 32px 20px 60px; }
-      .demo-dur-grid { gap: 20px; }
-      .demo-clock { font-size: 1.8rem; }
-      .docs-sidebar { display: none; }
-    }
-  `],
+      .output-log {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        min-height: 60px;
+      }
+
+      .output-entry {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* API table */
+      .api-group {
+        margin-bottom: 28px;
+      }
+
+      .api-group-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .api-component-name {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      .api-kind-badge {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: oklch(93% 0.015 255);
+        color: oklch(42% 0.18 255);
+      }
+
+      .api-kind-badge--out {
+        background: oklch(93% 0.015 145);
+        color: oklch(40% 0.15 145);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        border: 1px solid oklch(90% 0.006 265);
+        border-radius: 10px;
+        background: oklch(99.2% 0.001 265);
+        box-shadow: 0 1px 0 oklch(100% 0 0) inset;
+      }
+
+      .api-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+        font-size: 13px;
+      }
+
+      .api-table th {
+        text-align: left;
+        padding: 11px 16px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        color: oklch(49% 0.015 265);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: oklch(96.8% 0.004 265);
+        border-bottom: 1px solid oklch(89% 0.006 265);
+        white-space: nowrap;
+      }
+
+      .api-table--inputs th:first-child {
+        width: 20%;
+      }
+      .api-table--inputs th:nth-child(2) {
+        width: 29%;
+      }
+      .api-table--inputs th:nth-child(3) {
+        width: 16%;
+      }
+      .api-table--inputs th:last-child {
+        width: 35%;
+      }
+      .api-table--outputs {
+        min-width: 560px;
+      }
+      .api-table--outputs th:first-child {
+        width: 28%;
+      }
+      .api-table--outputs th:nth-child(2) {
+        width: 18%;
+      }
+      .api-table--outputs th:last-child {
+        width: 54%;
+      }
+
+      .api-table td {
+        text-align: left;
+        padding: 13px 16px;
+        border-bottom: 1px solid oklch(94% 0.004 265);
+        vertical-align: top;
+        color: oklch(28% 0.005 265);
+        line-height: 1.55;
+        background: oklch(99.6% 0.001 265);
+      }
+
+      .api-table tbody tr:not(.api-group-row):hover td {
+        background: oklch(98.5% 0.006 255);
+      }
+
+      .api-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .api-table td:first-child code {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        color: oklch(38% 0.12 255);
+        background: oklch(94% 0.015 255);
+        padding: 2px 6px;
+        border-radius: 5px;
+      }
+
+      .api-table td:not(:first-child) code {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--ink);
+        background: oklch(95% 0.003 265);
+        padding: 1px 5px;
+        border-radius: 4px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .badge-req {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: oklch(50% 0.17 30);
+        background: oklch(95% 0.07 30);
+        padding: 2px 7px;
+        border-radius: 4px;
+      }
+
+      .api-group-row td {
+        padding: 18px 16px 7px !important;
+        background:
+          linear-gradient(90deg, oklch(96% 0.018 255), transparent 72%), oklch(99.6% 0.001 265) !important;
+        border-bottom: 1px solid oklch(91.5% 0.006 265) !important;
+      }
+
+      .api-group-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--sans);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: oklch(42% 0.12 255);
+      }
+
+      .api-group-divider::after {
+        content: '';
+        height: 1px;
+        flex: 1;
+        background: oklch(88% 0.02 255);
+      }
+
+      @media (max-width: 900px) {
+        .docs-page {
+          grid-template-columns: 1fr;
+        }
+        .docs-sidebar {
+          position: static;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .sidebar-title {
+          margin: 0;
+          white-space: nowrap;
+        }
+        .sidebar-nav {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .docs-page {
+          padding: 32px 20px 60px;
+        }
+        .demo-dur-grid {
+          gap: 20px;
+        }
+        .demo-clock {
+          font-size: 1.8rem;
+        }
+        .docs-sidebar {
+          display: none;
+        }
+      }
+    `,
+  ],
 })
 export class DocsComponent implements OnInit, AfterViewInit {
   protected activeSection = signal('installation');
 
   protected navItems = [
-    { id: 'installation',    label: 'Installation' },
-    { id: 'basic-usage',     label: 'Basic Usage' },
-    { id: 'format-options',  label: 'Format Options' },
-    { id: 'prefix-suffix',   label: 'Prefix & Suffix' },
+    { id: 'installation', label: 'Installation' },
+    { id: 'basic-usage', label: 'Basic Usage' },
+    { id: 'format-options', label: 'Format Options' },
+    { id: 'prefix-suffix', label: 'Prefix & Suffix' },
     { id: 'custom-duration', label: 'Custom Duration' },
     { id: 'animated-toggle', label: 'Animated Toggle' },
     { id: 'group-directive', label: 'Group Directive' },
-    { id: 'outputs',         label: 'Outputs' },
-    { id: 'easing',          label: 'Easing' },
-    { id: 'trend',           label: 'Trend' },
-    { id: 'continuous',      label: 'Continuous' },
-    { id: 'stagger',         label: 'Stagger' },
-    { id: 'color-flash',     label: 'Color Flash' },
-    { id: 'api-reference',   label: 'API Reference' },
+    { id: 'outputs', label: 'Outputs' },
+    { id: 'easing', label: 'Easing' },
+    { id: 'trend', label: 'Trend' },
+    { id: 'continuous', label: 'Continuous' },
+    { id: 'stagger', label: 'Stagger' },
+    { id: 'color-flash', label: 'Color Flash' },
+    { id: 'api-reference', label: 'API Reference' },
   ];
 
   private elRef = inject(ElementRef<HTMLElement>);
@@ -1201,12 +1365,14 @@ export class DocsComponent implements OnInit, AfterViewInit {
   private staggerIdx = 0;
 
   // Color flash
-  protected colorVal = signal(4285.50);
+  protected colorVal = signal(4285.5);
 
   private destroyRef = inject(DestroyRef);
 
   ngAfterViewInit() {
-    const sections = this.elRef.nativeElement.querySelectorAll('[data-section]') as NodeListOf<HTMLElement>;
+    const sections = this.elRef.nativeElement.querySelectorAll(
+      '[data-section]',
+    ) as NodeListOf<HTMLElement>;
     this.observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -1215,9 +1381,9 @@ export class DocsComponent implements OnInit, AfterViewInit {
           }
         }
       },
-      { rootMargin: '-10% 0px -80% 0px', threshold: 0 }
+      { rootMargin: '-10% 0px -80% 0px', threshold: 0 },
     );
-    sections.forEach(s => this.observer!.observe(s));
+    sections.forEach((s) => this.observer!.observe(s));
     this.destroyRef.onDestroy(() => this.observer?.disconnect());
   }
 
@@ -1259,14 +1425,14 @@ export class DocsComponent implements OnInit, AfterViewInit {
   }
 
   protected onStart(): void {
-    this.outputLog.update(log => [
+    this.outputLog.update((log) => [
       ...log,
       `animationsStart — ${new Date().toLocaleTimeString()}`,
     ]);
   }
 
   protected onFinish(): void {
-    this.outputLog.update(log => [
+    this.outputLog.update((log) => [
       ...log,
       `animationsFinish — ${new Date().toLocaleTimeString()}`,
     ]);
@@ -1369,7 +1535,7 @@ export class MyComponent {}`;
   protected codeContinuous = `<!-- jump to new value (default) -->
 <ngx-digit-flow [value]="n" [duration]="500" />
 
-<!-- tick through every intermediate integer (max 15 steps) -->
+<!-- visually tick through intermediate values with one smooth animation -->
 <ngx-digit-flow [value]="n" [duration]="500" [continuous]="true" />`;
 
   protected codeStagger = `<!-- all elements animate simultaneously (default) -->

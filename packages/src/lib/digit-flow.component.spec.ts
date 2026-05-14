@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
 import { DigitFlowComponent } from './digit-flow.component';
 
 interface AnimateCall {
@@ -153,19 +152,54 @@ describe('DigitFlowComponent', () => {
     expect(value).toBe('1,000');
   });
 
-  it('continues processing continuous steps while color flash animations are still running', async () => {
+  it('uses a single continuous animation where unchanged lower digits loop once', async () => {
+    fixture.componentRef.setInput('value', 120);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('continuous', true);
+    fixture.componentRef.setInput('value', 140);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spinDeltas = animateCalls
+      .filter((call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']))
+      .map((call) => ((call.keyframes as PropertyIndexedKeyframes)['--_df-d'] as number[])[0]);
+
+    expect(renderedValue()).toBe('140');
+    expect(spinDeltas).toEqual(expect.arrayContaining([-2, -10]));
+  });
+
+  it('does not loop unchanged lower digits when continuous mode is disabled', async () => {
+    fixture.componentRef.setInput('value', 120);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('value', 140);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spinDeltas = animateCalls
+      .filter((call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']))
+      .map((call) => ((call.keyframes as PropertyIndexedKeyframes)['--_df-d'] as number[])[0]);
+
+    expect(spinDeltas).toEqual([-2]);
+  });
+
+  it('keeps continuous mode on one render pass while color flash animations are still running', async () => {
     holdColorAnimations = true;
     fixture.componentRef.setInput('continuous', true);
     fixture.componentRef.setInput('colorOnIncrease', '#4ade80');
-    fixture.componentRef.setInput('value', 3);
+    fixture.componentRef.setInput('value', 30);
     fixture.detectChanges();
 
-    for (let i = 0; i < 6; i++) {
-      await fixture.whenStable();
-      fixture.detectChanges();
-    }
+    await fixture.whenStable();
 
-    expect(renderedValue()).toBe('3');
+    expect(renderedValue()).toBe('30');
   });
 
   it('applies stagger delay to fade-in animations for newly inserted elements', async () => {
@@ -367,27 +401,5 @@ describe('DigitFlowComponent', () => {
 
     expect(tensDigit.style.getPropertyValue('--_df-len')).toBe('6');
     expect(renderedTensGlyphs.length).toBe(6);
-  });
-
-  it('emits finish when the last continuous step has no visible animations', async () => {
-    const emitFinish = vi.spyOn(fixture.componentInstance.animationsFinish, 'emit');
-    const component = fixture.componentInstance as unknown as {
-      snapshot: () => void;
-      runAnimations: () => void;
-      _continuousNeedsFinish: boolean;
-      _durationOverride: number;
-      _targetDisplayValue: number;
-    };
-
-    component.snapshot();
-    component._continuousNeedsFinish = true;
-    component._durationOverride = 80;
-    component._targetDisplayValue = 0;
-    component.runAnimations();
-
-    await Promise.resolve();
-    await fixture.whenStable();
-
-    expect(emitFinish).toHaveBeenCalledTimes(1);
   });
 });

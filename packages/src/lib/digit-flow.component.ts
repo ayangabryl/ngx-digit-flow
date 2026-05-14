@@ -1,7 +1,6 @@
 import {
   afterEveryRender,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   computed,
   DestroyRef,
@@ -38,9 +37,6 @@ const SPIN_EASING =
 
 const FLIP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
-// Max intermediate steps for continuous mode
-const MAX_CONTINUOUS_STEPS = 15;
-
 @Component({
   selector: 'ngx-digit-flow',
   standalone: true,
@@ -59,7 +55,7 @@ export class DigitFlowComponent {
   suffix = input<string>('');
   animated = input<boolean>(true);
 
-  // ── Timing inputs — undefined means "inherit from variant" ───────────────
+  // ── Timing inputs ─────────────────────────────────────────────────────────
   duration = input<number | undefined>(undefined);
   opacityDuration = input<number | undefined>(undefined);
   /** Full timing options for layout/FLIP animations. Overrides duration + flipEasing. */
@@ -72,7 +68,7 @@ export class DigitFlowComponent {
   // ── Animation style inputs ────────────────────────────────────────────────
   /** CSS easing for the digit spin (the vertical reel). Defaults to a damped spring curve. */
   spinEasing = input<string | undefined>(undefined);
-  /** CSS easing for the FLIP layout animation (horizontal shift when digit count changes). Defaults to an ease-out curve. */
+  /** CSS easing for the FLIP layout animation (horizontal shift when digit count changes). */
   flipEasing = input<string | undefined>(undefined);
   /**
    * Controls digit direction. Use +1 to force upward reels, -1 for downward reels,
@@ -82,8 +78,9 @@ export class DigitFlowComponent {
 
   // ── Feature inputs ────────────────────────────────────────────────────────
   /**
-   * Animate through all intermediate integer values between old and new (like a ticker).
-   * Best for small delta changes (< 50). Capped at 15 intermediate steps.
+   * When a higher-place digit changes, spin all lower-place unchanged digits a full reel
+   * loop — giving the illusion that the whole number is ticking through intermediate values.
+   * Matches number-flow's continuous plugin behaviour.
    */
   continuous = input<boolean>(false);
   /** Configure digit reels by decimal position. Useful for clocks, e.g. `{ 1: { max: 5 } }`. */
@@ -127,7 +124,6 @@ export class DigitFlowComponent {
   private platformId = inject(PLATFORM_ID);
   private elRef = inject(ElementRef<HTMLElement>);
   private destroyRef = inject(DestroyRef);
-  private cdr = inject(ChangeDetectorRef);
 
   // Snapshot state — captured BEFORE each re-render
   private prevRects = new Map<string, DOMRect>();
@@ -145,22 +141,9 @@ export class DigitFlowComponent {
   private _live: Animation[] = [];
   private _spinCount = new Map<HTMLElement, number>();
 
-  // Continuous mode state
-  private _continuousQueue: FormattedNumber[] = [];
-  private _continuousValues: number[] = [];
-  private _continuousStepDuration = 0;
-  private _continuousNeedsFinish = false;
-
-  // Per-batch overrides (cleared after each runAnimations call)
-  private _targetDisplayValue: number | null = null;
-  private _durationOverride: number | null = null;
-
   constructor() {
     this.destroyRef.onDestroy(() => {
       this._destroyed = true;
-      this._continuousQueue = [];
-      this._continuousValues = [];
-      this._continuousNeedsFinish = false;
       for (const a of this._live) {
         try {
           a.cancel();
@@ -189,57 +172,6 @@ export class DigitFlowComponent {
         this.snapshot();
       }
 
-      // Cancel any in-flight continuous queue when a new value arrives.
-      // Also clear per-batch overrides so a stale processContinuousQueue callback
-      // that ran just before this effect cannot corrupt the next animation.
-      this._continuousQueue = [];
-      this._continuousValues = [];
-      this._continuousNeedsFinish = false;
-      this._targetDisplayValue = null;
-      this._durationOverride = null;
-
-      if (isPlatformBrowser(this.platformId) && this.animated() && this.continuous()) {
-        const from = this.prevNumericValue;
-        const diff = v - from;
-        // Use floor so each step spans at least one full integer, preventing
-        // Math.round from producing duplicate consecutive intermediate values.
-        const steps = Math.min(Math.max(1, Math.floor(Math.abs(diff))), MAX_CONTINUOUS_STEPS);
-
-        if (steps > 1) {
-          // Pre-build all intermediate formatted numbers so we can check structure.
-          const intermediateValues: number[] = [];
-          const intermediateFormatted: FormattedNumber[] = [];
-          for (let i = 1; i <= steps; i++) {
-            const iv = i === steps ? v : Math.round(from + diff * (i / steps));
-            intermediateValues.push(iv);
-            intermediateFormatted.push(formatToData(iv, fmt, loc, pfx, sfx));
-          }
-
-          // Only step-chain when the DOM structure changes at some intermediate value
-          // (e.g. 9→10 adds a digit). For pure value changes within the same structure,
-          // N consecutive tiny spring animations look choppy — one smooth animation is
-          // both visually superior and semantically equivalent (the reel scrolls through
-          // every intermediate digit naturally).
-          const curIntLen = untracked(() => this.data().integer.length);
-          const curFracLen = untracked(() => this.data().fraction.length);
-          const hasStructureChange = intermediateFormatted.some(
-            (f) => f.integer.length !== curIntLen || f.fraction.length !== curFracLen,
-          );
-
-          if (hasStructureChange) {
-            const totalDur = this.effectiveSettings().duration;
-            this._continuousStepDuration = Math.max(80, totalDur / steps);
-            this._continuousQueue = intermediateFormatted;
-            this._continuousValues = intermediateValues;
-            this._continuousNeedsFinish = true;
-            this.processContinuousQueue(true);
-            return;
-          }
-          // No structure change: fall through to the single-animation path below.
-        }
-      }
-
-      // Normal single animation — also used by continuous mode when structure is stable.
       untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
       if (isPlatformBrowser(this.platformId) && this.animated()) {
         this._pending = true;
@@ -256,32 +188,6 @@ export class DigitFlowComponent {
         },
       });
     }
-  }
-
-  // ─── Continuous queue ─────────────────────────────────────────────────────
-
-  private processContinuousQueue(isFirst = false): void {
-    if (this._continuousQueue.length === 0) {
-      return;
-    }
-
-    const nextFormatted = this._continuousQueue.shift()!;
-    const nextValue = this._continuousValues.shift()!;
-
-    if (!isFirst) {
-      // Subsequent steps: snapshot NOW (DOM settled from previous step animation)
-      this.snapshot();
-    }
-
-    this._targetDisplayValue = nextValue;
-    this._durationOverride = this._continuousStepDuration;
-
-    untracked(() => this.data.set(nextFormatted));
-    // Force synchronous render so the animation starts in the same pass as the DOM
-    // update — otherwise the browser paints one frame with the new digit value but
-    // no animation, creating a visible flash before the spin begins.
-    this._pending = true;
-    this.cdr.detectChanges();
   }
 
   // ─── Snapshot ─────────────────────────────────────────────────────────────
@@ -325,19 +231,10 @@ export class DigitFlowComponent {
       this.respectMotionPreference() &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Per-step override for continuous mode
-    const isContinuousStep = this._durationOverride !== null;
-    const rawDur = isContinuousStep ? this._durationOverride! : settings.duration;
-    this._durationOverride = null;
-
-    const d = reduced ? 0 : rawDur;
+    const d = reduced ? 0 : settings.duration;
     const od = reduced ? 0 : settings.opacityDuration;
 
-    // Trend: determines scroll direction and color animation
-    const newNumericValue =
-      this._targetDisplayValue !== null ? this._targetDisplayValue : untracked(() => this.value());
-    this._targetDisplayValue = null;
-
+    const newNumericValue = untracked(() => this.value());
     const trend = this.resolveTrend(this.prevNumericValue, newNumericValue);
     const staggerMs = this.stagger();
 
@@ -347,8 +244,8 @@ export class DigitFlowComponent {
     };
     const spinOpts: KeyframeAnimationOptions = {
       ...baseTransformTiming,
-      easing: settings.spinEasing, // override flipEasing with the dedicated spin easing
-      ...(settings.spinTiming ?? {}), // explicit spinTiming wins over everything
+      easing: settings.spinEasing,
+      ...(settings.spinTiming ?? {}),
       duration: reduced ? 0 : (settings.spinTiming?.duration ?? baseTransformTiming.duration),
       fill: 'none',
       composite: 'accumulate',
@@ -368,6 +265,23 @@ export class DigitFlowComponent {
     };
     if (reduced) fadeOpts.duration = 0;
 
+    // ── Continuous mode: find the lowest decimal position of any changed digit.
+    // Unchanged digits below that position spin a full reel loop, giving the visual
+    // illusion of ticking through intermediate values — same technique as
+    // number-flow's continuous plugin. No step-chaining needed; it's one animation.
+    let continuousStartPos = Infinity;
+    if (this.continuous() && d > 0 && trend !== 0) {
+      host.querySelectorAll<HTMLElement>('.df-digit[data-key^="i"]').forEach((el) => {
+        const key = el.getAttribute('data-key')!;
+        const digitPos = Number(key.slice(1)); // 'i0'=ones, 'i1'=tens, 'i2'=hundreds …
+        const digit = this.getDigitValue(key);
+        const prev = this.prevDigitValues.get(key) ?? digit;
+        if (prev !== digit) {
+          continuousStartPos = Math.min(continuousStartPos, digitPos);
+        }
+      });
+    }
+
     const batch: Animation[] = [];
     const newKeys = new Set<string>();
     let elemIdx = 0;
@@ -383,7 +297,16 @@ export class DigitFlowComponent {
       if (el.classList.contains('df-digit')) {
         const digit = this.getDigitValue(key);
         const fromDigit = this.prevDigitValues.has(key) ? this.prevDigitValues.get(key)! : digit;
-        const delta = this.getTrendDelta(fromDigit, digit, trend, this.getDigitLength(key));
+        const rawDelta = this.getTrendDelta(fromDigit, digit, trend, this.getDigitLength(key));
+
+        // Continuous effect: unchanged digit at a lower decimal position than the
+        // lowest changed digit → spin a full reel loop so it appears to tick through.
+        const isLowerUnchanged =
+          this.continuous() &&
+          rawDelta === 0 &&
+          key.startsWith('i') &&
+          Number(key.slice(1)) < continuousStartPos;
+        const delta = isLowerUnchanged ? this.getDigitLength(key) * trend : rawDelta;
 
         if (delta !== 0 && d > 0) {
           this.incrementSpin(el);
@@ -445,10 +368,8 @@ export class DigitFlowComponent {
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
     });
 
-    // Color animation on trend change — only fires on non-continuous steps to avoid
-    // blocking the continuous chain (each step would otherwise add a 300ms+ animation
-    // to the batch, multiplying total duration by the step count).
-    if (d > 0 && !isContinuousStep) {
+    // Color flash on value change direction
+    if (d > 0) {
       const colorIncrease = this.colorOnIncrease();
       const colorDecrease = this.colorOnDecrease();
       if (trend > 0 && colorIncrease) {
@@ -473,12 +394,6 @@ export class DigitFlowComponent {
     this.prevNumericValue = newNumericValue;
 
     if (batch.length === 0) {
-      // Still need to continue continuous queue even with no visible animations
-      if (this._continuousQueue.length > 0) {
-        this.processContinuousQueue(false);
-      } else {
-        this.finishContinuousChainIfNeeded(isContinuousStep);
-      }
       return;
     }
 
@@ -492,13 +407,7 @@ export class DigitFlowComponent {
       this.animCount--;
 
       if (this.animCount === 0 && !this._destroyed) {
-        if (this._continuousQueue.length > 0) {
-          // Continue continuous chain
-          this.processContinuousQueue(false);
-        } else {
-          this._continuousNeedsFinish = false;
-          this.animationsFinish.emit();
-        }
+        this.animationsFinish.emit();
       }
     });
   }
@@ -543,19 +452,7 @@ export class DigitFlowComponent {
     staggerDelay: number,
   ): KeyframeAnimationOptions {
     const currentDelay = typeof options.delay === 'number' ? options.delay : 0;
-    return {
-      ...options,
-      delay: currentDelay + staggerDelay,
-    };
-  }
-
-  private finishContinuousChainIfNeeded(isContinuousStep: boolean): void {
-    if (!isContinuousStep || !this._continuousNeedsFinish || this._destroyed) {
-      return;
-    }
-
-    this._continuousNeedsFinish = false;
-    this.animationsFinish.emit();
+    return { ...options, delay: currentDelay + staggerDelay };
   }
 
   private getTrendDelta(from: number, to: number, trend: number, length = 10): number {
