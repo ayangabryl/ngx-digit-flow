@@ -110,8 +110,8 @@ const INPUTS = [
     name: 'flipEasing',
     type: 'string',
     required: false,
-    default: 'ease-out',
-    desc: 'CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10). Defaults to a smooth ease-out curve.',
+    default: 'spring',
+    desc: 'CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10). Defaults to the same damped spring as spinEasing.',
   },
   {
     name: 'trend',

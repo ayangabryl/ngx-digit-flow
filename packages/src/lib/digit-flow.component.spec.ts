@@ -8,6 +8,7 @@ interface AnimateCall {
 
 let animateCalls: AnimateCall[] = [];
 let holdColorAnimations = false;
+let holdAllAnimations = false;
 let prefersReducedMotion = false;
 
 function finishImmediatelyAnimation(): Animation {
@@ -25,7 +26,9 @@ function testAnimation(
   const colorAnimation = Array.isArray(keyframes) && keyframes.some((frame) => 'color' in frame);
   return {
     finished:
-      colorAnimation && holdColorAnimations ? new Promise(() => undefined) : Promise.resolve(),
+      holdAllAnimations || (colorAnimation && holdColorAnimations)
+        ? new Promise(() => undefined)
+        : Promise.resolve(),
     cancel: () => undefined,
   } as unknown as Animation;
 }
@@ -79,13 +82,34 @@ describe('DigitFlowComponent', () => {
   beforeEach(async () => {
     animateCalls = [];
     holdColorAnimations = false;
+    holdAllAnimations = false;
     prefersReducedMotion = false;
 
+    const cssMock = {
+      registerProperty: () => undefined,
+      supports: () => true,
+    };
+    Object.defineProperty(window, 'CSS', {
+      configurable: true,
+      value: cssMock,
+    });
+    Object.defineProperty(globalThis, 'CSS', {
+      configurable: true,
+      value: cssMock,
+    });
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'visible',
+    });
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       value: () => ({ matches: prefersReducedMotion }),
     });
     Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: testAnimation,
+    });
+    Object.defineProperty(Element.prototype, 'animate', {
       configurable: true,
       value: testAnimation,
     });
@@ -254,10 +278,7 @@ describe('DigitFlowComponent', () => {
 
     const fadeInWithDelay = animateCalls.some((call) => {
       const fadesIn =
-        Array.isArray(call.keyframes) &&
-        call.keyframes.length === 2 &&
-        call.keyframes[0]['opacity'] === '0' &&
-        call.keyframes[1]['opacity'] === '1';
+        !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d-opacity']);
       return fadesIn && typeof call.options === 'object' && (call.options.delay ?? 0) > 0;
     });
 
@@ -314,13 +335,11 @@ describe('DigitFlowComponent', () => {
     );
     const transform = animateCalls.find(
       (call) =>
-        Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame),
+        (Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame)) ||
+        (!Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-dx'])),
     );
     const fade = animateCalls.find(
-      (call) =>
-        Array.isArray(call.keyframes) &&
-        call.keyframes[0]['opacity'] === '0' &&
-        call.keyframes[1]['opacity'] === '1',
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d-opacity']),
     );
 
     expect(spin?.options).toEqual(expect.objectContaining({ duration: 222, easing: 'ease-in' }));
@@ -330,7 +349,7 @@ describe('DigitFlowComponent', () => {
     expect(fade?.options).toEqual(expect.objectContaining({ duration: 333, easing: 'ease-out' }));
   });
 
-  it('uses the spring easing for spins and ease-out easing for layout FLIP by default', async () => {
+  it('uses the spring easing for spins and layout FLIP by default', async () => {
     mockMovingRects();
     fixture.componentRef.setInput('value', 9);
     fixture.detectChanges();
@@ -348,14 +367,15 @@ describe('DigitFlowComponent', () => {
     );
     const transform = animateCalls.find(
       (call) =>
-        Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame),
+        (Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame)) ||
+        (!Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-dx'])),
     );
 
     expect(spin?.options).toEqual(
       expect.objectContaining({ easing: expect.stringContaining('linear(') }),
     );
     expect(transform?.options).toEqual(
-      expect.objectContaining({ easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }),
+      expect.objectContaining({ easing: expect.stringContaining('linear(') }),
     );
   });
 
@@ -380,13 +400,11 @@ describe('DigitFlowComponent', () => {
     );
     const transform = animateCalls.find(
       (call) =>
-        Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame),
+        (Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame)) ||
+        (!Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-dx'])),
     );
     const fade = animateCalls.find(
-      (call) =>
-        Array.isArray(call.keyframes) &&
-        call.keyframes[0]['opacity'] === '0' &&
-        call.keyframes[1]['opacity'] === '1',
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d-opacity']),
     );
 
     expect(spin?.options).toEqual(expect.objectContaining({ delay: 30 }));
@@ -406,6 +424,75 @@ describe('DigitFlowComponent', () => {
     );
 
     expect(spin?.options).toEqual(expect.objectContaining({ duration: 900 }));
+  });
+
+  it('animates the number container with accumulated dx and width deltas', async () => {
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 1000);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const container = animateCalls.find(
+      (call) =>
+        !Array.isArray(call.keyframes) &&
+        Array.isArray(call.keyframes['--_df-dx']) &&
+        Array.isArray(call.keyframes['--_df-d-width']),
+    );
+
+    expect(container?.options).toEqual(expect.objectContaining({ composite: 'accumulate' }));
+  });
+
+  it('uses accumulated opacity delta for entering and exiting parts', async () => {
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('value', 10);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const opacityDelta = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d-opacity']),
+    );
+
+    expect(opacityDelta?.options).toEqual(expect.objectContaining({ composite: 'accumulate' }));
+  });
+
+  it('does not emit duplicate start events during interrupted animation batches', async () => {
+    holdAllAnimations = true;
+    let starts = 0;
+    fixture.componentInstance.animationsStart.subscribe(() => starts++);
+
+    fixture.componentRef.setInput('value', 1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.componentRef.setInput('value', 2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(starts).toBe(1);
+  });
+
+  it('skips animations while the document is hidden', async () => {
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'hidden',
+    });
+
+    fixture.componentRef.setInput('value', 1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(animateCalls.length).toBe(0);
   });
 
   it('uses digit max config for countdown-style rolls', async () => {

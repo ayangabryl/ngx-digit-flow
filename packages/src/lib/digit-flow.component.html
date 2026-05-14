@@ -1,48 +1,23 @@
 <span class="df-number" aria-hidden="true">
-  <!-- Pre: currency symbol, sign, custom prefix -->
-  @if (data().pre.length) {
-    <span class="df-section df-section--pre">
-      @for (p of data().pre; track p.key) {
-        <span class="df-literal" [attr.data-key]="p.key">{{ p.value }}</span>
-      }
-    </span>
-  }
+  <span class="df-number__inner">
+    <!-- Pre: currency symbol, sign, custom prefix -->
+    @if (data().pre.length) {
+      <span class="df-section df-section--pre">
+        @for (p of data().pre; track p.key) {
+          <span class="df-literal" [attr.data-key]="p.key">{{ p.value }}</span>
+        }
+      </span>
+    }
 
-  <!-- Integer digits + group separators -->
-  <span class="df-section df-section--integer">
-    @for (p of data().integer; track p.key) {
-      @if (p.type === 'integer') {
-        <!--
+    <!-- Integer digits + group separators -->
+    <span class="df-section df-section--integer">
+      @for (p of data().integer; track p.key) {
+        @if (p.type === 'integer') {
+          <!--
           --_df-current: the settled digit value CSS uses for positioning at rest.
           Each digit__num sets --n and [inert] so non-current digits are hidden
           until .is-spinning is applied by the animation engine.
         -->
-        <span
-          class="df-digit"
-          [attr.data-key]="p.key"
-          [style.--_df-current]="p.numericValue"
-          [style.--_df-len]="digitLengthForKey(p.key)"
-        >
-          @for (n of digitGlyphsForKey(p.key); track n.value) {
-            <span
-              class="df-digit__num"
-              [style.--n]="n.value"
-              [attr.inert]="n.value !== p.numericValue ? '' : null"
-              >{{ n.glyph }}</span
-            >
-          }
-        </span>
-      } @else {
-        <span class="df-sep" [attr.data-key]="p.key">{{ p.value }}</span>
-      }
-    }
-  </span>
-
-  <!-- Fraction: decimal point + fractional digits -->
-  @if (data().fraction.length) {
-    <span class="df-section df-section--fraction">
-      @for (p of data().fraction; track p.key) {
-        @if (p.type === 'fraction') {
           <span
             class="df-digit"
             [attr.data-key]="p.key"
@@ -63,16 +38,43 @@
         }
       }
     </span>
-  }
 
-  <!-- Post: percent sign, unit, custom suffix -->
-  @if (data().post.length) {
-    <span class="df-section df-section--post">
-      @for (p of data().post; track p.key) {
-        <span class="df-literal" [attr.data-key]="p.key">{{ p.value }}</span>
-      }
-    </span>
-  }
+    <!-- Fraction: decimal point + fractional digits -->
+    @if (data().fraction.length) {
+      <span class="df-section df-section--fraction">
+        @for (p of data().fraction; track p.key) {
+          @if (p.type === 'fraction') {
+            <span
+              class="df-digit"
+              [attr.data-key]="p.key"
+              [style.--_df-current]="p.numericValue"
+              [style.--_df-len]="digitLengthForKey(p.key)"
+            >
+              @for (n of digitGlyphsForKey(p.key); track n.value) {
+                <span
+                  class="df-digit__num"
+                  [style.--n]="n.value"
+                  [attr.inert]="n.value !== p.numericValue ? '' : null"
+                  >{{ n.glyph }}</span
+                >
+              }
+            </span>
+          } @else {
+            <span class="df-sep" [attr.data-key]="p.key">{{ p.value }}</span>
+          }
+        }
+      </span>
+    }
+
+    <!-- Post: percent sign, unit, custom suffix -->
+    @if (data().post.length) {
+      <span class="df-section df-section--post">
+        @for (p of data().post; track p.key) {
+          <span class="df-literal" [attr.data-key]="p.key">{{ p.value }}</span>
+        }
+      </span>
+    }
+  </span>
 </span>
 
 <!-- Accessible text for screen readers -->

@@ -5,17 +5,39 @@
   initial-value: 0;
 }
 
+@property --_df-d-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --_df-d-width {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --_df-dx {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
 ngx-digit-flow {
   display: inline-block;
   position: relative;
 }
 
 .df-number {
-  display: inline-flex;
-  align-items: baseline;
+  display: inline-block;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
+  position: relative;
+  transform-origin: left top;
+  --_df-width: 1;
+  --_df-scale-x: calc(1 + var(--_df-d-width) / var(--_df-width));
+  transform: translateX(var(--_df-dx)) scaleX(var(--_df-scale-x));
 
   // ── Mask (number-flow blur-vignette technique) ──────────────────────────────
   --df-mask-height: 0.25em;
@@ -23,8 +45,17 @@ ngx-digit-flow {
   --df-half-mask-h: calc(var(--df-mask-height) / 2);
 
   margin: calc(-1 * var(--df-half-mask-h)) calc(-1 * var(--df-mask-width));
-  padding: var(--df-half-mask-h) var(--df-mask-width);
+}
 
+.df-number__inner {
+  display: inline-flex;
+  align-items: baseline;
+  padding: var(--df-half-mask-h) var(--df-mask-width);
+  transform-origin: left top;
+  transform: scaleX(calc(1 / var(--_df-scale-x))) translateX(calc(-1 * var(--_df-dx)));
+}
+
+.df-number {
   -webkit-mask-image:
     linear-gradient(
       to right,
@@ -119,6 +150,13 @@ ngx-digit-flow {
   // math expression. --_df-d accumulates freely; mod() wraps it correctly.
   --_df-c: var(--_df-current, 0) + var(--_df-d);
   --_df-len: 10;
+}
+
+.df-digit,
+.df-sep,
+.df-literal,
+.df-ghost {
+  opacity: calc(1 + var(--_df-d-opacity, 0));
 }
 
 .df-digit__num {
