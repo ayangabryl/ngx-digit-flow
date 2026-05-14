@@ -468,9 +468,10 @@ export class DocsDemoComponent {
         <section class="docs-section" id="trend" data-section="trend">
           <h2 class="section-heading">Trend</h2>
           <p class="section-desc">
-            By default the reel scrolls in the direction of the value delta. Use
-            <code>[trend]="1"</code> to always scroll upward (even when value decreases),
-            <code>[trend]="-1"</code> for always downward, or pass a function for custom logic.
+            <code>trend</code> controls the path digits take around the reel, not whether the value
+            increases or decreases. By default reels follow the value delta. Use
+            <code>[trend]="1"</code> to always count up through the reel sequence, or
+            <code>[trend]="-1"</code> to always count down through it.
           </p>
 
           <docs-demo label="trend" [code]="codeTrend">
@@ -478,8 +479,11 @@ export class DocsDemoComponent {
               <ngx-digit-flow [value]="trendVal()" [duration]="900" [trend]="trendMode()" />
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="trendVal.update((v) => v - 1)">−1</button>
-              <button class="demo-btn" (click)="trendVal.update((v) => v + 1)">+1</button>
+              <span class="demo-control-label">value</span>
+              <button class="demo-btn" (click)="trendVal.update((v) => v - 7)">− 7</button>
+              <button class="demo-btn" (click)="trendVal.update((v) => v + 7)">+ 7</button>
+              <span class="demo-control-separator" aria-hidden="true"></span>
+              <span class="demo-control-label">digit path</span>
               <button
                 class="demo-btn"
                 [class.active]="trendMode() === undefined"
@@ -492,14 +496,14 @@ export class DocsDemoComponent {
                 [class.active]="trendMode() === 1"
                 (click)="trendMode.set(1)"
               >
-                always up
+                count up
               </button>
               <button
                 class="demo-btn"
                 [class.active]="trendMode() === -1"
                 (click)="trendMode.set(-1)"
               >
-                always down
+                count down
               </button>
             </div>
           </docs-demo>
@@ -735,8 +739,9 @@ export class DocsDemoComponent {
                     <td><code>number | (oldValue, value) =&gt; number</code></td>
                     <td><code>auto</code></td>
                     <td>
-                      Controls reel direction. Use <code>1</code>, <code>-1</code>, <code>0</code>,
-                      or a custom function.
+                      Controls the path digits take around the reel. Use <code>1</code> to count up
+                      through the reel sequence, <code>-1</code> to count down, <code>0</code> for
+                      per-digit local direction, or a custom function.
                     </td>
                   </tr>
                   <!-- Features -->
@@ -997,6 +1002,18 @@ export class DocsDemoComponent {
         background: var(--ink);
         color: var(--bg);
         border-color: var(--ink);
+      }
+      .demo-control-label {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--dim);
+        margin: 0 2px;
+      }
+      .demo-control-separator {
+        width: 1px;
+        height: 22px;
+        background: oklch(88% 0.005 265);
+        margin: 0 4px;
       }
 
       /* Duration demo */
@@ -1524,17 +1541,17 @@ export class MyComponent {}`;
   flipEasing="overshoot"
 />`;
 
-  protected codeTrend = `<!-- auto: follows value delta (default) -->
+  protected codeTrend = `<!-- auto: digit path follows value delta (default) -->
 <ngx-digit-flow [value]="n" />
 
-<!-- always scroll upward, even when value decreases -->
+<!-- always count up through the reel sequence, e.g. 8 → 9 → 0 → 1 -->
 <ngx-digit-flow [value]="n" [trend]="1" />
 
-<!-- always scroll downward -->
+<!-- always count down through the reel sequence, e.g. 1 → 0 → 9 → 8 -->
 <ngx-digit-flow [value]="n" [trend]="-1" />
 
 <!-- custom function -->
-<ngx-digit-flow [value]="n" [trend]="(old, val) => old > 100 ? 1 : -1" />`;
+<ngx-digit-flow [value]="n" [trend]="chooseTrend" />`;
 
   protected codeContinuous = `<!-- jump to new value (default) -->
 <ngx-digit-flow [value]="n" [duration]="500" />

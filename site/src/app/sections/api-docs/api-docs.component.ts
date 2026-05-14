@@ -118,7 +118,7 @@ const INPUTS = [
     type: 'number | (oldValue,value)=>number',
     required: false,
     default: 'auto',
-    desc: 'Controls reel direction. Use 1, -1, 0, or a custom function.',
+    desc: 'Controls the digit path around the reel. Use 1 to count up, -1 to count down, 0 for per-digit local direction, or a custom function.',
   },
   // ── Features ─────────────────────────────────────────────────────────────
   {

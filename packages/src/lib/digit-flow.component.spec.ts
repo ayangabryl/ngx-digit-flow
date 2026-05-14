@@ -639,6 +639,29 @@ describe('DigitFlowComponent', () => {
     expect(animateCalls.length).toBe(0);
   });
 
+  it('skips animations when the host is far outside the viewport', async () => {
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        x: 0,
+        y: 5000,
+        left: 0,
+        top: 5000,
+        right: 10,
+        bottom: 5020,
+        width: 10,
+        height: 20,
+        toJSON: () => ({}),
+      }),
+    });
+
+    fixture.componentRef.setInput('value', 1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(animateCalls.length).toBe(0);
+  });
+
   it('skips animations when linear() easing cannot be animated', async () => {
     linearEasingSupported = false;
 
