@@ -23,6 +23,7 @@ import {
   FormattedNumber,
 } from './digit-flow.types';
 import { formatToData, getDigitGlyphs } from './formatter';
+import { canAnimateDigitFlow } from './capabilities';
 
 // ── Easings ──────────────────────────────────────────────────────────────────
 
@@ -34,8 +35,6 @@ const SPIN_EASING =
   '.965,.968,.971,.973,.976,.978,.98,.981,.983,.984,.986,.987,.988,.989,.99,.991,.992,' +
   '.992,.993,.994,.994,.995,.995,.996,.996,.9963,.9967,.9969,.9972,.9975,.9977,.9979,' +
   '.9981,.9982,.9984,.9985,.9987,.9988,.9989,1)';
-
-const FLIP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 @Component({
   selector: 'ngx-digit-flow',
@@ -114,7 +113,7 @@ export class DigitFlowComponent {
       duration,
       opacityDuration: this.opacityDuration() ?? Math.round(duration / 2),
       spinEasing: this.spinEasing() ?? SPIN_EASING,
-      flipEasing: this.flipEasing() ?? FLIP_EASING,
+      flipEasing: this.flipEasing() ?? SPIN_EASING,
       transformTiming: this.transformTiming(),
       spinTiming: this.spinTiming(),
       opacityTiming: this.opacityTiming(),
@@ -132,6 +131,8 @@ export class DigitFlowComponent {
   private prevDigitCurrent = new Map<string, string>();
   private prevDigitValues = new Map<string, number>();
   private prevDigitOrder: string[] = [];
+  private prevNumberLeft = 0;
+  private prevNumberWidth = 0;
   private prevNumericValue = 0;
 
   // Animation bookkeeping
@@ -141,10 +142,12 @@ export class DigitFlowComponent {
   private _hasRenderedValue = false;
   private _live: Animation[] = [];
   private _spinCount = new Map<HTMLElement, number>();
+  private _animationsFinishAbort?: AbortController;
 
   constructor() {
     this.destroyRef.onDestroy(() => {
       this._destroyed = true;
+      this._animationsFinishAbort?.abort();
       for (const a of this._live) {
         try {
           a.cancel();
@@ -202,6 +205,13 @@ export class DigitFlowComponent {
     this.prevDigitValues.clear();
     this.prevDigitOrder = [];
 
+    const number = host.querySelector<HTMLElement>('.df-number');
+    if (number) {
+      const numberRect = number.getBoundingClientRect();
+      this.prevNumberLeft = numberRect.left;
+      this.prevNumberWidth = numberRect.width;
+    }
+
     untracked(() => {
       [...this.data().integer, ...this.data().fraction].forEach((p) => {
         if (p.type === 'integer' || p.type === 'fraction') {
@@ -241,6 +251,11 @@ export class DigitFlowComponent {
     const trend = this.resolveTrend(this.prevNumericValue, newNumericValue);
     const staggerMs = this.stagger();
 
+    if (!this.canAnimateNow()) {
+      this.prevNumericValue = newNumericValue;
+      return;
+    }
+
     const baseTransformTiming = settings.transformTiming ?? {
       duration: d,
       easing: settings.flipEasing,
@@ -262,8 +277,8 @@ export class DigitFlowComponent {
     const fadeOpts: KeyframeAnimationOptions = {
       duration: od,
       easing: 'ease-out',
-      fill: 'both',
-      composite: 'replace',
+      fill: 'none',
+      composite: 'accumulate',
       ...(settings.opacityTiming ?? {}),
     };
     if (reduced) fadeOpts.duration = 0;
@@ -278,6 +293,7 @@ export class DigitFlowComponent {
     const batch: Animation[] = [];
     const newKeys = new Set<string>();
     let elemIdx = 0;
+    const number = host.querySelector<HTMLElement>('.df-number');
 
     host.querySelectorAll<HTMLElement>('[data-key]').forEach((el) => {
       const key = el.getAttribute('data-key')!;
@@ -326,7 +342,7 @@ export class DigitFlowComponent {
         } else {
           batch.push(
             el.animate(
-              [{ opacity: '0' }, { opacity: '1' }],
+              { '--_df-d-opacity': [-0.9999, 0] } as PropertyIndexedKeyframes,
               this.addStaggerDelay(fadeOpts, staggerDelay),
             ),
           );
@@ -345,7 +361,7 @@ export class DigitFlowComponent {
         } else {
           batch.push(
             el.animate(
-              [{ opacity: '0' }, { opacity: '1' }],
+              { '--_df-d-opacity': [-0.9999, 0] } as PropertyIndexedKeyframes,
               this.addStaggerDelay(fadeOpts, staggerDelay),
             ),
           );
@@ -358,10 +374,32 @@ export class DigitFlowComponent {
       if (newKeys.has(key)) return;
       const ghost = this.buildGhost(key, rect, host);
       host.appendChild(ghost);
-      const a = ghost.animate([{ opacity: '1' }, { opacity: '0' }], { ...fadeOpts });
+      ghost.style.setProperty('--_df-d-opacity', '-0.999');
+      const a = ghost.animate({ '--_df-d-opacity': [0.999, 0] } as PropertyIndexedKeyframes, {
+        ...fadeOpts,
+      });
       batch.push(a);
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
     });
+
+    if (number) {
+      const rect = number.getBoundingClientRect();
+      const dx = this.prevNumberLeft - rect.left;
+      const width = rect.width || number.offsetWidth;
+      const dWidth = this.prevNumberWidth - width;
+      number.style.setProperty('--_df-width', String(width || this.prevNumberWidth || 1));
+      if (Math.abs(dx) > 0.5 || Math.abs(dWidth) > 0.5) {
+        batch.push(
+          number.animate(
+            {
+              '--_df-dx': [`${dx}px`, '0px'],
+              '--_df-d-width': [dWidth, 0],
+            } as PropertyIndexedKeyframes,
+            { ...flipOpts },
+          ),
+        );
+      }
+    }
 
     // Color flash on value change direction
     if (d > 0) {
@@ -394,15 +432,27 @@ export class DigitFlowComponent {
 
     this._live.push(...batch);
     this.animCount++;
-    this.animationsStart.emit();
+    if (this._animationsFinishAbort) {
+      this._animationsFinishAbort.abort();
+    } else {
+      this.animationsStart.emit();
+    }
+
+    const finishController = new AbortController();
+    this._animationsFinishAbort = finishController;
 
     Promise.allSettled(batch.map((a) => a.finished)).then(() => {
       const batchSet = new Set(batch);
       this._live = this._live.filter((a) => !batchSet.has(a));
       this.animCount--;
 
+      if (finishController.signal.aborted) {
+        return;
+      }
+
       if (this.animCount === 0 && !this._destroyed) {
         this.animationsFinish.emit();
+        this._animationsFinishAbort = undefined;
       }
     });
   }
@@ -425,6 +475,15 @@ export class DigitFlowComponent {
         ? configured(oldValue, newValue)
         : (configured ?? Math.sign(newValue - oldValue));
     return Math.sign(trend);
+  }
+
+  private canAnimateNow(): boolean {
+    const host = this.elRef.nativeElement;
+    return (
+      canAnimateDigitFlow({ respectMotionPreference: this.respectMotionPreference() }) &&
+      this.animated() &&
+      host.ownerDocument.visibilityState === 'visible'
+    );
   }
 
   private getContinuousStartPos(): number | undefined {
@@ -516,6 +575,7 @@ export class DigitFlowComponent {
       `width:${rect.width}px;height:${rect.height}px;` +
       `pointer-events:none;overflow:hidden;display:inline-flex;` +
       `align-items:center;font:${cs.font};color:${cs.color}`;
+    ghost.className = 'df-ghost';
 
     const savedHTML = this.prevInnerHTML.get(key);
     if (savedHTML) {

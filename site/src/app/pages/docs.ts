@@ -723,7 +723,8 @@ export class DocsDemoComponent {
                     <td><code>spring</code></td>
                     <td>
                       CSS easing for the FLIP animation — digits slide horizontally when the digit
-                      count changes (e.g. 9→10). Defaults to a smooth ease-out curve.
+                      count changes (e.g. 9→10). Defaults to the same damped spring as
+                      <code>spinEasing</code>.
                     </td>
                   </tr>
                   <tr>

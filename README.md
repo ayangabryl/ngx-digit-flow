@@ -61,7 +61,7 @@ export class PriceComponent {
 | `opacityTiming`           | `DigitFlowTiming`                                             | `opacityDuration` | Full WAAPI timing for fade animations                                              |
 | `variant`                 | `'default' \| 'gaming' \| 'metrics' \| 'finance' \| 'smooth'` | `'default'`       | Pre-configured duration/easing preset                                              |
 | `spinEasing`              | `string`                                                      | `variant`         | CSS easing for digit spin                                                          |
-| `flipEasing`              | `string`                                                      | ease-out          | CSS easing for layout transitions                                                  |
+| `flipEasing`              | `string`                                                      | spring            | CSS easing for layout transitions                                                  |
 | `trend`                   | `number \| (oldValue, value) => number`                       | auto              | Controls reel direction: `1`, `-1`, `0`, or custom                                 |
 | `continuous`              | `boolean`                                                     | `false`           | Visually ticks through intermediate values by looping unchanged lower-place digits |
 | `digits`                  | `Record<number, { max?: number }>`                            | `{}`              | Configure digit reel ranges by decimal position                                    |
