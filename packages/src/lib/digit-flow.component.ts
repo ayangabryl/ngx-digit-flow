@@ -131,6 +131,7 @@ export class DigitFlowComponent {
   private prevDigitD = new Map<string, string>();
   private prevDigitCurrent = new Map<string, string>();
   private prevDigitValues = new Map<string, number>();
+  private prevDigitOrder: string[] = [];
   private prevNumericValue = 0;
 
   // Animation bookkeeping
@@ -199,11 +200,13 @@ export class DigitFlowComponent {
     this.prevDigitD.clear();
     this.prevDigitCurrent.clear();
     this.prevDigitValues.clear();
+    this.prevDigitOrder = [];
 
     untracked(() => {
       [...this.data().integer, ...this.data().fraction].forEach((p) => {
         if (p.type === 'integer' || p.type === 'fraction') {
           this.prevDigitValues.set(p.key, this.getPartDigitValue(p));
+          this.prevDigitOrder.push(p.key);
         }
       });
     });
@@ -265,22 +268,12 @@ export class DigitFlowComponent {
     };
     if (reduced) fadeOpts.duration = 0;
 
-    // ── Continuous mode: find the lowest decimal position of any changed digit.
+    // ── Continuous mode: find the first changed digit position.
     // Unchanged digits below that position spin a full reel loop, giving the visual
     // illusion of ticking through intermediate values — same technique as
     // number-flow's continuous plugin. No step-chaining needed; it's one animation.
-    let continuousStartPos = Infinity;
-    if (this.continuous() && d > 0 && trend !== 0) {
-      host.querySelectorAll<HTMLElement>('.df-digit[data-key^="i"]').forEach((el) => {
-        const key = el.getAttribute('data-key')!;
-        const digitPos = Number(key.slice(1)); // 'i0'=ones, 'i1'=tens, 'i2'=hundreds …
-        const digit = this.getDigitValue(key);
-        const prev = this.prevDigitValues.get(key) ?? digit;
-        if (prev !== digit) {
-          continuousStartPos = Math.min(continuousStartPos, digitPos);
-        }
-      });
-    }
+    const continuousStartPos =
+      this.continuous() && d > 0 && trend !== 0 ? this.getContinuousStartPos() : undefined;
 
     const batch: Animation[] = [];
     const newKeys = new Set<string>();
@@ -296,16 +289,18 @@ export class DigitFlowComponent {
 
       if (el.classList.contains('df-digit')) {
         const digit = this.getDigitValue(key);
-        const fromDigit = this.prevDigitValues.has(key) ? this.prevDigitValues.get(key)! : digit;
+        const fromDigit = this.prevDigitValues.has(key) ? this.prevDigitValues.get(key)! : 0;
         const rawDelta = this.getTrendDelta(fromDigit, digit, trend, this.getDigitLength(key));
+        const digitPos = this.getDigitPosition(key);
 
-        // Continuous effect: unchanged digit at a lower decimal position than the
-        // lowest changed digit → spin a full reel loop so it appears to tick through.
+        // Continuous effect: unchanged digit at or below the first changed position
+        // spins a full reel loop so it appears to tick through.
         const isLowerUnchanged =
           this.continuous() &&
           rawDelta === 0 &&
-          key.startsWith('i') &&
-          Number(key.slice(1)) < continuousStartPos;
+          continuousStartPos !== undefined &&
+          digitPos !== undefined &&
+          continuousStartPos >= digitPos;
         const delta = isLowerUnchanged ? this.getDigitLength(key) * trend : rawDelta;
 
         if (delta !== 0 && d > 0) {
@@ -430,6 +425,40 @@ export class DigitFlowComponent {
         ? configured(oldValue, newValue)
         : (configured ?? Math.sign(newValue - oldValue));
     return Math.sign(trend);
+  }
+
+  private getContinuousStartPos(): number | undefined {
+    const current = new Map<string, number>();
+    const currentOrder: string[] = [];
+
+    untracked(() => {
+      [...this.data().integer, ...this.data().fraction].forEach((p) => {
+        if (p.type === 'integer' || p.type === 'fraction') {
+          current.set(p.key, this.getPartDigitValue(p));
+          currentOrder.push(p.key);
+        }
+      });
+    });
+
+    const firstChangedPrev = this.prevDigitOrder.find(
+      (key) => current.get(key) !== this.prevDigitValues.get(key),
+    );
+    const firstChangedCurrent = currentOrder.find(
+      (key) => current.get(key) !== this.prevDigitValues.get(key),
+    );
+
+    const start = Math.max(
+      this.getDigitPosition(firstChangedPrev) ?? -Infinity,
+      this.getDigitPosition(firstChangedCurrent) ?? -Infinity,
+    );
+    return Number.isFinite(start) ? start : undefined;
+  }
+
+  private getDigitPosition(key?: string): number | undefined {
+    if (!key) return undefined;
+    if (key.startsWith('i')) return Number(key.slice(1));
+    if (key.startsWith('f')) return -Number(key.slice(1));
+    return undefined;
   }
 
   private getDigitLength(key: string): number {
