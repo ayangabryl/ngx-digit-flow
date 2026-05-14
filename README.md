@@ -32,10 +32,13 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
 
 @Component({
   imports: [DigitFlowComponent],
-  template: `<ngx-digit-flow [value]="price()" [format]="{ style: 'currency', currency: 'USD' }" />`
+  template: `<ngx-digit-flow
+    [value]="price()"
+    [format]="{ style: 'currency', currency: 'USD' }"
+  />`,
 })
 export class PriceComponent {
-  price = signal(182.50);
+  price = signal(182.5);
 }
 ```
 
@@ -43,41 +46,42 @@ export class PriceComponent {
 
 ### Inputs
 
-| Input | Type | Default | Description |
-|---|---|---|---|
-| `value` | `number` | required | The number to display and animate |
-| `format` | `Intl.NumberFormatOptions` | `{}` | Options forwarded to `Intl.NumberFormat` |
-| `locales` | `string \| string[]` | `undefined` | BCP 47 locale string(s), including localized digit glyphs |
-| `prefix` | `string` | `''` | Text prepended before the number |
-| `suffix` | `string` | `''` | Text appended after the number |
-| `animated` | `boolean` | `true` | Set `false` to disable all animation |
-| `duration` | `number` | `variant` | Animation duration in ms |
-| `opacityDuration` | `number` | `150` | Fade duration for appearing/disappearing elements |
-| `transformTiming` | `DigitFlowTiming` | `variant` | Full WAAPI timing for layout/FLIP animations |
-| `spinTiming` | `DigitFlowTiming` | `transformTiming` | Full WAAPI timing for digit spin animations |
-| `opacityTiming` | `DigitFlowTiming` | `opacityDuration` | Full WAAPI timing for fade animations |
-| `variant` | `'default' \| 'gaming' \| 'metrics' \| 'finance' \| 'smooth'` | `'default'` | Pre-configured duration/easing preset |
-| `spinEasing` | `string` | `variant` | CSS easing for digit spin |
-| `flipEasing` | `string` | `variant` | CSS easing for layout transitions |
-| `trend` | `number \| (oldValue, value) => number` | auto | Controls reel direction: `1`, `-1`, `0`, or custom |
-| `continuous` | `boolean` | `false` | Animate through intermediate values, capped at 15 steps |
-| `digits` | `Record<number, { max?: number }>` | `{}` | Configure digit reel ranges by decimal position |
-| `respectMotionPreference` | `boolean` | `true` | Disable animations when the user prefers reduced motion |
-| `stagger` | `number` | `0` | Delay in ms between element animations |
-| `colorOnIncrease` | `string` | `undefined` | CSS color flashed when value increases |
-| `colorOnDecrease` | `string` | `undefined` | CSS color flashed when value decreases |
-| `spin3d` | `boolean` | `false` | Adds a subtle 3D cylinder effect to spinning digits |
+| Input                     | Type                                                          | Default           | Description                                                                        |
+| ------------------------- | ------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------- |
+| `value`                   | `number`                                                      | required          | The number to display and animate                                                  |
+| `format`                  | `Intl.NumberFormatOptions`                                    | `{}`              | Options forwarded to `Intl.NumberFormat`                                           |
+| `locales`                 | `string \| string[]`                                          | `undefined`       | BCP 47 locale string(s), including localized digit glyphs                          |
+| `prefix`                  | `string`                                                      | `''`              | Text prepended before the number                                                   |
+| `suffix`                  | `string`                                                      | `''`              | Text appended after the number                                                     |
+| `animated`                | `boolean`                                                     | `true`            | Set `false` to disable all animation                                               |
+| `duration`                | `number`                                                      | `variant`         | Animation duration in ms                                                           |
+| `opacityDuration`         | `number`                                                      | `150`             | Fade duration for appearing/disappearing elements                                  |
+| `transformTiming`         | `DigitFlowTiming`                                             | `variant`         | Full WAAPI timing for layout/FLIP animations                                       |
+| `spinTiming`              | `DigitFlowTiming`                                             | `transformTiming` | Full WAAPI timing for digit spin animations                                        |
+| `opacityTiming`           | `DigitFlowTiming`                                             | `opacityDuration` | Full WAAPI timing for fade animations                                              |
+| `variant`                 | `'default' \| 'gaming' \| 'metrics' \| 'finance' \| 'smooth'` | `'default'`       | Pre-configured duration/easing preset                                              |
+| `spinEasing`              | `string`                                                      | `variant`         | CSS easing for digit spin                                                          |
+| `flipEasing`              | `string`                                                      | ease-out          | CSS easing for layout transitions                                                  |
+| `trend`                   | `number \| (oldValue, value) => number`                       | auto              | Controls reel direction: `1`, `-1`, `0`, or custom                                 |
+| `continuous`              | `boolean`                                                     | `false`           | Visually ticks through intermediate values by looping unchanged lower-place digits |
+| `digits`                  | `Record<number, { max?: number }>`                            | `{}`              | Configure digit reel ranges by decimal position                                    |
+| `respectMotionPreference` | `boolean`                                                     | `true`            | Disable animations when the user prefers reduced motion                            |
+| `stagger`                 | `number`                                                      | `0`               | Delay in ms between element animations                                             |
+| `colorOnIncrease`         | `string`                                                      | `undefined`       | CSS color flashed when value increases                                             |
+| `colorOnDecrease`         | `string`                                                      | `undefined`       | CSS color flashed when value decreases                                             |
+| `spin3d`                  | `boolean`                                                     | `false`           | Adds a subtle 3D cylinder effect to spinning digits                                |
 
 ### Outputs
 
-| Output | Payload | Description |
-|---|---|---|
-| `animationsStart` | `void` | Fires when a batch of animations begins |
-| `animationsFinish` | `void` | Fires when all in-flight animations settle |
+| Output             | Payload | Description                                |
+| ------------------ | ------- | ------------------------------------------ |
+| `animationsStart`  | `void`  | Fires when a batch of animations begins    |
+| `animationsFinish` | `void`  | Fires when all in-flight animations settle |
 
 ## Examples
 
 **Currency**
+
 ```html
 <ngx-digit-flow
   [value]="revenue()"
@@ -87,41 +91,35 @@ export class PriceComponent {
 ```
 
 **Compact notation (K / M / B)**
+
 ```html
-<ngx-digit-flow
-  [value]="views()"
-  [format]="{ notation: 'compact', maximumFractionDigits: 1 }"
-/>
+<ngx-digit-flow [value]="views()" [format]="{ notation: 'compact', maximumFractionDigits: 1 }" />
 ```
 
 **Percentage**
+
 ```html
-<ngx-digit-flow
-  [value]="progress()"
-  [format]="{ style: 'percent', maximumFractionDigits: 1 }"
-/>
+<ngx-digit-flow [value]="progress()" [format]="{ style: 'percent', maximumFractionDigits: 1 }" />
 ```
 
 **Localized digits**
+
 ```html
-<ngx-digit-flow
-  [value]="12345"
-  locales="ar-EG"
-/>
+<ngx-digit-flow [value]="12345" locales="ar-EG" />
 ```
 
 **Forced trend direction**
+
 ```html
-<ngx-digit-flow
-  [value]="value()"
-  [trend]="-1"
-/>
+<ngx-digit-flow [value]="value()" [trend]="-1" />
 ```
 
 **Score counter**
+
 ```typescript
 score = signal(0);
 ```
+
 ```html
 <ngx-digit-flow [value]="score()" [duration]="500" />
 <button (click)="score.update(v => v - 1)">-</button>
@@ -129,9 +127,11 @@ score = signal(0);
 ```
 
 **Group directive** (sync multiple instances)
+
 ```typescript
 import { DigitFlowGroupDirective } from 'ngx-digit-flow';
 ```
+
 ```html
 <div ngxDigitFlowGroup>
   <ngx-digit-flow [value]="hours" />
