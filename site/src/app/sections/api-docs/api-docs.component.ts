@@ -27,15 +27,14 @@ const INPUTS = [
   { name: 'suffix',          type: 'string',                              required: false, default: "''",         desc: 'Custom text appended after the number' },
   { name: 'animated',        type: 'boolean',                             required: false, default: 'true',       desc: 'Enable or disable all digit animations' },
   // ── Timing ───────────────────────────────────────────────────────────────
-  { name: 'duration',        type: 'number',                              required: false, default: 'variant',    desc: 'Spin + FLIP animation duration in ms. Overrides variant duration.' },
-  { name: 'opacityDuration', type: 'number',                              required: false, default: '150',        desc: 'Fade in/out duration in ms for appearing/disappearing elements' },
-  { name: 'transformTiming', type: 'DigitFlowTiming',                     required: false, default: 'variant',    desc: 'Full WAAPI timing for layout/FLIP animations.' },
-  { name: 'spinTiming',      type: 'DigitFlowTiming',                     required: false, default: 'transform',  desc: 'Full WAAPI timing for digit spin animations.' },
+  { name: 'duration',        type: 'number',                              required: false, default: '900',        desc: 'Spin + FLIP animation duration in ms.' },
+  { name: 'opacityDuration', type: 'number',                              required: false, default: '150',        desc: 'Fade in/out duration in ms for appearing/disappearing elements.' },
+  { name: 'transformTiming', type: 'DigitFlowTiming',                     required: false, default: 'duration+flipEasing', desc: 'Full WAAPI timing for the FLIP layout animation. Overrides duration and flipEasing.' },
+  { name: 'spinTiming',      type: 'DigitFlowTiming',                     required: false, default: 'transformTiming', desc: 'Full WAAPI timing for the digit spin animation. Falls back to transformTiming.' },
   { name: 'opacityTiming',   type: 'DigitFlowTiming',                     required: false, default: 'opacityDuration', desc: 'Full WAAPI timing for fade animations.' },
-  // ── Style presets ────────────────────────────────────────────────────────
-  { name: 'variant',         type: "'default'|'gaming'|'metrics'|'finance'|'smooth'", required: false, default: "'default'", desc: 'Pre-configured animation preset. Sets duration and easing as a group.' },
-  { name: 'spinEasing',      type: 'string',                              required: false, default: 'variant',    desc: 'CSS easing for digit spin. Overrides variant\'s spin easing.' },
-  { name: 'flipEasing',      type: 'string',                              required: false, default: 'variant',    desc: 'CSS easing for FLIP layout animation. Overrides variant\'s flip easing.' },
+  // ── Animation style ──────────────────────────────────────────────────────
+  { name: 'spinEasing',      type: 'string',                              required: false, default: 'spring',     desc: 'CSS easing for the digit spin — each digit scrolls vertically on a 0-9 reel. Defaults to a damped spring.' },
+  { name: 'flipEasing',      type: 'string',                              required: false, default: 'ease-out',   desc: 'CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10).' },
   { name: 'trend',           type: 'number | (oldValue,value)=>number',    required: false, default: 'auto',       desc: 'Controls reel direction. Use 1, -1, 0, or a custom function.' },
   // ── Features ─────────────────────────────────────────────────────────────
   { name: 'continuous',      type: 'boolean',                             required: false, default: 'false',      desc: 'Ticker mode: animate through every intermediate integer value (max 15 steps).' },
@@ -44,7 +43,7 @@ const INPUTS = [
   { name: 'stagger',         type: 'number',                              required: false, default: '0',          desc: 'Milliseconds of delay between each element\'s animation. Creates a cascade effect.' },
   { name: 'colorOnIncrease', type: 'string',                              required: false, default: 'undefined',  desc: 'CSS color flashed on the host when value increases (e.g. "#4ade80").' },
   { name: 'colorOnDecrease', type: 'string',                              required: false, default: 'undefined',  desc: 'CSS color flashed on the host when value decreases (e.g. "#f87171").' },
-  { name: 'spin3d',          type: 'boolean',                             required: false, default: 'false',      desc: 'Enables a 3D cylinder perspective effect while digits spin.' },
+  { name: 'spin3d',          type: 'boolean',                             required: false, default: 'false',      desc: 'Adds a 3D cylinder effect — digits tilt on the X-axis while spinning. Tune via --df-3d-angle and --df-3d-perspective CSS properties.' },
 ];
 
 const OUTPUTS = [

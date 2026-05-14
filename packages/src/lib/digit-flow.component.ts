@@ -19,7 +19,6 @@ import {
   DigitFlowDigits,
   DigitFlowTiming,
   DigitFlowTrend,
-  DigitFlowVariant,
   EMPTY_FORMATTED,
   FormattedNumber,
 } from './digit-flow.types';
@@ -37,25 +36,6 @@ const SPIN_EASING =
   '.9981,.9982,.9984,.9985,.9987,.9988,.9989,1)';
 
 const FLIP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
-
-// Overshoot spring for gaming variant
-const GAMING_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-
-// ── Variant Presets ───────────────────────────────────────────────────────────
-
-interface VariantPreset {
-  duration: number;
-  spinEasing: string;
-  flipEasing: string;
-}
-
-const VARIANT_PRESETS: Record<DigitFlowVariant, VariantPreset> = {
-  default: { duration: 900,  spinEasing: SPIN_EASING,   flipEasing: FLIP_EASING },
-  gaming:  { duration: 280,  spinEasing: GAMING_EASING, flipEasing: GAMING_EASING },
-  metrics: { duration: 800,  spinEasing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', flipEasing: FLIP_EASING },
-  finance: { duration: 1400, spinEasing: SPIN_EASING,   flipEasing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)' },
-  smooth:  { duration: 750,  spinEasing: 'cubic-bezier(0.4, 0, 0.2, 1)', flipEasing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
-};
 
 // Max intermediate steps for continuous mode
 const MAX_CONTINUOUS_STEPS = 15;
@@ -89,11 +69,9 @@ export class DigitFlowComponent {
   opacityTiming   = input<DigitFlowTiming | undefined>(undefined);
 
   // ── Animation style inputs ────────────────────────────────────────────────
-  /** Pre-configured preset; overrides default duration/easing. Individual inputs take priority. */
-  variant         = input<DigitFlowVariant>('default');
-  /** Custom easing for the digit spin. Overrides variant's spinEasing. */
+  /** CSS easing for the digit spin (the vertical reel). Defaults to a damped spring curve. */
   spinEasing      = input<string | undefined>(undefined);
-  /** Custom easing for the FLIP (layout shift) animation. Overrides variant's flipEasing. */
+  /** CSS easing for the FLIP layout animation (horizontal shift when digit count changes). Defaults to an ease-out curve. */
   flipEasing      = input<string | undefined>(undefined);
   /**
    * Controls digit direction. Use +1 to force upward reels, -1 for downward reels,
@@ -134,19 +112,15 @@ export class DigitFlowComponent {
     new Intl.NumberFormat(this.locales(), this.format()).format(this.value())
   );
 
-  // Resolves variant + individual overrides into effective animation settings
-  protected effectiveSettings = computed(() => {
-    const preset = VARIANT_PRESETS[this.variant()] ?? VARIANT_PRESETS['default'];
-    return {
-      duration:        this.duration()        ?? preset.duration,
-      opacityDuration: this.opacityDuration() ?? 150,
-      spinEasing:      this.spinEasing()      ?? preset.spinEasing,
-      flipEasing:      this.flipEasing()      ?? preset.flipEasing,
-      transformTiming: this.transformTiming(),
-      spinTiming:      this.spinTiming(),
-      opacityTiming:   this.opacityTiming(),
-    };
-  });
+  protected effectiveSettings = computed(() => ({
+    duration:        this.duration()        ?? 900,
+    opacityDuration: this.opacityDuration() ?? 150,
+    spinEasing:      this.spinEasing()      ?? SPIN_EASING,
+    flipEasing:      this.flipEasing()      ?? FLIP_EASING,
+    transformTiming: this.transformTiming(),
+    spinTiming:      this.spinTiming(),
+    opacityTiming:   this.opacityTiming(),
+  }));
 
   private platformId = inject(PLATFORM_ID);
   private elRef      = inject(ElementRef<HTMLElement>);

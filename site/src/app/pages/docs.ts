@@ -443,8 +443,8 @@ export class DocsDemoComponent {
                   <tr>
                     <td><code>duration</code></td>
                     <td><code>number</code></td>
-                    <td><code>variant</code></td>
-                    <td>Spin + FLIP animation duration in ms. Overrides the active variant's duration.</td>
+                    <td><code>900</code></td>
+                    <td>Spin + FLIP animation duration in ms.</td>
                   </tr>
                   <tr>
                     <td><code>opacityDuration</code></td>
@@ -455,8 +455,8 @@ export class DocsDemoComponent {
                   <tr>
                     <td><code>transformTiming</code></td>
                     <td><code>DigitFlowTiming</code></td>
-                    <td><code>variant</code></td>
-                    <td>Full WAAPI timing for layout/FLIP animations. Overrides <code>duration</code> and <code>flipEasing</code>.</td>
+                    <td><code>duration+flipEasing</code></td>
+                    <td>Full WAAPI timing for the FLIP layout animation. Overrides <code>duration</code> and <code>flipEasing</code>.</td>
                   </tr>
                   <tr>
                     <td><code>spinTiming</code></td>
@@ -470,25 +470,19 @@ export class DocsDemoComponent {
                     <td><code>opacityDuration</code></td>
                     <td>Full WAAPI timing for fade-in and fade-out animations.</td>
                   </tr>
-                  <!-- Style presets -->
-                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Style presets</span></td></tr>
-                  <tr>
-                    <td><code>variant</code></td>
-                    <td><code>'default' | 'gaming' | 'metrics' | 'finance' | 'smooth'</code></td>
-                    <td><code>'default'</code></td>
-                    <td>Pre-configured animation preset that sets duration and easing as a group.</td>
-                  </tr>
+                  <!-- Animation style -->
+                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Animation style</span></td></tr>
                   <tr>
                     <td><code>spinEasing</code></td>
                     <td><code>string</code></td>
-                    <td><code>variant</code></td>
-                    <td>CSS easing for the digit spin. Overrides the variant's spin easing.</td>
+                    <td><code>spring</code></td>
+                    <td>CSS easing for the digit spin — each digit scrolls vertically on a 0–9 reel. Defaults to a damped spring.</td>
                   </tr>
                   <tr>
                     <td><code>flipEasing</code></td>
                     <td><code>string</code></td>
-                    <td><code>variant</code></td>
-                    <td>CSS easing for FLIP layout transitions. Overrides the variant's flip easing.</td>
+                    <td><code>ease-out</code></td>
+                    <td>CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10).</td>
                   </tr>
                   <tr>
                     <td><code>trend</code></td>
@@ -538,7 +532,7 @@ export class DocsDemoComponent {
                     <td><code>spin3d</code></td>
                     <td><code>boolean</code></td>
                     <td><code>false</code></td>
-                    <td>Enables a 3D cylinder perspective effect while digits spin.</td>
+                    <td>Adds a 3D cylinder effect — digits tilt on the X-axis while spinning. Tune with <code>--df-3d-angle</code> and <code>--df-3d-perspective</code> CSS properties.</td>
                   </tr>
                 </tbody>
               </table>
