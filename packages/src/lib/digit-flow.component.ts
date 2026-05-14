@@ -139,13 +139,13 @@ export class DigitFlowComponent {
   private animCount  = 0;
   private _pending   = false;
   private _destroyed = false;
+  private _hasRenderedValue = false;
   private _live: Animation[] = [];
   private _spinCount = new Map<HTMLElement, number>();
 
   // Continuous mode state
   private _continuousQueue: FormattedNumber[] = [];
   private _continuousValues: number[]         = [];
-  private _continuousActive                   = false;
   private _continuousStepDuration             = 0;
 
   // Per-batch overrides (cleared after each runAnimations call)
@@ -170,6 +170,13 @@ export class DigitFlowComponent {
       const pfx = this.prefix();
       const sfx = this.suffix();
 
+      if (!this._hasRenderedValue) {
+        untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
+        this.prevNumericValue = v;
+        this._hasRenderedValue = true;
+        return;
+      }
+
       if (isPlatformBrowser(this.platformId)) {
         this.snapshot();
       }
@@ -177,7 +184,6 @@ export class DigitFlowComponent {
       // Cancel any in-flight continuous queue when a new value arrives
       this._continuousQueue  = [];
       this._continuousValues = [];
-      this._continuousActive = false;
 
       if (isPlatformBrowser(this.platformId) && this.animated() && this.continuous()) {
         const from  = this.prevNumericValue;
@@ -223,7 +229,6 @@ export class DigitFlowComponent {
 
   private processContinuousQueue(isFirst = false): void {
     if (this._continuousQueue.length === 0) {
-      this._continuousActive = false;
       return;
     }
 
@@ -235,9 +240,8 @@ export class DigitFlowComponent {
       this.snapshot();
     }
 
-    this._continuousActive      = true;
-    this._targetDisplayValue    = nextValue;
-    this._durationOverride      = this._continuousStepDuration;
+    this._targetDisplayValue = nextValue;
+    this._durationOverride   = this._continuousStepDuration;
 
     untracked(() => this.data.set(nextFormatted));
     this._pending = true;
@@ -283,7 +287,8 @@ export class DigitFlowComponent {
     const reduced   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Per-step override for continuous mode
-    const rawDur = this._durationOverride !== null ? this._durationOverride : settings.duration;
+    const isContinuousStep = this._durationOverride !== null;
+    const rawDur = isContinuousStep ? this._durationOverride! : settings.duration;
     this._durationOverride = null;
 
     const d  = reduced ? 0 : rawDur;
@@ -348,7 +353,7 @@ export class DigitFlowComponent {
             ));
           }
         } else {
-          batch.push(el.animate([{ opacity: '0' }, { opacity: '1' }], fadeOpts));
+          batch.push(el.animate([{ opacity: '0' }, { opacity: '1' }], { ...fadeOpts, delay: staggerDelay }));
         }
 
       } else {
@@ -361,7 +366,7 @@ export class DigitFlowComponent {
             ));
           }
         } else {
-          batch.push(el.animate([{ opacity: '0' }, { opacity: '1' }], fadeOpts));
+          batch.push(el.animate([{ opacity: '0' }, { opacity: '1' }], { ...fadeOpts, delay: staggerDelay }));
         }
       }
     });
@@ -377,19 +382,24 @@ export class DigitFlowComponent {
     });
 
     // Color animation on trend change
-    if (d > 0) {
+    if (d > 0 && (!isContinuousStep || this._continuousQueue.length === 0)) {
       const colorIncrease = this.colorOnIncrease();
       const colorDecrease = this.colorOnDecrease();
+      let colorAnimation: Animation | null = null;
       if (trend > 0 && colorIncrease) {
-        batch.push(host.animate(
+        colorAnimation = host.animate(
           [{ color: colorIncrease }, { color: '' }],
           { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
-        ));
+        );
       } else if (trend < 0 && colorDecrease) {
-        batch.push(host.animate(
+        colorAnimation = host.animate(
           [{ color: colorDecrease }, { color: '' }],
           { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
-        ));
+        );
+      }
+
+      if (colorAnimation && !isContinuousStep) {
+        batch.push(colorAnimation);
       }
     }
 
@@ -399,8 +409,6 @@ export class DigitFlowComponent {
       // Still need to continue continuous queue even with no visible animations
       if (this._continuousQueue.length > 0) {
         this.processContinuousQueue(false);
-      } else {
-        this._continuousActive = false;
       }
       return;
     }
@@ -419,7 +427,6 @@ export class DigitFlowComponent {
           // Continue continuous chain
           this.processContinuousQueue(false);
         } else {
-          this._continuousActive = false;
           this.animationsFinish.emit();
         }
       }
