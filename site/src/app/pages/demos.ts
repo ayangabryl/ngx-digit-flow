@@ -76,12 +76,17 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
         <!-- Countdown -->
         <div class="card card--countdown">
           <span class="card-label">Countdown</span>
-          <div class="card-center">
-            <ngx-digit-flow
-              [value]="countdown()"
-              [suffix]="' s'"
-              [duration]="600"
-            />
+          <div class="countdown-stage">
+            <svg class="countdown-ring" viewBox="0 0 72 72">
+              <circle class="countdown-ring-bg" cx="36" cy="36" r="28"/>
+              <circle class="countdown-ring-fill" cx="36" cy="36" r="28"
+                [style.stroke]="countdownColor()"
+                [style.stroke-dashoffset]="countdownRingOffset()"
+              />
+            </svg>
+            <div class="countdown-center" [style.color]="countdownColor()">
+              <ngx-digit-flow [value]="countdown()" [suffix]="'s'" [duration]="600" />
+            </div>
           </div>
         </div>
 
@@ -107,17 +112,41 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
           </div>
         </div>
 
-        <!-- Compact notation -->
-        <div class="card card--compact">
-          <span class="card-label">Compact</span>
-          <div class="card-center">
-            <ngx-digit-flow
-              [value]="compact()"
-              [format]="compactFmt"
-              [duration]="700"
-            />
+        <!-- XP / Level -->
+        <div class="card card--xp">
+          <div class="xp-head">
+            <span class="card-label">Experience</span>
+            <span class="xp-level-badge" [class.leveling]="xpLeveling()">
+              Lv&nbsp;<ngx-digit-flow [value]="xpLevel()" [duration]="300" />
+            </span>
           </div>
-          <span class="card-foot-note">K / M / B notation</span>
+          <div class="xp-display">
+            <ngx-digit-flow class="xp-val" [value]="xpCurrent()" [format]="xpFmt" [duration]="500" />
+            <span class="xp-unit">XP</span>
+          </div>
+          <div class="xp-bar-wrap">
+            <div class="xp-bar-track">
+              <div class="xp-bar-fill" [style.width.%]="xpPct()"></div>
+            </div>
+            <span class="xp-pct"><ngx-digit-flow [value]="xpPctDisplay()" [duration]="500" />%</span>
+          </div>
+          <span class="xp-to-next">
+            <ngx-digit-flow class="xp-to-next-num" [value]="xpToNext()" [format]="xpFmt" [duration]="500" />&nbsp;XP to Lv&nbsp;{{ xpLevel() + 1 }}
+          </span>
+          @if (xpLeveling()) {
+            <div class="xp-levelup-overlay">
+              <div class="xp-spark xp-spark-a"></div>
+              <div class="xp-spark xp-spark-b"></div>
+              <div class="xp-spark xp-spark-c"></div>
+              <div class="xp-spark xp-spark-d"></div>
+              <div class="xp-spark xp-spark-e"></div>
+              <div class="xp-levelup-inner">
+                <span class="xp-levelup-icon">⭐</span>
+                <p class="xp-levelup-sub">Level Up!</p>
+                <div class="xp-levelup-lv">Lv&nbsp;<ngx-digit-flow [value]="xpLevel()" [duration]="300" /></div>
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Progress -->
@@ -504,6 +533,47 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
     .card--countdown {
       grid-column: 3 / 4;
       grid-row: 1 / 2;
+      gap: 0;
+    }
+
+    .countdown-stage {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .countdown-ring {
+      width: 100%;
+      max-width: 108px;
+      height: auto;
+      display: block;
+    }
+
+    .countdown-ring-bg {
+      fill: none;
+      stroke: oklch(93% 0.003 265);
+      stroke-width: 5;
+    }
+
+    .countdown-ring-fill {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 175.93;
+      transform: rotate(-90deg);
+      transform-origin: 36px 36px;
+      transition: stroke-dashoffset 0.6s linear, stroke 0.4s ease;
+    }
+
+    .countdown-center {
+      position: absolute;
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      transition: color 0.4s ease;
     }
 
     /* ── Score: col 4, row 1 ─────────────────── */
@@ -608,10 +678,191 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
       border-color: oklch(44% 0.20 145);
     }
 
-    /* ── Compact: col 3, row 2 ───────────────── */
-    .card--compact {
+    /* ── XP / Level: col 3, row 2 ───────────── */
+    .card--xp {
       grid-column: 3 / 4;
       grid-row: 2 / 3;
+      gap: 0;
+      position: relative;
+    }
+
+    .xp-levelup-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      background: linear-gradient(145deg, oklch(36% 0.24 280), oklch(44% 0.20 310));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      animation: xpOverlayFade 2.3s ease-in-out forwards;
+    }
+
+    @keyframes xpOverlayFade {
+      0%   { opacity: 0; }
+      12%  { opacity: 1; }
+      72%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .xp-levelup-inner {
+      text-align: center;
+      color: #fff;
+      animation: xpInnerPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+    }
+
+    @keyframes xpInnerPop {
+      from { transform: scale(0.65) translateY(8px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .xp-levelup-icon {
+      font-size: 2rem;
+      display: block;
+      animation: xpIconBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+    }
+
+    @keyframes xpIconBounce {
+      from { transform: scale(0) rotate(-20deg); }
+      to   { transform: scale(1) rotate(0deg); }
+    }
+
+    .xp-levelup-sub {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin: 5px 0 1px;
+    }
+
+    .xp-levelup-lv {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      display: inline-flex;
+      align-items: baseline;
+    }
+
+    .xp-spark {
+      position: absolute;
+      border-radius: 50%;
+      background: oklch(88% 0.16 55);
+      animation: xpSparkBurst 1.1s ease-out both;
+    }
+
+    .xp-spark-a { width: 9px;  height: 9px;  top: 22%;    left: 16%;   --xp-tx: -18px; --xp-ty: -22px; animation-delay: 0.18s; }
+    .xp-spark-b { width: 6px;  height: 6px;  top: 15%;    right: 20%;  --xp-tx:  14px; --xp-ty: -20px; animation-delay: 0.26s; background: oklch(82% 0.12 145); }
+    .xp-spark-c { width: 10px; height: 10px; bottom: 24%; left: 18%;   --xp-tx: -20px; --xp-ty:  18px; animation-delay: 0.22s; }
+    .xp-spark-d { width: 7px;  height: 7px;  bottom: 20%; right: 16%;  --xp-tx:  16px; --xp-ty:  14px; animation-delay: 0.32s; background: oklch(85% 0.14 310); }
+    .xp-spark-e { width: 5px;  height: 5px;  top: 45%;    left: 8%;    --xp-tx: -12px; --xp-ty:  -8px; animation-delay: 0.14s; background: oklch(80% 0.10 55); }
+
+    @keyframes xpSparkBurst {
+      from { opacity: 0; transform: scale(0) translate(0, 0); }
+      30%  { opacity: 1; transform: scale(1.6) translate(calc(var(--xp-tx) * 0.4), calc(var(--xp-ty) * 0.4)); }
+      to   { opacity: 0; transform: scale(0.4) translate(var(--xp-tx), var(--xp-ty)); }
+    }
+
+    .xp-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      margin-bottom: 4px;
+    }
+
+    .xp-level-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: oklch(46% 0.20 280);
+      background: oklch(93% 0.07 280);
+      padding: 3px 9px;
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .xp-level-badge.leveling {
+      background: oklch(88% 0.16 55);
+      color: oklch(38% 0.22 55);
+      animation: xpLevelUp 0.5s ease-out;
+    }
+
+    @keyframes xpLevelUp {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    .xp-display {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .xp-val {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .xp-unit {
+      font-size: 11px;
+      font-weight: 600;
+      color: oklch(58% 0.005 265);
+      letter-spacing: 0.06em;
+    }
+
+    .xp-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-bottom: 6px;
+    }
+
+    .xp-bar-track {
+      flex: 1;
+      height: 7px;
+      background: oklch(93% 0.05 280);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, oklch(56% 0.22 280), oklch(62% 0.18 310));
+      transition: width 0.6s cubic-bezier(0.34, 1.1, 0.64, 1);
+      box-shadow: 0 0 6px oklch(56% 0.22 280 / 0.35);
+    }
+
+    .xp-pct {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: oklch(50% 0.18 280);
+      min-width: 30px;
+      text-align: right;
+    }
+
+    .xp-to-next {
+      font-size: 11px;
+      color: oklch(62% 0.003 265);
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .xp-to-next-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink);
     }
 
     .card-foot-note {
@@ -1363,7 +1614,7 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
       .card--trend     { grid-column: 1 / 3; grid-row: 1 / 2; }
       .card--countdown { grid-column: 1 / 2; grid-row: 2 / 3; }
       .card--score     { grid-column: 2 / 3; grid-row: 2 / 3; }
-      .card--compact   { grid-column: 1 / 2; grid-row: 3 / 4; }
+      .card--xp   { grid-column: 1 / 2; grid-row: 3 / 4; }
       .card--progress  { grid-column: 2 / 3; grid-row: 3 / 4; }
       .card--slider    { grid-column: 1 / 3; grid-row: 4 / 5; }
       .card--pricing   { grid-column: 1 / 2; grid-row: 5 / 6; }
@@ -1383,7 +1634,7 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
       .card--trend,
       .card--countdown,
       .card--score,
-      .card--compact,
+      .card--xp,
       .card--progress,
       .card--slider,
       .card--pricing,
@@ -1396,20 +1647,33 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
   `],
 })
 export class DemosComponent implements OnInit {
-  protected countdown  = signal(30);
+  protected countdown = signal(30);
+  protected countdownColor = computed(() => {
+    const v = this.countdown();
+    if (v > 15) return 'oklch(44% 0.18 145)';
+    if (v > 8)  return 'oklch(52% 0.20 65)';
+    return              'oklch(48% 0.22 25)';
+  });
+  protected countdownRingOffset = computed(() => 2 * Math.PI * 28 * (1 - this.countdown() / 30));
   protected score      = signal(0);
   protected scoreBest  = signal(0);
   protected scoreTrend = signal<'up' | 'down' | 'neutral'>('neutral');
   protected scoreDelta = signal(0);
   private   scoreTrendTimer: ReturnType<typeof setTimeout> | null = null;
 
-  protected compact = signal(1200);
   protected compactFmt: Intl.NumberFormatOptions = {
-    notation: 'compact',
-    maximumFractionDigits: 1,
+    notation: 'compact', maximumFractionDigits: 1,
   } as Intl.NumberFormatOptions;
-  private compactValues = [1200, 15_400, 2_100_000, 150_000_000];
-  private compactIdx = 0;
+
+  // XP / Level card
+  private readonly xpRequired = 6000;
+  protected xpLevel      = signal(12);
+  protected xpCurrent    = signal(4820);
+  protected xpLeveling   = signal(false);
+  protected xpFmt: Intl.NumberFormatOptions = { maximumFractionDigits: 0 };
+  protected xpPct        = computed(() => Math.min(100, this.xpCurrent() / this.xpRequired * 100));
+  protected xpPctDisplay = computed(() => Math.floor(this.xpPct()));
+  protected xpToNext     = computed(() => Math.max(0, this.xpRequired - this.xpCurrent()));
 
   protected progress       = signal(0);
   protected progressPaused = signal(false);
@@ -1587,10 +1851,19 @@ export class DemosComponent implements OnInit {
       this.countdown.update(v => v <= 0 ? 30 : v - 1);
     }, 600));
 
+    // XP gain
     ids.push(setInterval(() => {
-      this.compactIdx = (this.compactIdx + 1) % this.compactValues.length;
-      this.compact.set(this.compactValues[this.compactIdx]);
-    }, 2000));
+      const gained = Math.floor(Math.random() * 70 + 50);
+      const next   = this.xpCurrent() + gained;
+      if (next >= this.xpRequired) {
+        this.xpLevel.update(l => l + 1);
+        this.xpCurrent.set(next - this.xpRequired);
+        this.xpLeveling.set(true);
+        setTimeout(() => this.xpLeveling.set(false), 500);
+      } else {
+        this.xpCurrent.set(next);
+      }
+    }, 900));
 
     ids.push(setInterval(() => {
       if (!this.progressPaused()) {
