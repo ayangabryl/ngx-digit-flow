@@ -380,6 +380,186 @@ export class DocsDemoComponent {
           </docs-demo>
         </section>
 
+        <!-- Easing -->
+        <section class="docs-section" id="easing" data-section="easing">
+          <h2 class="section-heading">Easing</h2>
+          <p class="section-desc">
+            <code>[spinEasing]</code> controls the CSS easing of the vertical digit scroll.
+            <code>[flipEasing]</code> controls the horizontal slide when digits appear or disappear
+            (e.g. 9→10 or $999→$1,000). Both accept any valid CSS easing string.
+          </p>
+
+          <docs-demo label="spinEasing" [code]="codeSpinEasing">
+            <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">spring (default)</span>
+                <ngx-digit-flow [value]="easingVal()" [duration]="900" />
+              </div>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">overshoot spring</span>
+                <ngx-digit-flow [value]="easingVal()" [duration]="600" [spinEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'" />
+              </div>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">linear</span>
+                <ngx-digit-flow [value]="easingVal()" [duration]="600" [spinEasing]="'linear'" />
+              </div>
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="triggerEasing()">Trigger ↻</button>
+            </div>
+          </docs-demo>
+
+          <docs-demo label="flipEasing — layout shift on digit count change" [code]="codeFlipEasing">
+            <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">ease-out (default)</span>
+                <ngx-digit-flow [value]="flipVal()" [duration]="900" [format]="currencyFmt" />
+              </div>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">overshoot spring</span>
+                <ngx-digit-flow [value]="flipVal()" [duration]="900" [format]="currencyFmt" [flipEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'" />
+              </div>
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="flipVal.set(9)">$9</button>
+              <button class="demo-btn" (click)="flipVal.set(99)">$99</button>
+              <button class="demo-btn" (click)="flipVal.set(999)">$999</button>
+              <button class="demo-btn" (click)="flipVal.set(1000)">$1,000</button>
+              <button class="demo-btn" (click)="flipVal.set(9999)">$9,999</button>
+            </div>
+          </docs-demo>
+        </section>
+
+        <!-- 3D Spin -->
+        <section class="docs-section" id="spin-3d" data-section="spin-3d">
+          <h2 class="section-heading">3D Spin</h2>
+          <p class="section-desc">
+            <code>[spin3d]="true"</code> adds CSS <code>perspective</code> and <code>rotateX</code>
+            to the digit reel, making it look like a physical cylinder rolling in place.
+            Tune the tilt and vanishing point with <code>--df-3d-angle</code> (default 5deg)
+            and <code>--df-3d-perspective</code> (default 180px) CSS custom properties.
+          </p>
+
+          <docs-demo label="spin3d" [code]="codeSpin3d">
+            <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">spin3d: false</span>
+                <ngx-digit-flow [value]="spin3dVal()" [duration]="900" />
+              </div>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">spin3d: true</span>
+                <ngx-digit-flow [value]="spin3dVal()" [duration]="900" [spin3d]="true" />
+              </div>
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="triggerSpin3d()">Trigger ↻</button>
+            </div>
+          </docs-demo>
+        </section>
+
+        <!-- Trend -->
+        <section class="docs-section" id="trend" data-section="trend">
+          <h2 class="section-heading">Trend</h2>
+          <p class="section-desc">
+            By default the reel scrolls in the direction of the value delta.
+            Use <code>[trend]="1"</code> to always scroll upward (even when value decreases),
+            <code>[trend]="-1"</code> for always downward, or pass a function for custom logic.
+          </p>
+
+          <docs-demo label="trend" [code]="codeTrend">
+            <div slot="number" class="demo-number-wrap">
+              <ngx-digit-flow [value]="trendVal()" [duration]="900" [trend]="trendMode()" />
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="trendVal.update(v => v - 1)">−1</button>
+              <button class="demo-btn" (click)="trendVal.update(v => v + 1)">+1</button>
+              <button class="demo-btn" [class.active]="trendMode() === undefined" (click)="trendMode.set(undefined)">auto</button>
+              <button class="demo-btn" [class.active]="trendMode() === 1" (click)="trendMode.set(1)">always up</button>
+              <button class="demo-btn" [class.active]="trendMode() === -1" (click)="trendMode.set(-1)">always down</button>
+            </div>
+          </docs-demo>
+        </section>
+
+        <!-- Continuous -->
+        <section class="docs-section" id="continuous" data-section="continuous">
+          <h2 class="section-heading">Continuous Mode</h2>
+          <p class="section-desc">
+            <code>[continuous]="true"</code> animates through every intermediate integer between
+            old and new value — up to 15 steps. Useful for score counters and live feeds where
+            the reel should tick rather than jump.
+          </p>
+
+          <docs-demo label="continuous" [code]="codeContinuous">
+            <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">continuous: false</span>
+                <ngx-digit-flow [value]="contVal()" [duration]="500" />
+              </div>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">continuous: true</span>
+                <ngx-digit-flow [value]="contVal()" [duration]="500" [continuous]="true" />
+              </div>
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="contVal.update(v => v + 5)">+5</button>
+              <button class="demo-btn" (click)="contVal.update(v => v + 10)">+10</button>
+              <button class="demo-btn" (click)="contVal.set(0)">Reset</button>
+            </div>
+          </docs-demo>
+        </section>
+
+        <!-- Stagger -->
+        <section class="docs-section" id="stagger" data-section="stagger">
+          <h2 class="section-heading">Stagger</h2>
+          <p class="section-desc">
+            <code>[stagger]</code> adds a delay in milliseconds between each element's animation,
+            creating a left-to-right cascade across digits, separators, and affixes.
+          </p>
+
+          <docs-demo label="stagger" [code]="codeStagger">
+            <div slot="number" class="demo-dur-grid" ngxDigitFlowGroup>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">stagger: 0</span>
+                <ngx-digit-flow [value]="staggerVal()" [duration]="700" [stagger]="0" />
+              </div>
+              <div class="demo-dur-item">
+                <span class="demo-dur-label">stagger: 60 ms</span>
+                <ngx-digit-flow [value]="staggerVal()" [duration]="700" [stagger]="60" />
+              </div>
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="triggerStagger()">Trigger ↻</button>
+            </div>
+          </docs-demo>
+        </section>
+
+        <!-- Color flash -->
+        <section class="docs-section" id="color-flash" data-section="color-flash">
+          <h2 class="section-heading">Color Flash</h2>
+          <p class="section-desc">
+            <code>[colorOnIncrease]</code> and <code>[colorOnDecrease]</code> flash a CSS color
+            on the host element when the value changes direction, then fade back to the inherited
+            color. Useful for stock tickers, scores, and live metrics.
+          </p>
+
+          <docs-demo label="colorOnIncrease / colorOnDecrease" [code]="codeColorFlash">
+            <div slot="number" class="demo-number-wrap">
+              <ngx-digit-flow
+                [value]="colorVal()"
+                [duration]="600"
+                colorOnIncrease="#4ade80"
+                colorOnDecrease="#f87171"
+              />
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="colorVal.update(v => v - 7)">−7</button>
+              <button class="demo-btn" (click)="colorVal.update(v => v - 1)">−1</button>
+              <button class="demo-btn" (click)="colorVal.update(v => v + 1)">+1</button>
+              <button class="demo-btn" (click)="colorVal.update(v => v + 7)">+7</button>
+            </div>
+          </docs-demo>
+        </section>
+
         <!-- API Reference -->
         <section class="docs-section" id="api-reference" data-section="api-reference">
           <h2 class="section-heading">API Reference</h2>
@@ -975,6 +1155,12 @@ export class DocsComponent implements OnInit, AfterViewInit {
     { id: 'animated-toggle', label: 'Animated Toggle' },
     { id: 'group-directive', label: 'Group Directive' },
     { id: 'outputs',         label: 'Outputs' },
+    { id: 'easing',          label: 'Easing' },
+    { id: 'spin-3d',         label: '3D Spin' },
+    { id: 'trend',           label: 'Trend' },
+    { id: 'continuous',      label: 'Continuous' },
+    { id: 'stagger',         label: 'Stagger' },
+    { id: 'color-flash',     label: 'Color Flash' },
     { id: 'api-reference',   label: 'API Reference' },
   ];
 
@@ -1028,6 +1214,32 @@ export class DocsComponent implements OnInit, AfterViewInit {
   protected outputVal = signal(0);
   protected outputLog = signal<string[]>([]);
 
+  // Easing
+  protected easingVal = signal(1234);
+  private easingValues = [1234, 9876, 5050, 3003, 8181];
+  private easingIdx = 0;
+  protected flipVal = signal(9);
+
+  // Spin3d
+  protected spin3dVal = signal(1234);
+  private spin3dValues = [1234, 9876, 5050, 3003, 8181];
+  private spin3dIdx = 0;
+
+  // Trend
+  protected trendVal = signal(50);
+  protected trendMode = signal<number | undefined>(undefined);
+
+  // Continuous
+  protected contVal = signal(0);
+
+  // Stagger
+  protected staggerVal = signal(1234);
+  private staggerValues = [1234, 9876, 5050, 3003, 8181];
+  private staggerIdx = 0;
+
+  // Color flash
+  protected colorVal = signal(100);
+
   private destroyRef = inject(DestroyRef);
 
   ngAfterViewInit() {
@@ -1071,6 +1283,21 @@ export class DocsComponent implements OnInit, AfterViewInit {
   protected triggerDur(): void {
     this.durIdx = (this.durIdx + 1) % this.durValues.length;
     this.durVal.set(this.durValues[this.durIdx]);
+  }
+
+  protected triggerEasing(): void {
+    this.easingIdx = (this.easingIdx + 1) % this.easingValues.length;
+    this.easingVal.set(this.easingValues[this.easingIdx]);
+  }
+
+  protected triggerSpin3d(): void {
+    this.spin3dIdx = (this.spin3dIdx + 1) % this.spin3dValues.length;
+    this.spin3dVal.set(this.spin3dValues[this.spin3dIdx]);
+  }
+
+  protected triggerStagger(): void {
+    this.staggerIdx = (this.staggerIdx + 1) % this.staggerValues.length;
+    this.staggerVal.set(this.staggerValues[this.staggerIdx]);
   }
 
   protected onStart(): void {
@@ -1148,6 +1375,68 @@ export class MyComponent {}`;
   [value]="n"
   (animationsStart)="onStart()"
   (animationsFinish)="onFinish()"
+/>`;
+
+  protected codeSpinEasing = `<!-- default: damped spring (100-point linear()) -->
+<ngx-digit-flow [value]="n" />
+
+<!-- snappy overshoot -->
+<ngx-digit-flow [value]="n" [spinEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'" />
+
+<!-- mechanical linear -->
+<ngx-digit-flow [value]="n" [spinEasing]="'linear'" />`;
+
+  protected codeFlipEasing = `<!-- default: ease-out -->
+<ngx-digit-flow [value]="n" [format]="{ style: 'currency', currency: 'USD' }" />
+
+<!-- overshoot spring on layout shift -->
+<ngx-digit-flow
+  [value]="n"
+  [format]="{ style: 'currency', currency: 'USD' }"
+  [flipEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'"
+/>`;
+
+  protected codeSpin3d = `<!-- flat reel (default) -->
+<ngx-digit-flow [value]="n" />
+
+<!-- 3D cylinder -->
+<ngx-digit-flow [value]="n" [spin3d]="true" />
+
+<!-- tune the tilt and vanishing point -->
+<ngx-digit-flow
+  [value]="n"
+  [spin3d]="true"
+  style="--df-3d-angle: 8deg; --df-3d-perspective: 120px"
+/>`;
+
+  protected codeTrend = `<!-- auto: follows value delta (default) -->
+<ngx-digit-flow [value]="n" />
+
+<!-- always scroll upward, even when value decreases -->
+<ngx-digit-flow [value]="n" [trend]="1" />
+
+<!-- always scroll downward -->
+<ngx-digit-flow [value]="n" [trend]="-1" />
+
+<!-- custom function -->
+<ngx-digit-flow [value]="n" [trend]="(old, val) => old > 100 ? 1 : -1" />`;
+
+  protected codeContinuous = `<!-- jump to new value (default) -->
+<ngx-digit-flow [value]="n" [duration]="500" />
+
+<!-- tick through every intermediate integer (max 15 steps) -->
+<ngx-digit-flow [value]="n" [duration]="500" [continuous]="true" />`;
+
+  protected codeStagger = `<!-- all elements animate simultaneously (default) -->
+<ngx-digit-flow [value]="n" />
+
+<!-- 60ms cascade from left to right -->
+<ngx-digit-flow [value]="n" [stagger]="60" />`;
+
+  protected codeColorFlash = `<ngx-digit-flow
+  [value]="price"
+  colorOnIncrease="#4ade80"
+  colorOnDecrease="#f87171"
 />`;
 
   protected codeGroupImport = `import { DigitFlowGroupDirective } from 'ngx-digit-flow';
