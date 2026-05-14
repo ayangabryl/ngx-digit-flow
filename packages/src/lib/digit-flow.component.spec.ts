@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { DigitFlowComponent } from './digit-flow.component';
 
 interface AnimateCall {
@@ -17,11 +18,15 @@ function finishImmediatelyAnimation(): Animation {
   } as unknown as Animation;
 }
 
-function testAnimation(keyframes: PropertyIndexedKeyframes | Keyframe[], options?: number | KeyframeAnimationOptions): Animation {
+function testAnimation(
+  keyframes: PropertyIndexedKeyframes | Keyframe[],
+  options?: number | KeyframeAnimationOptions,
+): Animation {
   animateCalls.push({ keyframes, options });
-  const colorAnimation = Array.isArray(keyframes) && keyframes.some(frame => 'color' in frame);
+  const colorAnimation = Array.isArray(keyframes) && keyframes.some((frame) => 'color' in frame);
   return {
-    finished: colorAnimation && holdColorAnimations ? new Promise(() => undefined) : Promise.resolve(),
+    finished:
+      colorAnimation && holdColorAnimations ? new Promise(() => undefined) : Promise.resolve(),
     cancel: () => undefined,
   } as unknown as Animation;
 }
@@ -48,23 +53,27 @@ describe('DigitFlowComponent', () => {
   let fixture: ComponentFixture<DigitFlowComponent>;
 
   function renderedValue(): string {
-    const data = (fixture.componentInstance as unknown as {
-      data: () => {
-        pre: { value: string }[];
-        integer: { value: string }[];
-        fraction: { value: string }[];
-        post: { value: string }[];
-      };
-    }).data();
+    const data = (
+      fixture.componentInstance as unknown as {
+        data: () => {
+          pre: { value: string }[];
+          integer: { value: string }[];
+          fraction: { value: string }[];
+          post: { value: string }[];
+        };
+      }
+    ).data();
 
     return [...data.pre, ...data.integer, ...data.fraction, ...data.post]
-      .map(part => part.value)
+      .map((part) => part.value)
       .join('');
   }
 
   function visibleDigitText(): string {
     return [...fixture.nativeElement.querySelectorAll('.df-digit')]
-      .map((digit: Element) => digit.querySelector('.df-digit__num:not([inert])')?.textContent ?? '')
+      .map(
+        (digit: Element) => digit.querySelector('.df-digit__num:not([inert])')?.textContent ?? '',
+      )
       .join('');
   }
 
@@ -80,6 +89,20 @@ describe('DigitFlowComponent', () => {
     Object.defineProperty(HTMLElement.prototype, 'animate', {
       configurable: true,
       value: testAnimation,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        x: 0,
+        y: 0,
+        left: 0,
+        top: 0,
+        right: 10,
+        bottom: 20,
+        width: 10,
+        height: 20,
+        toJSON: () => ({}),
+      }),
     });
 
     await TestBed.configureTestingModule({
@@ -113,16 +136,18 @@ describe('DigitFlowComponent', () => {
     initialFixture.componentRef.setInput('continuous', true);
     initialFixture.detectChanges();
 
-    const data = (initialFixture.componentInstance as unknown as {
-      data: () => {
-        pre: { value: string }[];
-        integer: { value: string }[];
-        fraction: { value: string }[];
-        post: { value: string }[];
-      };
-    }).data();
+    const data = (
+      initialFixture.componentInstance as unknown as {
+        data: () => {
+          pre: { value: string }[];
+          integer: { value: string }[];
+          fraction: { value: string }[];
+          post: { value: string }[];
+        };
+      }
+    ).data();
     const value = [...data.pre, ...data.integer, ...data.fraction, ...data.post]
-      .map(part => part.value)
+      .map((part) => part.value)
       .join('');
 
     expect(value).toBe('1,000');
@@ -155,14 +180,13 @@ describe('DigitFlowComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const fadeInWithDelay = animateCalls.some(call => {
-      const fadesIn = Array.isArray(call.keyframes)
-        && call.keyframes.length === 2
-        && call.keyframes[0]['opacity'] === '0'
-        && call.keyframes[1]['opacity'] === '1';
-      return fadesIn
-        && typeof call.options === 'object'
-        && (call.options.delay ?? 0) > 0;
+    const fadeInWithDelay = animateCalls.some((call) => {
+      const fadesIn =
+        Array.isArray(call.keyframes) &&
+        call.keyframes.length === 2 &&
+        call.keyframes[0]['opacity'] === '0' &&
+        call.keyframes[1]['opacity'] === '1';
+      return fadesIn && typeof call.options === 'object' && (call.options.delay ?? 0) > 0;
     });
 
     expect(fadeInWithDelay).toBe(true);
@@ -190,8 +214,9 @@ describe('DigitFlowComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const spin = animateCalls.find(call => !Array.isArray(call.keyframes)
-      && Array.isArray(call.keyframes['--_df-d']));
+    const spin = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']),
+    );
 
     expect((spin?.keyframes as PropertyIndexedKeyframes)['--_df-d']).toEqual([4, 0]);
   });
@@ -212,17 +237,89 @@ describe('DigitFlowComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const spin = animateCalls.find(call => !Array.isArray(call.keyframes)
-      && Array.isArray(call.keyframes['--_df-d']));
-    const transform = animateCalls.find(call => Array.isArray(call.keyframes)
-      && call.keyframes.some(frame => 'transform' in frame));
-    const fade = animateCalls.find(call => Array.isArray(call.keyframes)
-      && call.keyframes[0]['opacity'] === '0'
-      && call.keyframes[1]['opacity'] === '1');
+    const spin = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']),
+    );
+    const transform = animateCalls.find(
+      (call) =>
+        Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame),
+    );
+    const fade = animateCalls.find(
+      (call) =>
+        Array.isArray(call.keyframes) &&
+        call.keyframes[0]['opacity'] === '0' &&
+        call.keyframes[1]['opacity'] === '1',
+    );
 
     expect(spin?.options).toEqual(expect.objectContaining({ duration: 222, easing: 'ease-in' }));
-    expect(transform?.options).toEqual(expect.objectContaining({ duration: 111, easing: 'linear' }));
+    expect(transform?.options).toEqual(
+      expect.objectContaining({ duration: 111, easing: 'linear' }),
+    );
     expect(fade?.options).toEqual(expect.objectContaining({ duration: 333, easing: 'ease-out' }));
+  });
+
+  it('uses the spring easing for spins and ease-out easing for layout FLIP by default', async () => {
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 10);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spin = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']),
+    );
+    const transform = animateCalls.find(
+      (call) =>
+        Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame),
+    );
+
+    expect(spin?.options).toEqual(
+      expect.objectContaining({ easing: expect.stringContaining('linear(') }),
+    );
+    expect(transform?.options).toEqual(
+      expect.objectContaining({ easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }),
+    );
+  });
+
+  it('preserves user timing delays when stagger is not configured', async () => {
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    mockMovingRects();
+    fixture.componentRef.setInput('transformTiming', { duration: 111, delay: 40 });
+    fixture.componentRef.setInput('spinTiming', { duration: 222, delay: 30 });
+    fixture.componentRef.setInput('opacityTiming', { duration: 333, delay: 20 });
+    fixture.componentRef.setInput('value', 10);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spin = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']),
+    );
+    const transform = animateCalls.find(
+      (call) =>
+        Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame),
+    );
+    const fade = animateCalls.find(
+      (call) =>
+        Array.isArray(call.keyframes) &&
+        call.keyframes[0]['opacity'] === '0' &&
+        call.keyframes[1]['opacity'] === '1',
+    );
+
+    expect(spin?.options).toEqual(expect.objectContaining({ delay: 30 }));
+    expect(transform?.options).toEqual(expect.objectContaining({ delay: 40 }));
+    expect(fade?.options).toEqual(expect.objectContaining({ delay: 20 }));
   });
 
   it('can ignore reduced motion when respectMotionPreference is false', async () => {
@@ -232,8 +329,9 @@ describe('DigitFlowComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const spin = animateCalls.find(call => !Array.isArray(call.keyframes)
-      && Array.isArray(call.keyframes['--_df-d']));
+    const spin = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']),
+    );
 
     expect(spin?.options).toEqual(expect.objectContaining({ duration: 900 }));
   });
@@ -252,9 +350,44 @@ describe('DigitFlowComponent', () => {
     await fixture.whenStable();
 
     const spinDeltas = animateCalls
-      .filter(call => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']))
-      .map(call => ((call.keyframes as PropertyIndexedKeyframes)['--_df-d'] as number[])[0]);
+      .filter((call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']))
+      .map((call) => ((call.keyframes as PropertyIndexedKeyframes)['--_df-d'] as number[])[0]);
 
     expect(spinDeltas).toContain(-1);
+  });
+
+  it('passes configured digit reel length to CSS positioning', async () => {
+    fixture.componentRef.setInput('digits', { 1: { max: 5 } });
+    fixture.componentRef.setInput('value', 59);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const tensDigit = fixture.nativeElement.querySelector('[data-key="i1"]') as HTMLElement;
+    const renderedTensGlyphs = tensDigit.querySelectorAll('.df-digit__num');
+
+    expect(tensDigit.style.getPropertyValue('--_df-len')).toBe('6');
+    expect(renderedTensGlyphs.length).toBe(6);
+  });
+
+  it('emits finish when the last continuous step has no visible animations', async () => {
+    const emitFinish = vi.spyOn(fixture.componentInstance.animationsFinish, 'emit');
+    const component = fixture.componentInstance as unknown as {
+      snapshot: () => void;
+      runAnimations: () => void;
+      _continuousNeedsFinish: boolean;
+      _durationOverride: number;
+      _targetDisplayValue: number;
+    };
+
+    component.snapshot();
+    component._continuousNeedsFinish = true;
+    component._durationOverride = 80;
+    component._targetDisplayValue = 0;
+    component.runAnimations();
+
+    await Promise.resolve();
+    await fixture.whenStable();
+
+    expect(emitFinish).toHaveBeenCalledTimes(1);
   });
 });

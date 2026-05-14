@@ -1,5 +1,4 @@
 <span class="df-number" aria-hidden="true">
-
   <!-- Pre: currency symbol, sign, custom prefix -->
   @if (data().pre.length) {
     <span class="df-section df-section--pre">
@@ -18,13 +17,19 @@
           Each digit__num sets --n and [inert] so non-current digits are hidden
           until .is-spinning is applied by the animation engine.
         -->
-        <span class="df-digit" [attr.data-key]="p.key" [style.--_df-current]="p.numericValue">
-          @for (n of digitGlyphs(); track n.value) {
+        <span
+          class="df-digit"
+          [attr.data-key]="p.key"
+          [style.--_df-current]="p.numericValue"
+          [style.--_df-len]="digitLengthForKey(p.key)"
+        >
+          @for (n of digitGlyphsForKey(p.key); track n.value) {
             <span
               class="df-digit__num"
               [style.--n]="n.value"
               [attr.inert]="n.value !== p.numericValue ? '' : null"
-            >{{ n.glyph }}</span>
+              >{{ n.glyph }}</span
+            >
           }
         </span>
       } @else {
@@ -38,13 +43,19 @@
     <span class="df-section df-section--fraction">
       @for (p of data().fraction; track p.key) {
         @if (p.type === 'fraction') {
-          <span class="df-digit" [attr.data-key]="p.key" [style.--_df-current]="p.numericValue">
-            @for (n of digitGlyphs(); track n.value) {
+          <span
+            class="df-digit"
+            [attr.data-key]="p.key"
+            [style.--_df-current]="p.numericValue"
+            [style.--_df-len]="digitLengthForKey(p.key)"
+          >
+            @for (n of digitGlyphsForKey(p.key); track n.value) {
               <span
                 class="df-digit__num"
                 [style.--n]="n.value"
                 [attr.inert]="n.value !== p.numericValue ? '' : null"
-              >{{ n.glyph }}</span>
+                >{{ n.glyph }}</span
+              >
             }
           </span>
         } @else {
@@ -62,7 +73,6 @@
       }
     </span>
   }
-
 </span>
 
 <!-- Accessible text for screen readers -->

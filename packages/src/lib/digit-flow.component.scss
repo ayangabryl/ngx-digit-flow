@@ -1,6 +1,6 @@
 // ── Animated delta: registered <number> so WAAPI + composite:'accumulate' works ─
 @property --_df-d {
-  syntax: "<number>";
+  syntax: '<number>';
   inherits: true;
   initial-value: 0;
 }
@@ -15,23 +15,35 @@ ngx-digit-flow {
   align-items: baseline;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
+  font-feature-settings: 'tnum';
 
   // ── Mask (number-flow blur-vignette technique) ──────────────────────────────
   --df-mask-height: 0.25em;
-  --df-mask-width:  0.5em;
+  --df-mask-width: 0.5em;
   --df-half-mask-h: calc(var(--df-mask-height) / 2);
 
-  margin:  calc(-1 * var(--df-half-mask-h)) calc(-1 * var(--df-mask-width));
+  margin: calc(-1 * var(--df-half-mask-h)) calc(-1 * var(--df-mask-width));
   padding: var(--df-half-mask-h) var(--df-mask-width);
 
   -webkit-mask-image:
-    linear-gradient(to right, transparent 0, #000 var(--df-mask-width), #000 calc(100% - var(--df-mask-width)), transparent 100%),
-    linear-gradient(to bottom, transparent 0, #000 var(--df-mask-height), #000 calc(100% - var(--df-mask-height)), transparent 100%),
+    linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--df-mask-width),
+      #000 calc(100% - var(--df-mask-width)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--df-mask-height),
+      #000 calc(100% - var(--df-mask-height)),
+      transparent 100%
+    ),
     radial-gradient(at bottom right, #000 0, transparent 71%),
-    radial-gradient(at bottom left,  #000 0, transparent 71%),
-    radial-gradient(at top left,     #000 0, transparent 71%),
-    radial-gradient(at top right,    #000 0, transparent 71%);
+    radial-gradient(at bottom left, #000 0, transparent 71%),
+    radial-gradient(at top left, #000 0, transparent 71%),
+    radial-gradient(at top right, #000 0, transparent 71%);
 
   -webkit-mask-size:
     100% calc(100% - var(--df-mask-height) * 2),
@@ -41,16 +53,34 @@ ngx-digit-flow {
     var(--df-mask-width) var(--df-mask-height),
     var(--df-mask-width) var(--df-mask-height);
 
-  -webkit-mask-position: center, center, top left, top right, bottom right, bottom left;
+  -webkit-mask-position:
+    center,
+    center,
+    top left,
+    top right,
+    bottom right,
+    bottom left;
   -webkit-mask-repeat: no-repeat;
 
   mask-image:
-    linear-gradient(to right, transparent 0, #000 var(--df-mask-width), #000 calc(100% - var(--df-mask-width)), transparent 100%),
-    linear-gradient(to bottom, transparent 0, #000 var(--df-mask-height), #000 calc(100% - var(--df-mask-height)), transparent 100%),
+    linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--df-mask-width),
+      #000 calc(100% - var(--df-mask-width)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--df-mask-height),
+      #000 calc(100% - var(--df-mask-height)),
+      transparent 100%
+    ),
     radial-gradient(at bottom right, #000 0, transparent 71%),
-    radial-gradient(at bottom left,  #000 0, transparent 71%),
-    radial-gradient(at top left,     #000 0, transparent 71%),
-    radial-gradient(at top right,    #000 0, transparent 71%);
+    radial-gradient(at bottom left, #000 0, transparent 71%),
+    radial-gradient(at top left, #000 0, transparent 71%),
+    radial-gradient(at top right, #000 0, transparent 71%);
 
   mask-size:
     100% calc(100% - var(--df-mask-height) * 2),
@@ -60,7 +90,13 @@ ngx-digit-flow {
     var(--df-mask-width) var(--df-mask-height),
     var(--df-mask-width) var(--df-mask-height);
 
-  mask-position: center, center, top left, top right, bottom right, bottom left;
+  mask-position:
+    center,
+    center,
+    top left,
+    top right,
+    bottom right,
+    bottom left;
   mask-repeat: no-repeat;
 }
 
@@ -82,6 +118,7 @@ ngx-digit-flow {
   // This token sequence is substituted inside mod() below, making c a live
   // math expression. --_df-d accumulates freely; mod() wraps it correctly.
   --_df-c: var(--_df-current, 0) + var(--_df-d);
+  --_df-len: 10;
 }
 
 .df-digit__num {
@@ -100,11 +137,13 @@ ngx-digit-flow {
   // --_df-offset-raw : forward steps from mod(c,10) to n  (0 – 9)
   // --_df-offset     : shortest signed path  (−5 … +5)
   // --_df-y          : clamped to ±100% so off-screen digits don't waste layers
-  --_df-len: 10;
-  --_df-offset-raw: mod(var(--_df-len) + var(--n) - mod(var(--_df-c), var(--_df-len)), var(--_df-len));
+  --_df-offset-raw: mod(
+    var(--_df-len) + var(--n) - mod(var(--_df-c), var(--_df-len)),
+    var(--_df-len)
+  );
   --_df-offset: calc(
-    var(--_df-offset-raw) -
-    var(--_df-len) * round(down, var(--_df-offset-raw) / (var(--_df-len) / 2), 1)
+    var(--_df-offset-raw) - var(--_df-len) *
+      round(down, var(--_df-offset-raw) / (var(--_df-len) / 2), 1)
   );
   --_df-y: clamp(-100%, var(--_df-offset) * 100%, 100%);
   transform: translateY(var(--_df-y));
@@ -147,4 +186,3 @@ ngx-digit-flow[data-animated='false'] .df-literal {
   transition: none !important;
   animation: none !important;
 }
-
