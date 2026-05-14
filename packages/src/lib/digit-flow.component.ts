@@ -15,7 +15,14 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { EMPTY_FORMATTED, FormattedNumber, DigitFlowTrend, DigitFlowVariant } from './digit-flow.types';
+import {
+  DigitFlowDigits,
+  DigitFlowTiming,
+  DigitFlowTrend,
+  DigitFlowVariant,
+  EMPTY_FORMATTED,
+  FormattedNumber,
+} from './digit-flow.types';
 import { formatToData, getDigitGlyphs } from './formatter';
 
 // ── Easings ──────────────────────────────────────────────────────────────────
@@ -74,6 +81,12 @@ export class DigitFlowComponent {
   // ── Timing inputs — undefined means "inherit from variant" ───────────────
   duration        = input<number | undefined>(undefined);
   opacityDuration = input<number | undefined>(undefined);
+  /** Full timing options for layout/FLIP animations. Overrides duration + flipEasing. */
+  transformTiming = input<DigitFlowTiming | undefined>(undefined);
+  /** Full timing options for digit spin animations. Falls back to transformTiming, then duration + spinEasing. */
+  spinTiming      = input<DigitFlowTiming | undefined>(undefined);
+  /** Full timing options for fade in/out animations. Overrides opacityDuration. */
+  opacityTiming   = input<DigitFlowTiming | undefined>(undefined);
 
   // ── Animation style inputs ────────────────────────────────────────────────
   /** Pre-configured preset; overrides default duration/easing. Individual inputs take priority. */
@@ -94,6 +107,10 @@ export class DigitFlowComponent {
    * Best for small delta changes (< 50). Capped at 15 intermediate steps.
    */
   continuous      = input<boolean>(false);
+  /** Configure digit reels by decimal position. Useful for clocks, e.g. `{ 1: { max: 5 } }`. */
+  digits          = input<DigitFlowDigits>({});
+  /** Whether user reduced-motion preference should disable animation. */
+  respectMotionPreference = input<boolean>(true);
   /**
    * Milliseconds of delay added between each displayed element's animation start.
    * Creates a cascading left-to-right reveal effect.
@@ -125,6 +142,9 @@ export class DigitFlowComponent {
       opacityDuration: this.opacityDuration() ?? 150,
       spinEasing:      this.spinEasing()      ?? preset.spinEasing,
       flipEasing:      this.flipEasing()      ?? preset.flipEasing,
+      transformTiming: this.transformTiming(),
+      spinTiming:      this.spinTiming(),
+      opacityTiming:   this.opacityTiming(),
     };
   });
 
@@ -289,7 +309,8 @@ export class DigitFlowComponent {
 
     const host      = this.elRef.nativeElement as HTMLElement;
     const settings  = this.effectiveSettings();
-    const reduced   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced   = this.respectMotionPreference()
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Per-step override for continuous mode
     const isContinuousStep = this._durationOverride !== null;
@@ -308,15 +329,24 @@ export class DigitFlowComponent {
     const trend    = this.resolveTrend(this.prevNumericValue, newNumericValue);
     const staggerMs = this.stagger();
 
+    const baseTransformTiming = settings.transformTiming ?? { duration: d, easing: settings.flipEasing };
     const spinOpts: KeyframeAnimationOptions = {
-      duration: d, easing: settings.spinEasing, fill: 'none', composite: 'accumulate',
+      ...baseTransformTiming,
+      ...(settings.spinTiming ?? {}),
+      duration: reduced ? 0 : settings.spinTiming?.duration ?? baseTransformTiming.duration,
+      fill: 'none',
+      composite: 'accumulate',
     };
     const flipOpts: KeyframeAnimationOptions = {
-      duration: d, easing: settings.flipEasing, fill: 'none', composite: 'accumulate',
+      ...baseTransformTiming,
+      duration: reduced ? 0 : baseTransformTiming.duration,
+      fill: 'none',
+      composite: 'accumulate',
     };
     const fadeOpts: KeyframeAnimationOptions = {
-      duration: od, easing: 'ease-out', fill: 'both', composite: 'replace',
+      duration: od, easing: 'ease-out', fill: 'both', composite: 'replace', ...(settings.opacityTiming ?? {}),
     };
+    if (reduced) fadeOpts.duration = 0;
 
     const batch: Animation[] = [];
     const newKeys = new Set<string>();
@@ -335,7 +365,7 @@ export class DigitFlowComponent {
         const fromDigit = this.prevDigitValues.has(key)
           ? this.prevDigitValues.get(key)!
           : digit;
-        const delta = this.getTrendDelta(fromDigit, digit, trend);
+        const delta = this.getTrendDelta(fromDigit, digit, trend, this.getDigitLength(key));
 
         if (delta !== 0 && d > 0) {
           this.incrementSpin(el);
@@ -457,8 +487,14 @@ export class DigitFlowComponent {
     return Math.sign(trend);
   }
 
-  private getTrendDelta(from: number, to: number, trend: number): number {
-    const length = 10;
+  private getDigitLength(key: string): number {
+    if (!key.startsWith('i')) return 10;
+    const position = Number(key.slice(1));
+    const max = this.digits()[position]?.max;
+    return max !== undefined ? max + 1 : 10;
+  }
+
+  private getTrendDelta(from: number, to: number, trend: number, length = 10): number {
     const diff   = to - from;
     const t      = trend || Math.sign(diff);
     if (t > 0 && to < from) return length - from + to;

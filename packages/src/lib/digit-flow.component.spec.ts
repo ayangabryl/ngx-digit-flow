@@ -8,6 +8,7 @@ interface AnimateCall {
 
 let animateCalls: AnimateCall[] = [];
 let holdColorAnimations = false;
+let prefersReducedMotion = false;
 
 function finishImmediatelyAnimation(): Animation {
   return {
@@ -23,6 +24,24 @@ function testAnimation(keyframes: PropertyIndexedKeyframes | Keyframe[], options
     finished: colorAnimation && holdColorAnimations ? new Promise(() => undefined) : Promise.resolve(),
     cancel: () => undefined,
   } as unknown as Animation;
+}
+
+function mockMovingRects(): void {
+  let calls = 0;
+  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+    configurable: true,
+    value: () => ({
+      x: 0,
+      y: 0,
+      left: calls++ === 0 ? 20 : 0,
+      top: 0,
+      right: 30,
+      bottom: 20,
+      width: 10,
+      height: 20,
+      toJSON: () => ({}),
+    }),
+  });
 }
 
 describe('DigitFlowComponent', () => {
@@ -52,10 +71,11 @@ describe('DigitFlowComponent', () => {
   beforeEach(async () => {
     animateCalls = [];
     holdColorAnimations = false;
+    prefersReducedMotion = false;
 
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
-      value: () => ({ matches: false }),
+      value: () => ({ matches: prefersReducedMotion }),
     });
     Object.defineProperty(HTMLElement.prototype, 'animate', {
       configurable: true,
@@ -174,5 +194,67 @@ describe('DigitFlowComponent', () => {
       && Array.isArray(call.keyframes['--_df-d']));
 
     expect((spin?.keyframes as PropertyIndexedKeyframes)['--_df-d']).toEqual([4, 0]);
+  });
+
+  it('uses full timing inputs for spin, transform, and opacity animations', async () => {
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    mockMovingRects();
+    fixture.componentRef.setInput('transformTiming', { duration: 111, easing: 'linear' });
+    fixture.componentRef.setInput('spinTiming', { duration: 222, easing: 'ease-in' });
+    fixture.componentRef.setInput('opacityTiming', { duration: 333, easing: 'ease-out' });
+    fixture.componentRef.setInput('value', 10);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spin = animateCalls.find(call => !Array.isArray(call.keyframes)
+      && Array.isArray(call.keyframes['--_df-d']));
+    const transform = animateCalls.find(call => Array.isArray(call.keyframes)
+      && call.keyframes.some(frame => 'transform' in frame));
+    const fade = animateCalls.find(call => Array.isArray(call.keyframes)
+      && call.keyframes[0]['opacity'] === '0'
+      && call.keyframes[1]['opacity'] === '1');
+
+    expect(spin?.options).toEqual(expect.objectContaining({ duration: 222, easing: 'ease-in' }));
+    expect(transform?.options).toEqual(expect.objectContaining({ duration: 111, easing: 'linear' }));
+    expect(fade?.options).toEqual(expect.objectContaining({ duration: 333, easing: 'ease-out' }));
+  });
+
+  it('can ignore reduced motion when respectMotionPreference is false', async () => {
+    prefersReducedMotion = true;
+    fixture.componentRef.setInput('respectMotionPreference', false);
+    fixture.componentRef.setInput('value', 1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spin = animateCalls.find(call => !Array.isArray(call.keyframes)
+      && Array.isArray(call.keyframes['--_df-d']));
+
+    expect(spin?.options).toEqual(expect.objectContaining({ duration: 900 }));
+  });
+
+  it('uses digit max config for countdown-style rolls', async () => {
+    fixture.componentRef.setInput('value', 59);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('digits', { 1: { max: 5 } });
+    fixture.componentRef.setInput('trend', 1);
+    fixture.componentRef.setInput('value', 0);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spinDeltas = animateCalls
+      .filter(call => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']))
+      .map(call => ((call.keyframes as PropertyIndexedKeyframes)['--_df-d'] as number[])[0]);
+
+    expect(spinDeltas).toContain(-1);
   });
 });
