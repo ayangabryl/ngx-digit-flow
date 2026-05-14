@@ -7,13 +7,13 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
+import { DigitFlowComponent } from 'ngx-digit-flow';
 
 @Component({
   selector: 'app-demos',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DigitFlowComponent, DigitFlowGroupDirective],
+  imports: [DigitFlowComponent],
   template: `
     <div class="demos-page">
       <header class="page-header">
@@ -234,22 +234,40 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
           </div>
         </div>
 
-        <!-- Duration comparison -->
-        <div class="card card--duration">
-          <div class="duration-head">
-            <span class="card-label">Duration</span>
-            <button class="trigger-btn" (click)="triggerDuration()">Trigger ↻</button>
+        <!-- Transfer -->
+        <div class="card card--transfer">
+          <div class="transfer-head">
+            <span class="card-label">Transfer</span>
+            <div class="transfer-tabs">
+              @for (pair of transferPairs; track pair.code; let i = $index) {
+                <button [class.active]="transferPairIdx() === i" (click)="setTransferPair(i)">
+                  {{ pair.code }}
+                </button>
+              }
+            </div>
           </div>
-          <div class="duration-row" ngxDigitFlowGroup>
-            @for (d of durationDemos; track d.label) {
-              <div class="duration-item">
-                <span class="duration-label">{{ d.label }}</span>
-                <ngx-digit-flow
-                  [value]="durationVal()"
-                  [duration]="d.ms"
-                />
-              </div>
-            }
+          <div class="transfer-sublabels">
+            <span>You send</span>
+            <span>You receive</span>
+          </div>
+          <div class="transfer-row">
+            <div class="transfer-side">
+              <span class="transfer-code">USD</span>
+              <ngx-digit-flow class="transfer-val" [value]="transferAmount()" [format]="transferSendFmt" [duration]="250" />
+            </div>
+            <svg class="transfer-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            <div class="transfer-side transfer-side--recv">
+              <span class="transfer-code">{{ transferPair().code }}</span>
+              <ngx-digit-flow class="transfer-val transfer-val--recv" [value]="transferReceive()" [format]="transferFmt()" [duration]="400" />
+            </div>
+          </div>
+          <input class="transfer-slider" type="range" min="100" max="5000" step="10"
+            [value]="transferAmount()" (input)="onTransferChange($event)" />
+          <div class="transfer-rate">
+            <span class="transfer-rate-text">
+              1 USD =&nbsp;<ngx-digit-flow class="transfer-rate-num" [value]="transferRate()" [format]="transferRateFmt()" [duration]="700" />&nbsp;{{ transferPair().code }}
+            </span>
+            <span class="transfer-live-badge">&#x21BB; live</span>
           </div>
         </div>
 
@@ -864,58 +882,154 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
     .temp-btn:hover { color: var(--ink); border-color: oklch(70% 0.003 265); }
     .temp-btn.active { background: oklch(56% 0.22 255); color: #fff; border-color: oklch(56% 0.22 255); }
 
-    /* ── Duration: col 1–2, row 4 ────────────── */
-    .card--duration {
+    /* ── Transfer: col 1–2, row 4 ───────────── */
+    .card--transfer {
       grid-column: 1 / 3;
       grid-row: 4 / 5;
+      gap: 0;
     }
 
-    .duration-head {
+    .transfer-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
-    .trigger-btn {
+    .transfer-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .transfer-tabs button {
       font-family: var(--font);
       font-size: 12px;
       font-weight: 500;
-      color: var(--muted);
-      background: transparent;
+      padding: 6px 14px;
       border: 1px solid oklch(88% 0.002 265);
       border-radius: 100px;
-      padding: 6px 13px;
+      background: transparent;
+      color: var(--muted);
       cursor: pointer;
-      transition: border-color 0.12s, color 0.12s;
+      transition: all 0.12s;
     }
-    .trigger-btn:hover { border-color: var(--ink); color: var(--ink); }
 
-    .duration-row {
+    .transfer-tabs button:hover { color: var(--ink); border-color: oklch(70% 0.003 265); }
+    .transfer-tabs button.active {
+      background: oklch(56% 0.22 255);
+      color: #fff;
+      border-color: oklch(56% 0.22 255);
+    }
+
+    .transfer-sublabels {
+      display: flex;
+      justify-content: space-between;
+      flex-shrink: 0;
+      font-size: 11px;
+      color: oklch(62% 0.003 265);
+      margin-bottom: 4px;
+    }
+
+    .transfer-row {
       flex: 1;
       display: flex;
-      align-items: flex-end;
-      gap: 0;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    .duration-item {
-      flex: 1;
+    .transfer-side {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 3px;
     }
 
-    .duration-label {
-      font-family: var(--font);
+    .transfer-side--recv { align-items: flex-end; }
+
+    .transfer-code {
+      font-family: var(--mono);
       font-size: 11px;
-      color: var(--muted);
+      font-weight: 600;
+      color: oklch(55% 0.005 265);
+      letter-spacing: 0.04em;
     }
 
-    .duration-item ngx-digit-flow {
-      font-size: 2.6rem;
+    .transfer-val {
+      font-size: 2.4rem;
       font-weight: 700;
       letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .transfer-val--recv { color: oklch(44% 0.20 255); }
+
+    .transfer-arrow {
+      color: oklch(78% 0.003 265);
+      flex-shrink: 0;
+    }
+
+    .transfer-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 3px;
+      background: oklch(91% 0.002 265);
+      border-radius: 100px;
+      outline: none;
+      cursor: pointer;
+      display: block;
+      accent-color: oklch(56% 0.22 255);
+      flex-shrink: 0;
+      margin: 4px 0 10px;
+    }
+    .transfer-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.15), 0 0 0 1px oklch(88% 0.002 265);
+    }
+    .transfer-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.15), 0 0 0 1px oklch(88% 0.002 265);
+    }
+
+    .transfer-rate {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .transfer-rate-text {
+      font-size: 11.5px;
+      color: oklch(58% 0.004 265);
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .transfer-rate-num {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .transfer-live-badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: oklch(44% 0.20 145);
+      background: oklch(93% 0.07 145);
+      padding: 2px 8px;
+      border-radius: 100px;
     }
 
     /* ── Locale: col 3–4, row 4 ──────────────── */
@@ -1125,7 +1239,7 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
       .card--slider    { grid-column: 1 / 3; grid-row: 4 / 5; }
       .card--pricing   { grid-column: 1 / 2; grid-row: 5 / 6; }
       .card--temp      { grid-column: 2 / 3; grid-row: 5 / 6; }
-      .card--duration  { grid-column: 1 / 3; grid-row: 6 / 7; }
+      .card--transfer  { grid-column: 1 / 3; grid-row: 6 / 7; }
       .card--locale    { grid-column: 1 / 3; grid-row: 7 / 8; }
       .card--social    { grid-column: 1 / 3; grid-row: 8 / 9; }
       .card--cart      { grid-column: 1 / 3; grid-row: 9 / 10; }
@@ -1145,7 +1259,7 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
       .card--slider,
       .card--pricing,
       .card--temp,
-      .card--duration,
+      .card--transfer,
       .card--locale,
       .card--social,
       .card--cart { grid-column: 1 / 2; grid-row: auto; }
@@ -1263,14 +1377,30 @@ export class DemosComponent implements OnInit {
   protected tempFmt: Intl.NumberFormatOptions = { maximumFractionDigits: 1 };
   protected tempUnit = computed(() => this.tempCelsius() ? ' °C' : ' °F');
 
-  protected durationVal = signal(42);
-  protected durationDemos = [
-    { label: '300 ms',  ms: 300  },
-    { label: '900 ms',  ms: 900  },
-    { label: '1800 ms', ms: 1800 },
+  // Transfer card
+  protected readonly transferPairs = [
+    { code: 'EUR', baseRate: 0.9245, fmt: { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 } as Intl.NumberFormatOptions },
+    { code: 'GBP', baseRate: 0.7892, fmt: { style: 'currency', currency: 'GBP', minimumFractionDigits: 2 } as Intl.NumberFormatOptions },
+    { code: 'JPY', baseRate: 149.85, fmt: { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 } as Intl.NumberFormatOptions },
   ];
-  private durationValues = [42, 1337, 7, 9999, 100, 0, 512];
-  private durationIdx = 0;
+  protected transferPairIdx  = signal(0);
+  protected transferAmount   = signal(1000);
+  protected transferRate     = signal(0.9245);
+  protected transferPair     = computed(() => this.transferPairs[this.transferPairIdx()]);
+  protected transferFmt      = computed(() => this.transferPairs[this.transferPairIdx()].fmt);
+  protected transferRateFmt  = computed((): Intl.NumberFormatOptions =>
+    this.transferPairs[this.transferPairIdx()].code === 'JPY'
+      ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      : { minimumFractionDigits: 4, maximumFractionDigits: 4 }
+  );
+  protected transferReceive  = computed(() => {
+    const isJpy = this.transferPairs[this.transferPairIdx()].code === 'JPY';
+    const raw = this.transferAmount() * this.transferRate();
+    return isJpy ? Math.round(raw) : parseFloat(raw.toFixed(2));
+  });
+  protected transferSendFmt: Intl.NumberFormatOptions = {
+    style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0,
+  };
 
   protected localeOptions = [
     { label: 'USD', locale: 'en-US', currency: 'USD' },
@@ -1358,6 +1488,19 @@ export class DemosComponent implements OnInit {
       this.socialComments.update(v => v + 1);
     }, 6000));
 
+    // Transfer rate live oscillation
+    let transferPhase = 0;
+    ids.push(setInterval(() => {
+      const pair = this.transferPairs[this.transferPairIdx()];
+      transferPhase += 0.1;
+      const base = pair.baseRate;
+      const jpy  = pair.code === 'JPY';
+      const rate  = jpy
+        ? parseFloat((base + Math.sin(transferPhase) * base * 0.003).toFixed(2))
+        : parseFloat((base + Math.sin(transferPhase) * base * 0.003).toFixed(4));
+      this.transferRate.set(rate);
+    }, 1100));
+
     this.destroyRef.onDestroy(() => {
       ids.forEach(id => clearInterval(id));
       if (this.scoreTrendTimer) clearTimeout(this.scoreTrendTimer);
@@ -1378,9 +1521,13 @@ export class DemosComponent implements OnInit {
     }, 650);
   }
 
-  protected triggerDuration(): void {
-    this.durationIdx = (this.durationIdx + 1) % this.durationValues.length;
-    this.durationVal.set(this.durationValues[this.durationIdx]);
+  protected setTransferPair(idx: number): void {
+    this.transferPairIdx.set(idx);
+    this.transferRate.set(this.transferPairs[idx].baseRate);
+  }
+
+  protected onTransferChange(event: Event): void {
+    this.transferAmount.set(+(event.target as HTMLInputElement).value);
   }
 
   protected setLocale(opt: { locale: string; currency: string; label: string }): void {
