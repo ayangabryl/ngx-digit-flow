@@ -5,12 +5,12 @@
       <stop offset="100%" stop-color="#0f0f11"/>
     </linearGradient>
     <linearGradient id="fade-t" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#161618"/>
-      <stop offset="100%" stop-color="#161618" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#1a1a1c"/>
+      <stop offset="100%" stop-color="#1a1a1c" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="fade-b" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#0f0f11" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#0f0f11"/>
+      <stop offset="0%" stop-color="#111113" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#111113"/>
     </linearGradient>
     <clipPath id="clip">
       <rect width="64" height="64" rx="14"/>
@@ -22,47 +22,47 @@
     <rect width="64" height="64" fill="url(#bg)"/>
 
     <!-- Active-row window -->
-    <rect x="9" y="26.5" width="46" height="12" rx="2.5" fill="#fff" fill-opacity=".08"/>
+    <rect x="9" y="24" width="46" height="16" rx="3" fill="#fff" fill-opacity=".08"/>
 
     <!-- Subtle column dividers -->
-    <line x1="25" y1="20" x2="25" y2="44" stroke="#fff" stroke-opacity=".07" stroke-width=".5"/>
-    <line x1="39" y1="20" x2="39" y2="44" stroke="#fff" stroke-opacity=".07" stroke-width=".5"/>
+    <line x1="25" y1="16" x2="25" y2="48" stroke="#fff" stroke-opacity=".07" stroke-width=".5"/>
+    <line x1="39" y1="16" x2="39" y2="48" stroke="#fff" stroke-opacity=".07" stroke-width=".5"/>
 
-    <!-- Col 1  (x=17)  reel: 0 → 1 → 2 -->
-    <text x="17" y="25.5" text-anchor="middle"
+    <!-- Ghost row above: 0 · 7 · 4 -->
+    <text x="17" y="19" text-anchor="middle"
           font-family="ui-monospace,SFMono-Regular,monospace"
           font-size="9" font-weight="700" fill="#fff" opacity=".18">0</text>
-    <text x="17" y="35" text-anchor="middle"
-          font-family="ui-monospace,SFMono-Regular,monospace"
-          font-size="10.5" font-weight="700" fill="#fff">1</text>
-    <text x="17" y="44.5" text-anchor="middle"
-          font-family="ui-monospace,SFMono-Regular,monospace"
-          font-size="9" font-weight="700" fill="#fff" opacity=".18">2</text>
-
-    <!-- Col 2  (x=32)  reel: 7 → 8 → 9 -->
-    <text x="32" y="25.5" text-anchor="middle"
+    <text x="32" y="19" text-anchor="middle"
           font-family="ui-monospace,SFMono-Regular,monospace"
           font-size="9" font-weight="700" fill="#fff" opacity=".18">7</text>
-    <text x="32" y="35" text-anchor="middle"
-          font-family="ui-monospace,SFMono-Regular,monospace"
-          font-size="10.5" font-weight="700" fill="#fff">8</text>
-    <text x="32" y="44.5" text-anchor="middle"
-          font-family="ui-monospace,SFMono-Regular,monospace"
-          font-size="9" font-weight="700" fill="#fff" opacity=".18">9</text>
-
-    <!-- Col 3  (x=47)  reel: 4 → 5 → 6 -->
-    <text x="47" y="25.5" text-anchor="middle"
+    <text x="47" y="19" text-anchor="middle"
           font-family="ui-monospace,SFMono-Regular,monospace"
           font-size="9" font-weight="700" fill="#fff" opacity=".18">4</text>
-    <text x="47" y="35" text-anchor="middle"
+
+    <!-- Active row: 1 · 8 · 5 -->
+    <text x="17" y="36" text-anchor="middle"
           font-family="ui-monospace,SFMono-Regular,monospace"
-          font-size="10.5" font-weight="700" fill="#fff">5</text>
-    <text x="47" y="44.5" text-anchor="middle"
+          font-size="12" font-weight="700" fill="#fff">1</text>
+    <text x="32" y="36" text-anchor="middle"
+          font-family="ui-monospace,SFMono-Regular,monospace"
+          font-size="12" font-weight="700" fill="#fff">8</text>
+    <text x="47" y="36" text-anchor="middle"
+          font-family="ui-monospace,SFMono-Regular,monospace"
+          font-size="12" font-weight="700" fill="#fff">5</text>
+
+    <!-- Ghost row below: 2 · 9 · 6 -->
+    <text x="17" y="52" text-anchor="middle"
+          font-family="ui-monospace,SFMono-Regular,monospace"
+          font-size="9" font-weight="700" fill="#fff" opacity=".18">2</text>
+    <text x="32" y="52" text-anchor="middle"
+          font-family="ui-monospace,SFMono-Regular,monospace"
+          font-size="9" font-weight="700" fill="#fff" opacity=".18">9</text>
+    <text x="47" y="52" text-anchor="middle"
           font-family="ui-monospace,SFMono-Regular,monospace"
           font-size="9" font-weight="700" fill="#fff" opacity=".18">6</text>
 
-    <!-- Fade overlays — make reels appear to scroll in from darkness -->
-    <rect x="0" y="0" width="64" height="32" fill="url(#fade-t)"/>
-    <rect x="0" y="32" width="64" height="32" fill="url(#fade-b)"/>
+    <!-- Fade overlays — only cover ghost rows, stop before active row -->
+    <rect x="0" y="0"  width="64" height="26" fill="url(#fade-t)"/>
+    <rect x="0" y="38" width="64" height="26" fill="url(#fade-b)"/>
   </g>
 </svg>
