@@ -42,28 +42,28 @@ export class PriceComponent {
 
 ## Public API
 
-| Input                     | Type                                    | Default                 | Guidance                                                                                                                                                    |
-| ------------------------- | --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `value`                   | `number`                                | required                | The number to display and animate.                                                                                                                          |
-| `format`                  | `Intl.NumberFormatOptions`              | `{}`                    | Forwarded to `Intl.NumberFormat`; use for currency, percent, compact notation, grouping, fraction digits.                                                   |
-| `locales`                 | `string \| string[]`                    | `undefined`             | Locale and numbering system support, including non-Latin digit glyphs.                                                                                      |
-| `prefix`                  | `string`                                | `''`                    | Custom text before the formatted number. Prefer `format` for real currency/sign/unit formatting.                                                            |
-| `suffix`                  | `string`                                | `''`                    | Custom text after the formatted number. Prefer `format` for percent/unit when possible.                                                                     |
-| `animated`                | `boolean`                               | `true`                  | Set `false` to disable all animation.                                                                                                                       |
-| `duration`                | `number`                                | `900`                   | Shared spin + layout duration in milliseconds.                                                                                                              |
-| `opacityDuration`         | `number`                                | `450`                   | Presence fade duration for entering/exiting digits, separators, and literals.                                                                               |
-| `spinEasing`              | `DigitFlowEasing`                       | `spring`                | Named preset (`spring`, `default`, `overshoot`) or any CSS easing string. For string literals, prefer `spinEasing="overshoot"` over `[spinEasing]="'...'"`. |
-| `flipEasing`              | `DigitFlowEasing`                       | `spring`                | Same presets/raw CSS support for horizontal layout motion.                                                                                                  |
-| `transformTiming`         | `DigitFlowTiming`                       | `duration + flipEasing` | Full WAAPI timing for layout/FLIP and container width motion. Overrides `duration`/`flipEasing`.                                                            |
-| `spinTiming`              | `DigitFlowTiming`                       | `transformTiming`       | Full WAAPI timing for vertical digit reel motion. Overrides `duration`/`spinEasing`.                                                                        |
-| `opacityTiming`           | `DigitFlowTiming`                       | `opacityDuration`       | Full WAAPI timing for presence fades.                                                                                                                       |
-| `trend`                   | `number \| (oldValue, value) => number` | auto                    | Controls reel direction. Use `1` up, `-1` down, `0` per-digit shortest direction, or a function.                                                            |
-| `continuous`              | `boolean`                               | `false`                 | Number-flow-style visual continuity: lower unchanged digits loop one full reel when a higher-place digit changes.                                           |
-| `digits`                  | `Record<number, { max?: number }>`      | `{}`                    | Custom reel ranges by decimal position, e.g. `{ 1: { max: 5 } }` for clock tens.                                                                            |
-| `respectMotionPreference` | `boolean`                               | `true`                  | Skips animations when `prefers-reduced-motion: reduce` is active.                                                                                           |
-| `stagger`                 | `number`                                | `0`                     | Delay in ms between entering/exiting presence animations only. Core spin and layout remain synchronized.                                                    |
-| `colorOnIncrease`         | `string`                                | `undefined`             | Flash color when value increases.                                                                                                                           |
-| `colorOnDecrease`         | `string`                                | `undefined`             | Flash color when value decreases.                                                                                                                           |
+| Input                     | Type                                    | Default                 | Guidance                                                                                                                             |
+| ------------------------- | --------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `value`                   | `number`                                | required                | The number to display and animate.                                                                                                   |
+| `format`                  | `Intl.NumberFormatOptions`              | `{}`                    | Forwarded to `Intl.NumberFormat`; use for currency, percent, compact notation, grouping, fraction digits.                            |
+| `locales`                 | `string \| string[]`                    | `undefined`             | Locale and numbering system support, including non-Latin digit glyphs.                                                               |
+| `prefix`                  | `string`                                | `''`                    | Custom text before the formatted number. Prefer `format` for real currency/sign/unit formatting.                                     |
+| `suffix`                  | `string`                                | `''`                    | Custom text after the formatted number. Prefer `format` for percent/unit when possible.                                              |
+| `animated`                | `boolean`                               | `true`                  | Set `false` to disable all animation.                                                                                                |
+| `duration`                | `number`                                | `900`                   | Shared spin + layout duration in milliseconds.                                                                                       |
+| `opacityDuration`         | `number`                                | `450`                   | Presence fade duration for entering/exiting digits, separators, and literals.                                                        |
+| `spinEasing`              | `DigitFlowEasing`                       | `spring`                | Named preset (`spring`, `default`, `overshoot`) or any CSS easing string. Use the default unless the user asks for a different feel. |
+| `flipEasing`              | `DigitFlowEasing`                       | `spring`                | Same presets/raw CSS support for horizontal layout motion.                                                                           |
+| `transformTiming`         | `DigitFlowTiming`                       | `duration + flipEasing` | Full WAAPI timing for layout/FLIP and container width motion. Overrides `duration`/`flipEasing`.                                     |
+| `spinTiming`              | `DigitFlowTiming`                       | `transformTiming`       | Full WAAPI timing for vertical digit reel motion. Overrides `duration`/`spinEasing`.                                                 |
+| `opacityTiming`           | `DigitFlowTiming`                       | `opacityDuration`       | Full WAAPI timing for presence fades.                                                                                                |
+| `trend`                   | `number \| (oldValue, value) => number` | auto                    | Controls reel direction. Use `1` up, `-1` down, `0` per-digit shortest direction, or a function.                                     |
+| `continuous`              | `boolean`                               | `false`                 | Number-flow-style visual continuity: lower unchanged digits loop one full reel when a higher-place digit changes.                    |
+| `digits`                  | `Record<number, { max?: number }>`      | `{}`                    | Custom reel ranges by decimal position, e.g. `{ 1: { max: 5 } }` for clock tens.                                                     |
+| `respectMotionPreference` | `boolean`                               | `true`                  | Skips animations when `prefers-reduced-motion: reduce` is active.                                                                    |
+| `stagger`                 | `number`                                | `0`                     | Delay in ms between entering/exiting presence animations only. Core spin and layout remain synchronized.                             |
+| `colorOnIncrease`         | `string`                                | `undefined`             | Flash color when value increases.                                                                                                    |
+| `colorOnDecrease`         | `string`                                | `undefined`             | Flash color when value decreases.                                                                                                    |
 
 | Output             | Payload | Guidance                                                                                     |
 | ------------------ | ------- | -------------------------------------------------------------------------------------------- |
@@ -72,17 +72,13 @@ export class PriceComponent {
 
 ## Best-Practice Defaults
 
-Prefer the standard component before reaching for timing overrides:
+Prefer the standard component before reaching for timing overrides. The default spring is the recommended baseline:
 
 ```html
 <ngx-digit-flow [value]="n" />
 ```
 
-For a snappier visual, use the named preset:
-
-```html
-<ngx-digit-flow [value]="n" spinEasing="overshoot" />
-```
+Only use `spinEasing="overshoot"` or `flipEasing="overshoot"` when the user explicitly asks for a snappier, bouncier, or more playful feel. Do not recommend overshoot by default.
 
 For currency and product metrics:
 
@@ -127,7 +123,7 @@ When adding `ngx-digit-flow` to an Angular component:
 3. Replace static number text with `<ngx-digit-flow [value]="..." />`.
 4. Prefer `format`/`locales` over hand-built prefixes/suffixes for currency, percent, units, compact notation, and localized digits.
 5. Use `continuous` for counters where higher-place changes should feel like they tick through values.
-6. Use `spinEasing="overshoot"` for a playful/snappy feel; keep the default spring for polished dashboard motion.
+6. Keep the default spring easing unless the user asks for a custom feel. If they ask for snappy/playful motion, then suggest `spinEasing="overshoot"` or `flipEasing="overshoot"`.
 7. Use `stagger` only to reveal entering/exiting parts; do not expect it to affect same-width number updates.
 8. Preserve accessibility: the component renders screen-reader text; do not hide it with extra `aria-hidden` wrappers.
 
