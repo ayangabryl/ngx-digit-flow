@@ -390,7 +390,7 @@ export class DocsDemoComponent {
               <span class="api-kind-badge">Inputs</span>
             </div>
             <div class="table-wrap">
-              <table class="api-table">
+              <table class="api-table api-table--inputs">
                 <thead>
                   <tr>
                     <th>Input</th>
@@ -401,7 +401,7 @@ export class DocsDemoComponent {
                 </thead>
                 <tbody>
                   <!-- Core -->
-                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Core</td></tr>
+                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Core</span></td></tr>
                   <tr>
                     <td><code>value</code></td>
                     <td><code>number</code></td>
@@ -439,7 +439,7 @@ export class DocsDemoComponent {
                     <td>Enables or disables all animations.</td>
                   </tr>
                   <!-- Timing -->
-                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Timing</td></tr>
+                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Timing</span></td></tr>
                   <tr>
                     <td><code>duration</code></td>
                     <td><code>number</code></td>
@@ -453,7 +453,7 @@ export class DocsDemoComponent {
                     <td>Fade-in / fade-out duration for appearing and exiting elements.</td>
                   </tr>
                   <!-- Style presets -->
-                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Style presets</td></tr>
+                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Style presets</span></td></tr>
                   <tr>
                     <td><code>variant</code></td>
                     <td><code>'default' | 'gaming' | 'metrics' | 'finance' | 'smooth'</code></td>
@@ -473,7 +473,7 @@ export class DocsDemoComponent {
                     <td>CSS easing for FLIP layout transitions. Overrides the variant's flip easing.</td>
                   </tr>
                   <!-- Features -->
-                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Features</td></tr>
+                  <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Features</span></td></tr>
                   <tr>
                     <td><code>continuous</code></td>
                     <td><code>boolean</code></td>
@@ -515,7 +515,7 @@ export class DocsDemoComponent {
               <span class="api-kind-badge api-kind-badge--out">Outputs</span>
             </div>
             <div class="table-wrap">
-              <table class="api-table">
+              <table class="api-table api-table--outputs">
                 <thead>
                   <tr>
                     <th>Output</th>
@@ -797,42 +797,57 @@ export class DocsDemoComponent {
 
     .table-wrap {
       overflow-x: auto;
-      border: 1px solid oklch(91% 0.005 265);
-      border-radius: 12px;
-      overflow: hidden;
+      overflow-y: hidden;
+      border: 1px solid oklch(90% 0.006 265);
+      border-radius: 10px;
+      background: oklch(99.2% 0.001 265);
+      box-shadow: 0 1px 0 oklch(100% 0 0) inset;
     }
 
     .api-table {
       width: 100%;
-      border-collapse: collapse;
+      min-width: 760px;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
       font-size: 13px;
     }
 
     .api-table th {
       text-align: left;
-      padding: 10px 16px;
+      padding: 11px 16px;
       font-family: var(--mono);
       font-size: 10px;
-      font-weight: 600;
-      color: oklch(58% 0.005 265);
+      font-weight: 700;
+      color: oklch(49% 0.015 265);
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      background: oklch(98.5% 0.002 265);
-      border-bottom: 1px solid oklch(91% 0.005 265);
+      letter-spacing: 0.08em;
+      background: oklch(96.8% 0.004 265);
+      border-bottom: 1px solid oklch(89% 0.006 265);
       white-space: nowrap;
     }
 
+    .api-table--inputs th:first-child { width: 20%; }
+    .api-table--inputs th:nth-child(2) { width: 29%; }
+    .api-table--inputs th:nth-child(3) { width: 16%; }
+    .api-table--inputs th:last-child { width: 35%; }
+    .api-table--outputs { min-width: 560px; }
+    .api-table--outputs th:first-child { width: 28%; }
+    .api-table--outputs th:nth-child(2) { width: 18%; }
+    .api-table--outputs th:last-child { width: 54%; }
+
     .api-table td {
       text-align: left;
-      padding: 12px 16px;
-      border-bottom: 1px solid oklch(95% 0.003 265);
+      padding: 13px 16px;
+      border-bottom: 1px solid oklch(94% 0.004 265);
       vertical-align: top;
       color: oklch(28% 0.005 265);
-      line-height: 1.5;
+      line-height: 1.55;
+      background: oklch(99.6% 0.001 265);
     }
 
-    .api-table tbody tr:hover td {
-      background: oklch(99% 0.001 265);
+    .api-table tbody tr:not(.api-group-row):hover td {
+      background: oklch(98.5% 0.006 255);
     }
 
     .api-table tr:last-child td { border-bottom: none; }
@@ -854,6 +869,8 @@ export class DocsDemoComponent {
       background: oklch(95% 0.003 265);
       padding: 1px 5px;
       border-radius: 4px;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .badge-req {
@@ -866,16 +883,31 @@ export class DocsDemoComponent {
       border-radius: 4px;
     }
 
-    .api-group-row td { padding: 0 !important; border-bottom: none !important; }
+    .api-group-row td {
+      padding: 18px 16px 7px !important;
+      background:
+        linear-gradient(90deg, oklch(96% 0.018 255), transparent 72%),
+        oklch(99.6% 0.001 265) !important;
+      border-bottom: 1px solid oklch(91.5% 0.006 265) !important;
+    }
+
     .api-group-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-family: var(--sans);
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--muted);
-      padding: 14px 12px 4px !important;
-      background: transparent;
+      color: oklch(42% 0.12 255);
+    }
+
+    .api-group-divider::after {
+      content: '';
+      height: 1px;
+      flex: 1;
+      background: oklch(88% 0.02 255);
     }
 
     @media (max-width: 900px) {
