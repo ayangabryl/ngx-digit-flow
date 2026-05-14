@@ -9,6 +9,9 @@ import {
 import { RouterLink } from '@angular/router';
 import { DigitFlowComponent } from 'ngx-digit-flow';
 
+const NPM_CMD   = 'npm install ngx-digit-flow';
+const SKILL_CMD = 'npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow';
+
 interface HeroStep {
   value: number;
   format: Intl.NumberFormatOptions;
@@ -74,11 +77,25 @@ const STEPS: HeroStep[] = [
         <div class="installs">
           <div class="install">
             <span class="install-tag">npm</span>
-            <code>npm install ngx-digit-flow</code>
+            <code class="install-code">{{ npmCmd }}</code>
+            <button class="copy-btn" (click)="copy(npmCmd, 'npm')" aria-label="Copy npm command">
+              @if (copied() === 'npm') {
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="5" y="1" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M9 10v2a1.5 1.5 0 01-1.5 1.5H1.5A1.5 1.5 0 010 12V5A1.5 1.5 0 011.5 3.5H4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              }
+            </button>
           </div>
           <div class="install install--skill">
             <span class="install-tag">Skill</span>
-            <code>npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow</code>
+            <code class="install-code">{{ skillCmd }}</code>
+            <button class="copy-btn" (click)="copy(skillCmd, 'skill')" aria-label="Copy skill command">
+              @if (copied() === 'skill') {
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="5" y="1" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M9 10v2a1.5 1.5 0 01-1.5 1.5H1.5A1.5 1.5 0 010 12V5A1.5 1.5 0 011.5 3.5H4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              }
+            </button>
           </div>
         </div>
 
@@ -88,7 +105,7 @@ const STEPS: HeroStep[] = [
         </div>
 
         <div class="badges">
-          <span class="badge">Angular 21</span>
+          <span class="badge">Angular 17+</span>
           <span class="badge">Signals</span>
           <span class="badge">WAAPI</span>
           <span class="badge">FLIP</span>
@@ -175,18 +192,20 @@ const STEPS: HeroStep[] = [
       flex-direction: column;
       gap: 8px;
       width: 100%;
-      max-width: 640px;
+      max-width: 580px;
     }
 
     .install {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       border: 1px solid oklch(88% 0.002 265);
       border-radius: 14px;
-      padding: 11px 18px;
+      padding: 11px 14px 11px 18px;
       background: #fff;
       cursor: default;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .install--skill {
@@ -204,12 +223,37 @@ const STEPS: HeroStep[] = [
       flex-shrink: 0;
     }
 
-    .install code {
+    .install-code {
       font-family: var(--mono);
       font-size: 12px;
       color: var(--ink);
-      user-select: all;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+      user-select: all;
+    }
+
+    .copy-btn {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      padding: 0;
+    }
+
+    .copy-btn:hover {
+      background: oklch(94% 0.002 265);
+      color: var(--ink);
     }
 
     .cta {
@@ -313,6 +357,10 @@ export class HomeComponent implements OnInit {
   protected steps = STEPS;
   protected stepIdx = signal(0);
   protected step = signal(STEPS[0]);
+  protected copied = signal<string | null>(null);
+
+  protected readonly npmCmd   = NPM_CMD;
+  protected readonly skillCmd = SKILL_CMD;
 
   private destroyRef = inject(DestroyRef);
 
@@ -328,5 +376,12 @@ export class HomeComponent implements OnInit {
   protected goTo(idx: number): void {
     this.stepIdx.set(idx);
     this.step.set(STEPS[idx]);
+  }
+
+  protected copy(text: string, key: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      this.copied.set(key);
+      setTimeout(() => this.copied.set(null), 1500);
+    });
   }
 }

@@ -141,7 +141,7 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
               type="range"
               min="0"
               max="1000000"
-              step="1000"
+              step="1"
               [value]="sliderVal()"
               (input)="onSliderChange($event)"
             />

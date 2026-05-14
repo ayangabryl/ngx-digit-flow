@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
       <div class="footer__inner">
         <div class="footer__brand">
           <span class="footer__name">ngx-digit-flow</span>
-          <span class="footer__tag">Built for Angular 21</span>
+          <span class="footer__tag">Built for Angular</span>
         </div>
         <div class="footer__links">
           <a href="https://github.com/barvian/number-flow" target="_blank" rel="noopener">

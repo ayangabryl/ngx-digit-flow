@@ -10,7 +10,7 @@ const SHOWCASE = [1000000, 42, 3.14159, 99.9, 1234567.89, 0, 888888];
   imports: [DigitFlowComponent],
   template: `
     <section class="hero">
-      <div class="hero__badge">Angular 21 · Signals-first · Zero deps</div>
+      <div class="hero__badge">Angular · Signals-first · Zero deps</div>
 
       <h1 class="hero__title">
         Numbers that<br>
