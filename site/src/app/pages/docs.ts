@@ -546,8 +546,8 @@ export class DocsDemoComponent {
         <section class="docs-section" id="stagger" data-section="stagger">
           <h2 class="section-heading">Stagger</h2>
           <p class="section-desc">
-            <code>[stagger]</code> adds a delay in milliseconds between each element's animation,
-            creating a left-to-right cascade across digits, separators, and affixes.
+            <code>[stagger]</code> adds a delay in milliseconds between presence animations for
+            newly entering or exiting parts. Core digit spin and layout motion stay synchronized.
           </p>
 
           <docs-demo label="stagger" [code]="codeStagger">
@@ -773,8 +773,8 @@ export class DocsDemoComponent {
                     <td><code>number</code></td>
                     <td><code>0</code></td>
                     <td>
-                      Milliseconds of delay between each element's animation. Creates a cascade
-                      effect.
+                      Milliseconds of delay between entering/exiting presence animations. Core spin
+                      and layout motion stay synchronized.
                     </td>
                   </tr>
                   <tr>
@@ -1542,7 +1542,7 @@ export class MyComponent {}`;
   protected codeStagger = `<!-- all elements animate simultaneously (default) -->
 <ngx-digit-flow [value]="n" />
 
-<!-- 60ms cascade from left to right -->
+<!-- 60ms cascade for entering/exiting parts -->
 <ngx-digit-flow [value]="n" [stagger]="60" />`;
 
   protected codeColorFlash = `<ngx-digit-flow

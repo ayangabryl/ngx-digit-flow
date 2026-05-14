@@ -321,10 +321,7 @@ export class DigitFlowComponent {
 
         if (delta !== 0 && d > 0) {
           this.incrementSpin(el);
-          const a = el.animate(
-            { '--_df-d': [-delta, 0] } as PropertyIndexedKeyframes,
-            this.addStaggerDelay(spinOpts, staggerDelay),
-          );
+          const a = el.animate({ '--_df-d': [-delta, 0] } as PropertyIndexedKeyframes, spinOpts);
           batch.push(a);
           a.finished.then(() => this.decrementSpin(el)).catch(() => this.decrementSpin(el));
         }
@@ -335,7 +332,7 @@ export class DigitFlowComponent {
             batch.push(
               el.animate(
                 [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
-                this.addStaggerDelay(flipOpts, staggerDelay),
+                flipOpts,
               ),
             );
           }
@@ -354,7 +351,7 @@ export class DigitFlowComponent {
             batch.push(
               el.animate(
                 [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
-                this.addStaggerDelay(flipOpts, staggerDelay),
+                flipOpts,
               ),
             );
           }
