@@ -206,14 +206,21 @@ export class DigitFlowComponent {
         this.snapshot();
       }
 
-      // Cancel any in-flight continuous queue when a new value arrives
-      this._continuousQueue  = [];
-      this._continuousValues = [];
+      // Cancel any in-flight continuous queue when a new value arrives.
+      // Also clear per-batch overrides so a stale processContinuousQueue callback
+      // that ran just before this effect cannot corrupt the next animation.
+      this._continuousQueue    = [];
+      this._continuousValues   = [];
+      this._targetDisplayValue = null;
+      this._durationOverride   = null;
 
       if (isPlatformBrowser(this.platformId) && this.animated() && this.continuous()) {
         const from  = this.prevNumericValue;
         const diff  = v - from;
-        const steps = Math.min(Math.ceil(Math.abs(diff)), MAX_CONTINUOUS_STEPS);
+        // Use floor so each step spans at least one full integer, preventing
+        // Math.round from producing duplicate consecutive intermediate values
+        // (e.g. 0→2.1 with ceil=3 steps yields [1,1,2.1]; floor=2 yields [1,2.1]).
+        const steps = Math.min(Math.max(1, Math.floor(Math.abs(diff))), MAX_CONTINUOUS_STEPS);
 
         if (steps > 1) {
           const totalDur = this.effectiveSettings().duration;
@@ -332,7 +339,8 @@ export class DigitFlowComponent {
     const baseTransformTiming = settings.transformTiming ?? { duration: d, easing: settings.flipEasing };
     const spinOpts: KeyframeAnimationOptions = {
       ...baseTransformTiming,
-      ...(settings.spinTiming ?? {}),
+      easing: settings.spinEasing,      // override flipEasing with the dedicated spin easing
+      ...(settings.spinTiming ?? {}),   // explicit spinTiming wins over everything
       duration: reduced ? 0 : settings.spinTiming?.duration ?? baseTransformTiming.duration,
       fill: 'none',
       composite: 'accumulate',
@@ -416,25 +424,22 @@ export class DigitFlowComponent {
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
     });
 
-    // Color animation on trend change
-    if (d > 0 && (!isContinuousStep || this._continuousQueue.length === 0)) {
+    // Color animation on trend change — only fires on non-continuous steps to avoid
+    // blocking the continuous chain (each step would otherwise add a 300ms+ animation
+    // to the batch, multiplying total duration by the step count).
+    if (d > 0 && !isContinuousStep) {
       const colorIncrease = this.colorOnIncrease();
       const colorDecrease = this.colorOnDecrease();
-      let colorAnimation: Animation | null = null;
       if (trend > 0 && colorIncrease) {
-        colorAnimation = host.animate(
+        batch.push(host.animate(
           [{ color: colorIncrease }, { color: '' }],
           { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
-        );
+        ));
       } else if (trend < 0 && colorDecrease) {
-        colorAnimation = host.animate(
+        batch.push(host.animate(
           [{ color: colorDecrease }, { color: '' }],
           { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
-        );
-      }
-
-      if (colorAnimation && !isContinuousStep) {
-        batch.push(colorAnimation);
+        ));
       }
     }
 
