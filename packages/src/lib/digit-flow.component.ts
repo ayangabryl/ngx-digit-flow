@@ -453,11 +453,7 @@ export class DigitFlowComponent {
       this._live = this._live.filter((a) => !batchSet.has(a));
       this.animCount--;
 
-      if (finishController.signal.aborted) {
-        return;
-      }
-
-      if (this.animCount === 0 && !this._destroyed) {
+      if (this.animCount === 0 && !this._destroyed && this._animationsFinishAbort) {
         this.animationsFinish.emit();
         this._animationsFinishAbort = undefined;
       }
