@@ -1,6 +1,7 @@
 import {
   afterEveryRender,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   DestroyRef,
@@ -126,6 +127,7 @@ export class DigitFlowComponent {
   private platformId = inject(PLATFORM_ID);
   private elRef      = inject(ElementRef<HTMLElement>);
   private destroyRef = inject(DestroyRef);
+  private cdr        = inject(ChangeDetectorRef);
 
   // Snapshot state — captured BEFORE each re-render
   private prevRects         = new Map<string, DOMRect>();
@@ -147,9 +149,6 @@ export class DigitFlowComponent {
   private _continuousQueue: FormattedNumber[] = [];
   private _continuousValues: number[]         = [];
   private _continuousStepDuration             = 0;
-
-  // Container FLIP — captures container position before each re-render
-  private prevContainerRect: DOMRect | null = null;
 
   // Per-batch overrides (cleared after each runAnimations call)
   private _targetDisplayValue: number | null = null;
@@ -254,7 +253,11 @@ export class DigitFlowComponent {
     this._durationOverride   = this._continuousStepDuration;
 
     untracked(() => this.data.set(nextFormatted));
+    // Force synchronous render so the animation starts in the same pass as the DOM
+    // update — otherwise the browser paints one frame with the new digit value but
+    // no animation, creating a visible flash before the spin begins.
     this._pending = true;
+    this.cdr.detectChanges();
   }
 
   // ─── Snapshot ─────────────────────────────────────────────────────────────
@@ -274,9 +277,6 @@ export class DigitFlowComponent {
         }
       });
     });
-
-    const numEl = (this.elRef.nativeElement as HTMLElement).querySelector<HTMLElement>('.df-number');
-    this.prevContainerRect = numEl ? numEl.getBoundingClientRect() : null;
 
     host.querySelectorAll<HTMLElement>('[data-key]').forEach(el => {
       const key = el.getAttribute('data-key')!;
@@ -404,20 +404,6 @@ export class DigitFlowComponent {
       batch.push(a);
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
     });
-
-    // Container FLIP — prevents the number from jumping position when digit count changes
-    const numEl = host.querySelector<HTMLElement>('.df-number');
-    if (numEl && this.prevContainerRect && d > 0) {
-      const newContainerRect = numEl.getBoundingClientRect();
-      const cdx = this.prevContainerRect.left - newContainerRect.left;
-      if (Math.abs(cdx) > 0.5) {
-        batch.push(numEl.animate(
-          [{ transform: `translateX(${cdx}px)` }, { transform: 'none' }],
-          { duration: d, easing: settings.flipEasing, fill: 'none', composite: 'accumulate' }
-        ));
-      }
-    }
-    this.prevContainerRect = null;
 
     // Color animation on trend change — only fires on non-continuous steps to avoid
     // blocking the continuous chain (each step would otherwise add a 300ms+ animation
