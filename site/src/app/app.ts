@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
+const GITHUB_REPO_API = 'https://api.github.com/repos/ayangabryl/ngx-digit-flow';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +20,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
             href="https://github.com/ayangabryl/ngx-digit-flow"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="ngx-digit-flow on GitHub, 13 stars"
+            [attr.aria-label]="githubAriaLabel()"
           >
             <svg class="github-mark" viewBox="0 0 16 16" aria-hidden="true">
               <path
@@ -26,14 +28,16 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
               />
             </svg>
             <span>GitHub</span>
-            <span class="github-stars" aria-label="13 stars">
-              <svg viewBox="0 0 16 16" aria-hidden="true">
-                <path
-                  d="M8 1.2 9.9 5l4.2.61-3.05 2.97.72 4.2L8 10.8l-3.77 1.98.72-4.2L1.9 5.61 6.1 5 8 1.2Z"
-                />
-              </svg>
-              13
-            </span>
+            @if (githubStars() !== null) {
+              <span class="github-stars" [attr.aria-label]="formatStars(githubStars()!) + ' stars'">
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M8 1.2 9.9 5l4.2.61-3.05 2.97.72 4.2L8 10.8l-3.77 1.98.72-4.2L1.9 5.61 6.1 5 8 1.2Z"
+                  />
+                </svg>
+                {{ formatStars(githubStars()!) }}
+              </span>
+            }
           </a>
         </nav>
       </header>
@@ -156,4 +160,43 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     `,
   ],
 })
-export class App {}
+export class App implements OnInit {
+  protected githubStars = signal<number | null>(null);
+
+  ngOnInit(): void {
+    void this.loadGithubStars();
+  }
+
+  protected githubAriaLabel(): string {
+    const stars = this.githubStars();
+    return stars === null
+      ? 'ngx-digit-flow on GitHub'
+      : `ngx-digit-flow on GitHub, ${this.formatStars(stars)} stars`;
+  }
+
+  protected formatStars(count: number): string {
+    return new Intl.NumberFormat('en', {
+      notation: count >= 1000 ? 'compact' : 'standard',
+      maximumFractionDigits: 1,
+    }).format(count);
+  }
+
+  private async loadGithubStars(): Promise<void> {
+    if (typeof fetch !== 'function') return;
+
+    try {
+      const response = await fetch(GITHUB_REPO_API, {
+        headers: { Accept: 'application/vnd.github+json' },
+      });
+      if (!response.ok) return;
+
+      const data = (await response.json()) as { stargazers_count?: unknown };
+      const stars = data.stargazers_count;
+      if (typeof stars === 'number' && Number.isFinite(stars)) {
+        this.githubStars.set(stars);
+      }
+    } catch {
+      // Keep the link usable if GitHub is unreachable or rate-limited.
+    }
+  }
+}
