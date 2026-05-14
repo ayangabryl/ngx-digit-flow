@@ -1,64 +1,159 @@
-# NgxDigitFlow
+# ngx-digit-flow
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+Smooth odometer-style digit animations for Angular.
 
-## Code scaffolding
+`ngx-digit-flow` animates each changing digit on its own vertical reel, giving numbers the polished slot-machine / odometer motion you see in modern dashboards, counters, timers, pricing UI, stats, and any interface where numbers update.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Built for Angular with Signals, the Web Animations API, and CSS `@property`. SSR-safe. No animation libraries.
 
-```bash
-ng generate component component-name
-```
+**Demo:** [ngx-digit-flow.ayangabryl.com](https://ngx-digit-flow.ayangabryl.com)  
+**GitHub:** [github.com/ayangabryl/ngx-digit-flow](https://github.com/ayangabryl/ngx-digit-flow)
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+[![npm](https://img.shields.io/npm/v/ngx-digit-flow)](https://www.npmjs.com/package/ngx-digit-flow)
+[![license](https://img.shields.io/github/license/ayangabryl/ngx-digit-flow)](https://github.com/ayangabryl/ngx-digit-flow/blob/main/LICENSE)
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the library, run:
+## Install
 
 ```bash
-ng build ngx-digit-flow
+npm install ngx-digit-flow
 ```
 
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
+## Quick start
 
-### Publishing the Library
+Import the standalone component and bind it to a number.
 
-Once the project is built, you can publish your library by following these steps:
+```typescript
+import { Component, signal } from '@angular/core';
+import { DigitFlowComponent } from 'ngx-digit-flow';
 
-1. Navigate to the `dist` directory:
+@Component({
+  selector: 'app-price',
+  imports: [DigitFlowComponent],
+  template: `
+    <ngx-digit-flow
+      [value]="price()"
+      [format]="{ style: 'currency', currency: 'USD' }"
+    />
+  `,
+})
+export class PriceComponent {
+  price = signal(182.5);
+}
+```
 
-   ```bash
-   cd dist/ngx-digit-flow
-   ```
+## Why use it?
 
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
+- Smooth per-digit odometer animations
+- Works with `Intl.NumberFormatOptions`
+- Supports currency, percentages, compact notation, decimals, prefixes, and suffixes
+- Signals-first Angular API
+- SSR-safe browser checks
+- Respects `prefers-reduced-motion`
+- No animation libraries
 
-## Running unit tests
+## Examples
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Currency
+
+```html
+<ngx-digit-flow
+  [value]="revenue()"
+  [format]="{ style: 'currency', currency: 'USD' }"
+  [duration]="600"
+/>
+```
+
+### Compact notation
+
+```html
+<ngx-digit-flow
+  [value]="views()"
+  [format]="{ notation: 'compact', maximumFractionDigits: 1 }"
+/>
+```
+
+### Percentage
+
+```html
+<ngx-digit-flow
+  [value]="progress()"
+  [format]="{ style: 'percent', maximumFractionDigits: 1 }"
+/>
+```
+
+### Counter
+
+```typescript
+score = signal(0);
+```
+
+```html
+<ngx-digit-flow [value]="score()" [duration]="500" />
+
+<button type="button" (click)="score.update(value => value - 1)">-</button>
+<button type="button" (click)="score.update(value => value + 1)">+</button>
+```
+
+### Timer or grouped digits
+
+Use `ngxDigitFlowGroup` when multiple instances should animate together.
+
+```typescript
+import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
+```
+
+```html
+<div ngxDigitFlowGroup>
+  <ngx-digit-flow [value]="hours" />
+  <span>:</span>
+  <ngx-digit-flow [value]="minutes" />
+  <span>:</span>
+  <ngx-digit-flow [value]="seconds" />
+</div>
+```
+
+## API
+
+### Inputs
+
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number` | required | The number to display and animate |
+| `format` | `Intl.NumberFormatOptions` | `{}` | Options forwarded to `Intl.NumberFormat` |
+| `locales` | `string \| string[]` | `undefined` | BCP 47 locale string or list of locale strings |
+| `prefix` | `string` | `''` | Text prepended before the formatted number |
+| `suffix` | `string` | `''` | Text appended after the formatted number |
+| `animated` | `boolean` | `true` | Set to `false` to disable animation |
+| `duration` | `number` | `900` | Digit animation duration in milliseconds |
+| `opacityDuration` | `number` | `150` | Fade duration for appearing or disappearing parts |
+
+### Outputs
+
+| Output | Payload | Description |
+| --- | --- | --- |
+| `animationsStart` | `void` | Fires when an animation batch starts |
+| `animationsFinish` | `void` | Fires when all in-flight animations finish |
+
+## AI assistant setup
+
+Install the `ngx-digit-flow` skill so an AI coding assistant can understand the API and wire it into your Angular components.
 
 ```bash
-ng test
+npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow
 ```
 
-## Running end-to-end tests
+Works with Claude Code and any coding agent that supports the Agent Skills format.
 
-For end-to-end (e2e) testing, run:
+## Browser support
 
-```bash
-ng e2e
-```
+Requires CSS `mod()` and `@property`.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- Chrome 125+
+- Safari 15.4+
+- Firefox 118+
 
-## Additional Resources
+`prefers-reduced-motion` is respected automatically.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## License
+
+MIT

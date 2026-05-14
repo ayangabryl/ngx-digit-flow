@@ -2,7 +2,7 @@
 
 Individual digit animations for Angular. Each digit has a vertical reel (0-9) that scrolls to the new value when the number changes - slot-machine / odometer style.
 
-Built on Web Animations API + CSS `@property`. Zero dependencies. SSR-safe. Signals-first.
+Built on Web Animations API + CSS `@property`. No animation libraries. SSR-safe. Signals-first.
 
 **Website:** [ngx-digit-flow.ayangabryl.com](https://ngx-digit-flow.ayangabryl.com)
 
