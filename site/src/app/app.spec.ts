@@ -44,7 +44,7 @@ describe('App', () => {
     expect(compiled.querySelector('.wordmark')?.textContent).toContain('ngx-digit-flow');
     expect(
       [...compiled.querySelectorAll('.nav-link')].map((link) => link.textContent?.trim()),
-    ).toEqual(['demos', 'docs', 'GitHub 42']);
+    ).toEqual(['demos', 'docs', '42']);
     expect(compiled.querySelector('.github-mark')).toBeTruthy();
   });
 });

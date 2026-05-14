@@ -27,14 +27,8 @@ const GITHUB_REPO_API = 'https://api.github.com/repos/ayangabryl/ngx-digit-flow'
                 d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.24.49-2.71-1.08-2.71-1.08-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.51-1.07-1.79-.2-3.67-.89-3.67-3.98 0-.88.31-1.6.83-2.16-.08-.2-.36-1.02.08-2.13 0 0 .68-.22 2.2.82A7.66 7.66 0 0 1 8 3.84c.68 0 1.36.09 2 .27 1.52-1.04 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.52.56.83 1.28.83 2.16 0 3.1-1.89 3.77-3.69 3.97.29.25.55.74.55 1.49v2.17c0 .21.14.46.55.38A8 8 0 0 0 8 0Z"
               />
             </svg>
-            <span>GitHub</span>
             @if (githubStars() !== null) {
               <span class="github-stars" [attr.aria-label]="formatStars(githubStars()!) + ' stars'">
-                <svg viewBox="0 0 16 16" aria-hidden="true">
-                  <path
-                    d="M8 1.2 9.9 5l4.2.61-3.05 2.97.72 4.2L8 10.8l-3.77 1.98.72-4.2L1.9 5.61 6.1 5 8 1.2Z"
-                  />
-                </svg>
                 {{ formatStars(githubStars()!) }}
               </span>
             }
@@ -106,8 +100,8 @@ const GITHUB_REPO_API = 'https://api.github.com/repos/ayangabryl/ngx-digit-flow'
       .github-link {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 5px 8px 5px 7px;
+        gap: 8px;
+        padding: 6px 10px 6px 9px;
         border: 1px solid oklch(90% 0.004 265);
         border-radius: 999px;
         color: var(--ink);
@@ -118,25 +112,16 @@ const GITHUB_REPO_API = 'https://api.github.com/repos/ayangabryl/ngx-digit-flow'
         background: #fff;
       }
       .github-mark {
-        width: 15px;
-        height: 15px;
+        width: 18px;
+        height: 18px;
         fill: currentColor;
         flex: 0 0 auto;
       }
       .github-stars {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        padding-left: 7px;
-        border-left: 1px solid oklch(88% 0.005 265);
         font-family: var(--mono);
         font-size: 12px;
+        line-height: 1;
         color: var(--muted);
-      }
-      .github-stars svg {
-        width: 12px;
-        height: 12px;
-        fill: currentColor;
       }
 
       .outlet {
