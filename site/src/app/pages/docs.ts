@@ -452,6 +452,24 @@ export class DocsDemoComponent {
                     <td><code>150</code></td>
                     <td>Fade-in / fade-out duration for appearing and exiting elements.</td>
                   </tr>
+                  <tr>
+                    <td><code>transformTiming</code></td>
+                    <td><code>DigitFlowTiming</code></td>
+                    <td><code>variant</code></td>
+                    <td>Full WAAPI timing for layout/FLIP animations. Overrides <code>duration</code> and <code>flipEasing</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><code>spinTiming</code></td>
+                    <td><code>DigitFlowTiming</code></td>
+                    <td><code>transformTiming</code></td>
+                    <td>Full WAAPI timing for digit spin animations.</td>
+                  </tr>
+                  <tr>
+                    <td><code>opacityTiming</code></td>
+                    <td><code>DigitFlowTiming</code></td>
+                    <td><code>opacityDuration</code></td>
+                    <td>Full WAAPI timing for fade-in and fade-out animations.</td>
+                  </tr>
                   <!-- Style presets -->
                   <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Style presets</span></td></tr>
                   <tr>
@@ -485,6 +503,18 @@ export class DocsDemoComponent {
                     <td><code>boolean</code></td>
                     <td><code>false</code></td>
                     <td>Ticker mode: animates through every intermediate integer value (max 15 steps).</td>
+                  </tr>
+                  <tr>
+                    <td><code>digits</code></td>
+                    <td><code>Record&lt;number, {{ '{' }} max?: number {{ '}' }}&gt;</code></td>
+                    <td><code>{{ '{}' }}</code></td>
+                    <td>Configures digit reel ranges by decimal position, useful for clocks and countdowns.</td>
+                  </tr>
+                  <tr>
+                    <td><code>respectMotionPreference</code></td>
+                    <td><code>boolean</code></td>
+                    <td><code>true</code></td>
+                    <td>Disables animations when the user prefers reduced motion.</td>
                   </tr>
                   <tr>
                     <td><code>stagger</code></td>

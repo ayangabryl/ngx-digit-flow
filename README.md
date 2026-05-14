@@ -53,11 +53,16 @@ export class PriceComponent {
 | `animated` | `boolean` | `true` | Set `false` to disable all animation |
 | `duration` | `number` | `variant` | Animation duration in ms |
 | `opacityDuration` | `number` | `150` | Fade duration for appearing/disappearing elements |
+| `transformTiming` | `DigitFlowTiming` | `variant` | Full WAAPI timing for layout/FLIP animations |
+| `spinTiming` | `DigitFlowTiming` | `transformTiming` | Full WAAPI timing for digit spin animations |
+| `opacityTiming` | `DigitFlowTiming` | `opacityDuration` | Full WAAPI timing for fade animations |
 | `variant` | `'default' \| 'gaming' \| 'metrics' \| 'finance' \| 'smooth'` | `'default'` | Pre-configured duration/easing preset |
 | `spinEasing` | `string` | `variant` | CSS easing for digit spin |
 | `flipEasing` | `string` | `variant` | CSS easing for layout transitions |
 | `trend` | `number \| (oldValue, value) => number` | auto | Controls reel direction: `1`, `-1`, `0`, or custom |
 | `continuous` | `boolean` | `false` | Animate through intermediate values, capped at 15 steps |
+| `digits` | `Record<number, { max?: number }>` | `{}` | Configure digit reel ranges by decimal position |
+| `respectMotionPreference` | `boolean` | `true` | Disable animations when the user prefers reduced motion |
 | `stagger` | `number` | `0` | Delay in ms between element animations |
 | `colorOnIncrease` | `string` | `undefined` | CSS color flashed when value increases |
 | `colorOnDecrease` | `string` | `undefined` | CSS color flashed when value decreases |

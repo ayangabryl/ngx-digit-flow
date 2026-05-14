@@ -30,3 +30,11 @@ export const EMPTY_FORMATTED: FormattedNumber = {
 export type DigitFlowVariant = 'default' | 'gaming' | 'metrics' | 'finance' | 'smooth';
 
 export type DigitFlowTrend = number | ((oldValue: number, value: number) => number);
+
+export type DigitFlowTiming = Omit<KeyframeAnimationOptions, 'composite'>;
+
+export interface DigitFlowDigitConfig {
+  max?: number;
+}
+
+export type DigitFlowDigits = Record<number, DigitFlowDigitConfig>;
