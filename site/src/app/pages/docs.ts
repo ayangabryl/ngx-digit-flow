@@ -400,6 +400,8 @@ export class DocsDemoComponent {
                   </tr>
                 </thead>
                 <tbody>
+                  <!-- Core -->
+                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Core</td></tr>
                   <tr>
                     <td><code>value</code></td>
                     <td><code>number</code></td>
@@ -416,7 +418,7 @@ export class DocsDemoComponent {
                     <td><code>locales</code></td>
                     <td><code>string | string[]</code></td>
                     <td><code>undefined</code></td>
-                    <td>BCP 47 locale string(s) for formatting.</td>
+                    <td>BCP 47 locale(s) for formatting and RTL direction awareness.</td>
                   </tr>
                   <tr>
                     <td><code>prefix</code></td>
@@ -436,17 +438,71 @@ export class DocsDemoComponent {
                     <td><code>true</code></td>
                     <td>Enables or disables all animations.</td>
                   </tr>
+                  <!-- Timing -->
+                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Timing</td></tr>
                   <tr>
                     <td><code>duration</code></td>
                     <td><code>number</code></td>
-                    <td><code>900</code></td>
-                    <td>Digit spin / FLIP duration in milliseconds.</td>
+                    <td><code>variant</code></td>
+                    <td>Spin + FLIP animation duration in ms. Overrides the active variant's duration.</td>
                   </tr>
                   <tr>
                     <td><code>opacityDuration</code></td>
                     <td><code>number</code></td>
                     <td><code>150</code></td>
                     <td>Fade-in / fade-out duration for appearing and exiting elements.</td>
+                  </tr>
+                  <!-- Style presets -->
+                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Style presets</td></tr>
+                  <tr>
+                    <td><code>variant</code></td>
+                    <td><code>'default' | 'gaming' | 'metrics' | 'finance' | 'smooth'</code></td>
+                    <td><code>'default'</code></td>
+                    <td>Pre-configured animation preset that sets duration and easing as a group.</td>
+                  </tr>
+                  <tr>
+                    <td><code>spinEasing</code></td>
+                    <td><code>string</code></td>
+                    <td><code>variant</code></td>
+                    <td>CSS easing for the digit spin. Overrides the variant's spin easing.</td>
+                  </tr>
+                  <tr>
+                    <td><code>flipEasing</code></td>
+                    <td><code>string</code></td>
+                    <td><code>variant</code></td>
+                    <td>CSS easing for FLIP layout transitions. Overrides the variant's flip easing.</td>
+                  </tr>
+                  <!-- Features -->
+                  <tr class="api-group-row"><td colspan="4" class="api-group-divider">Features</td></tr>
+                  <tr>
+                    <td><code>continuous</code></td>
+                    <td><code>boolean</code></td>
+                    <td><code>false</code></td>
+                    <td>Ticker mode: animates through every intermediate integer value (max 15 steps).</td>
+                  </tr>
+                  <tr>
+                    <td><code>stagger</code></td>
+                    <td><code>number</code></td>
+                    <td><code>0</code></td>
+                    <td>Milliseconds of delay between each element's animation. Creates a cascade effect.</td>
+                  </tr>
+                  <tr>
+                    <td><code>colorOnIncrease</code></td>
+                    <td><code>string</code></td>
+                    <td><code>undefined</code></td>
+                    <td>CSS color flashed on the host when value increases (e.g. <code>"#4ade80"</code>).</td>
+                  </tr>
+                  <tr>
+                    <td><code>colorOnDecrease</code></td>
+                    <td><code>string</code></td>
+                    <td><code>undefined</code></td>
+                    <td>CSS color flashed on the host when value decreases (e.g. <code>"#f87171"</code>).</td>
+                  </tr>
+                  <tr>
+                    <td><code>spin3d</code></td>
+                    <td><code>boolean</code></td>
+                    <td><code>false</code></td>
+                    <td>Enables a 3D cylinder perspective effect while digits spin.</td>
                   </tr>
                 </tbody>
               </table>
@@ -808,6 +864,18 @@ export class DocsDemoComponent {
       background: oklch(95% 0.07 30);
       padding: 2px 7px;
       border-radius: 4px;
+    }
+
+    .api-group-row td { padding: 0 !important; border-bottom: none !important; }
+    .api-group-divider {
+      font-family: var(--sans);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 14px 12px 4px !important;
+      background: transparent;
     }
 
     @media (max-width: 900px) {
