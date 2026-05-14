@@ -1,0 +1,108 @@
+.examples {
+  padding: 6rem 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.examples__header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.examples__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.75rem;
+}
+
+.section-sub {
+  font-size: 1rem;
+  color: var(--fg-2);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+// Shared card styles (globally scoped since ViewEncapsulation is default)
+:root {
+  --ex-card-bg: #111;
+}
+
+.ex-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: var(--border-2);
+  }
+}
+
+.ex-card__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ex-card__sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.ex-card__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.ex-number {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+
+  &--lg { font-size: clamp(2.5rem, 6vw, 3.5rem); }
+  &--md { font-size: clamp(2rem, 4vw, 2.75rem); }
+}
+
+.ex-btn {
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--fg);
+  transition: all 0.15s;
+
+  &:hover { background: #2a2a2a; border-color: rgba(255,255,255,0.2); }
+  &--green { color: var(--green); border-color: rgba(52,211,153,0.3); }
+  &--red   { color: var(--red);   border-color: rgba(248,113,113,0.3); }
+}

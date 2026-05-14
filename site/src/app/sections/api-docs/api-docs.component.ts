@@ -1,0 +1,139 @@
+import { Component, inject, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+
+const INSTALL_SNIPPET = `npm install ngx-digit-flow`;
+
+const IMPORT_SNIPPET = `import { DigitFlowComponent } from 'ngx-digit-flow';
+
+@Component({
+  imports: [DigitFlowComponent],
+  template: \`
+    <ngx-digit-flow
+      [value]="price()"
+      [format]="{ style: 'currency', currency: 'USD' }"
+    />
+  \`,
+})
+export class MyComponent {
+  price = signal(1299.99);
+}`;
+
+const INPUTS = [
+  { name: 'value',          type: 'number',                    required: true,  default: '—',     desc: 'The number to display' },
+  { name: 'format',         type: 'Intl.NumberFormatOptions',  required: false, default: '{}',    desc: 'Intl.NumberFormat options (currency, percent, compact…)' },
+  { name: 'locales',        type: 'string | string[]',         required: false, default: 'undefined', desc: 'BCP 47 locale(s) for number formatting' },
+  { name: 'prefix',         type: 'string',                    required: false, default: "''",    desc: 'Custom text prepended before the number' },
+  { name: 'suffix',         type: 'string',                    required: false, default: "''",    desc: 'Custom text appended after the number' },
+  { name: 'animated',       type: 'boolean',                   required: false, default: 'true',  desc: 'Enable or disable digit animations' },
+  { name: 'duration',       type: 'number',                    required: false, default: '900',   desc: 'Animation duration in ms (spin + position)' },
+  { name: 'opacityDuration',type: 'number',                    required: false, default: '450',   desc: 'Fade in/out duration in ms' },
+];
+
+const OUTPUTS = [
+  { name: 'animationsStart',  desc: 'Emits when digit animations begin' },
+  { name: 'animationsFinish', desc: 'Emits when all digit animations complete' },
+];
+
+@Component({
+  selector: 'app-api-docs',
+  standalone: true,
+  template: `
+    <section class="api" id="install">
+      <div class="api__inner">
+
+        <div class="section-tag">API</div>
+        <h2 class="section-title">Developer experience first</h2>
+        <p class="section-sub">
+          One component. Signals-native inputs. Zero configuration required.
+        </p>
+
+        <!-- Install -->
+        <div class="api__block">
+          <div class="api__block-title">Install</div>
+          <div class="code-block">
+            <pre><code>{{ installSnippet }}</code></pre>
+            <button class="copy-btn" (click)="copy(installSnippet)" [class.copied]="copied() === 'install'">
+              {{ copied() === 'install' ? 'Copied!' : 'Copy' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Usage -->
+        <div class="api__block">
+          <div class="api__block-title">Usage</div>
+          <div class="code-block">
+            <pre><code>{{ importSnippet }}</code></pre>
+            <button class="copy-btn" (click)="copy(importSnippet, 'import')" [class.copied]="copied() === 'import'">
+              {{ copied() === 'import' ? 'Copied!' : 'Copy' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Inputs table -->
+        <div class="api__block">
+          <div class="api__block-title">Inputs</div>
+          <div class="api__table-wrap">
+            <table class="api__table">
+              <thead>
+                <tr>
+                  <th>Input</th>
+                  <th>Type</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of inputs; track row.name) {
+                  <tr>
+                    <td><code>{{ row.name }}</code> @if (row.required) { <span class="required">*</span> }</td>
+                    <td><code class="type">{{ row.type }}</code></td>
+                    <td><code>{{ row.default }}</code></td>
+                    <td class="desc">{{ row.desc }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Outputs table -->
+        <div class="api__block">
+          <div class="api__block-title">Outputs</div>
+          <div class="api__table-wrap">
+            <table class="api__table">
+              <thead>
+                <tr><th>Output</th><th>Description</th></tr>
+              </thead>
+              <tbody>
+                @for (row of outputs; track row.name) {
+                  <tr>
+                    <td><code>{{ row.name }}</code></td>
+                    <td class="desc">{{ row.desc }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  `,
+  styleUrl: './api-docs.component.scss',
+})
+export class ApiDocsComponent {
+  private platformId = inject(PLATFORM_ID);
+  installSnippet = INSTALL_SNIPPET;
+  importSnippet  = IMPORT_SNIPPET;
+  inputs  = INPUTS;
+  outputs = OUTPUTS;
+  copied  = signal<string | null>(null);
+
+  copy(text: string, key = 'install') {
+    if (!isPlatformBrowser(this.platformId)) return;
+    navigator.clipboard.writeText(text).then(() => {
+      this.copied.set(key);
+      setTimeout(() => this.copied.set(null), 2000);
+    });
+  }
+}
