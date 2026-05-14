@@ -71,7 +71,7 @@ Works with Claude Code and any agent that supports the [Agent Skills](https://an
 | `continuous`              | `boolean`                               | `false`                 | Visually ticks through intermediate values by looping unchanged lower-place digits                                  |
 | `digits`                  | `Record<number, { max?: number }>`      | `{}`                    | Configure digit reel ranges by decimal position                                                                     |
 | `respectMotionPreference` | `boolean`                               | `true`                  | Disable animations when the user prefers reduced motion                                                             |
-| `stagger`                 | `number`                                | `0`                     | Delay in ms between element animations                                                                              |
+| `stagger`                 | `number`                                | `0`                     | Delay in ms between entering/exiting presence animations                                                            |
 | `colorOnIncrease`         | `string`                                | `undefined`             | CSS color flashed when value increases                                                                              |
 | `colorOnDecrease`         | `string`                                | `undefined`             | CSS color flashed when value decreases                                                                              |
 

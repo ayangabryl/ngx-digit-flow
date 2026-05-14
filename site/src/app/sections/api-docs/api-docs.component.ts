@@ -147,7 +147,7 @@ const INPUTS = [
     type: 'number',
     required: false,
     default: '0',
-    desc: "Milliseconds of delay between each element's animation. Creates a cascade effect.",
+    desc: 'Milliseconds of delay between entering/exiting presence animations. Core spin and layout motion stay synchronized.',
   },
   {
     name: 'colorOnIncrease',

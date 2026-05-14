@@ -66,7 +66,7 @@ export class PriceComponent {
 | `continuous`              | `boolean`                                                     | `false`           | Visually ticks through intermediate values by looping unchanged lower-place digits |
 | `digits`                  | `Record<number, { max?: number }>`                            | `{}`              | Configure digit reel ranges by decimal position                                    |
 | `respectMotionPreference` | `boolean`                                                     | `true`            | Disable animations when the user prefers reduced motion                            |
-| `stagger`                 | `number`                                                      | `0`               | Delay in ms between element animations                                             |
+| `stagger`                 | `number`                                                      | `0`               | Delay in ms between entering/exiting presence animations                           |
 | `colorOnIncrease`         | `string`                                                      | `undefined`       | CSS color flashed when value increases                                             |
 | `colorOnDecrease`         | `string`                                                      | `undefined`       | CSS color flashed when value decreases                                             |
 | `spin3d`                  | `boolean`                                                     | `false`           | Adds a subtle 3D cylinder effect to spinning digits                                |

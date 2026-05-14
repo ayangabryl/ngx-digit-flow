@@ -285,6 +285,35 @@ describe('DigitFlowComponent', () => {
     expect(fadeInWithDelay).toBe(true);
   });
 
+  it('does not stagger core spin or layout animations', async () => {
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 99);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    mockMovingRects();
+    fixture.componentRef.setInput('stagger', 25);
+    fixture.componentRef.setInput('value', 100);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const coreAnimations = animateCalls.filter(
+      (call) =>
+        (!Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d'])) ||
+        (!Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-dx'])) ||
+        (Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame)),
+    );
+
+    expect(coreAnimations.length).toBeGreaterThan(0);
+    expect(
+      coreAnimations.every(
+        (call) => typeof call.options !== 'object' || (call.options.delay ?? 0) === 0,
+      ),
+    ).toBe(true);
+  });
+
   it('renders localized digit glyphs for non-Latin numbering systems', async () => {
     fixture.componentRef.setInput('locales', 'ar-EG');
     fixture.componentRef.setInput('value', 12);
