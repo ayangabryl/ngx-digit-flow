@@ -67,7 +67,7 @@ Works with Claude Code and any agent that supports the [Agent Skills](https://an
 | `transformTiming`         | `DigitFlowTiming`                       | `duration + flipEasing` | Full WAAPI timing for layout/FLIP animations. Overrides `duration` and `flipEasing`.  |
 | `spinTiming`              | `DigitFlowTiming`                       | `transformTiming`       | Full WAAPI timing for digit spin animations. Falls back to `transformTiming`.         |
 | `opacityTiming`           | `DigitFlowTiming`                       | `opacityDuration`       | Full WAAPI timing for fade animations.                                                |
-| `trend`                   | `number \| (oldValue, value) => number` | auto                    | Controls reel direction: `1`, `-1`, `0`, or custom                                    |
+| `trend`                   | `number \| (oldValue, value) => number` | auto                    | Controls digit path: `1` counts up, `-1` counts down, `0` per-digit local, or custom  |
 | `continuous`              | `boolean`                               | `false`                 | Visually ticks through intermediate values by looping unchanged lower-place digits    |
 | `digits`                  | `Record<number, { max?: number }>`      | `{}`                    | Configure digit reel ranges by decimal position                                       |
 | `respectMotionPreference` | `boolean`                               | `true`                  | Disable animations when the user prefers reduced motion                               |
@@ -112,7 +112,7 @@ Works with Claude Code and any agent that supports the [Agent Skills](https://an
 <ngx-digit-flow [value]="12345" locales="ar-EG" />
 ```
 
-**Forced trend direction**
+**Forced digit path**
 
 ```html
 <ngx-digit-flow [value]="value()" [trend]="-1" />

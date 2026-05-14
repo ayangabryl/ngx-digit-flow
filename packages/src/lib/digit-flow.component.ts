@@ -77,8 +77,8 @@ export class DigitFlowComponent {
   /** CSS easing for the FLIP layout animation (horizontal shift when digit count changes). */
   flipEasing = input<DigitFlowEasing | undefined>(undefined);
   /**
-   * Controls digit direction. Use +1 to force upward reels, -1 for downward reels,
-   * 0 for per-digit shortest direction, or a function for custom trend logic.
+   * Controls the digit path. Use +1 to count up through the reel, -1 to count down,
+   * 0 for per-digit local direction, or a function for custom trend logic.
    */
   trend = input<DigitFlowTrend | undefined>(undefined);
 
@@ -480,7 +480,24 @@ export class DigitFlowComponent {
     return (
       canAnimateDigitFlow({ respectMotionPreference: this.respectMotionPreference() }) &&
       this.animated() &&
-      host.ownerDocument.visibilityState === 'visible'
+      host.ownerDocument.visibilityState === 'visible' &&
+      this.isHostNearViewport(host)
+    );
+  }
+
+  private isHostNearViewport(host: HTMLElement): boolean {
+    const rect = host.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return false;
+
+    const win = host.ownerDocument.defaultView;
+    if (!win) return true;
+
+    const margin = 240;
+    return (
+      rect.bottom >= -margin &&
+      rect.right >= -margin &&
+      rect.top <= win.innerHeight + margin &&
+      rect.left <= win.innerWidth + margin
     );
   }
 

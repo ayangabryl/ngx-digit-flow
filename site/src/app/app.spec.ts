@@ -21,7 +21,9 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.wordmark')?.textContent).toContain('ngx-digit-flow');
-    expect([...compiled.querySelectorAll('.nav-link')].map(link => link.textContent?.trim()))
-      .toEqual(['demos', 'docs', 'GitHub\u00a0↗']);
+    expect(
+      [...compiled.querySelectorAll('.nav-link')].map((link) => link.textContent?.trim()),
+    ).toEqual(['demos', 'docs', 'GitHub 13']);
+    expect(compiled.querySelector('.github-mark')).toBeTruthy();
   });
 });
