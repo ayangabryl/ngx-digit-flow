@@ -101,17 +101,17 @@ const INPUTS = [
   // ── Animation style ──────────────────────────────────────────────────────
   {
     name: 'spinEasing',
-    type: 'string',
+    type: 'DigitFlowEasing',
     required: false,
     default: 'spring',
-    desc: 'CSS easing for the digit spin — each digit scrolls vertically on a 0-9 reel. Defaults to a damped spring.',
+    desc: 'CSS easing for the digit spin — accepts spring, default, overshoot, or any CSS easing string.',
   },
   {
     name: 'flipEasing',
-    type: 'string',
+    type: 'DigitFlowEasing',
     required: false,
     default: 'spring',
-    desc: 'CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10). Defaults to the same damped spring as spinEasing.',
+    desc: 'CSS easing for FLIP layout motion — accepts the same named presets and raw CSS easing strings as spinEasing.',
   },
   {
     name: 'trend',

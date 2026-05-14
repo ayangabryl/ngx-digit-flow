@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {
+  DigitFlowEasing,
   DigitFlowDigits,
   DigitFlowTiming,
   DigitFlowTrend,
@@ -35,6 +36,12 @@ const SPIN_EASING =
   '.965,.968,.971,.973,.976,.978,.98,.981,.983,.984,.986,.987,.988,.989,.99,.991,.992,' +
   '.992,.993,.994,.994,.995,.995,.996,.996,.9963,.9967,.9969,.9972,.9975,.9977,.9979,' +
   '.9981,.9982,.9984,.9985,.9987,.9988,.9989,1)';
+
+const EASING_PRESETS: Record<string, string> = {
+  default: SPIN_EASING,
+  spring: SPIN_EASING,
+  overshoot: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+};
 
 @Component({
   selector: 'ngx-digit-flow',
@@ -66,9 +73,9 @@ export class DigitFlowComponent {
 
   // ── Animation style inputs ────────────────────────────────────────────────
   /** CSS easing for the digit spin (the vertical reel). Defaults to a damped spring curve. */
-  spinEasing = input<string | undefined>(undefined);
+  spinEasing = input<DigitFlowEasing | undefined>(undefined);
   /** CSS easing for the FLIP layout animation (horizontal shift when digit count changes). */
-  flipEasing = input<string | undefined>(undefined);
+  flipEasing = input<DigitFlowEasing | undefined>(undefined);
   /**
    * Controls digit direction. Use +1 to force upward reels, -1 for downward reels,
    * 0 for per-digit shortest direction, or a function for custom trend logic.
@@ -112,8 +119,8 @@ export class DigitFlowComponent {
     return {
       duration,
       opacityDuration: this.opacityDuration() ?? 450,
-      spinEasing: this.spinEasing() ?? SPIN_EASING,
-      flipEasing: this.flipEasing() ?? SPIN_EASING,
+      spinEasing: this.resolveEasing(this.spinEasing()),
+      flipEasing: this.resolveEasing(this.flipEasing()),
       transformTiming: this.transformTiming(),
       spinTiming: this.spinTiming(),
       opacityTiming: this.opacityTiming(),
@@ -484,6 +491,10 @@ export class DigitFlowComponent {
       this.animated() &&
       host.ownerDocument.visibilityState === 'visible'
     );
+  }
+
+  private resolveEasing(easing: DigitFlowEasing | undefined): string {
+    return easing ? (EASING_PRESETS[easing] ?? easing) : SPIN_EASING;
   }
 
   private getContinuousStartPos(): number | undefined {

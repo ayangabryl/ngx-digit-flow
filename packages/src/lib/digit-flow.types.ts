@@ -23,6 +23,8 @@ export type DigitFlowTrend = number | ((oldValue: number, value: number) => numb
 
 export type DigitFlowTiming = Omit<KeyframeAnimationOptions, 'composite'>;
 
+export type DigitFlowEasing = 'default' | 'spring' | 'overshoot' | (string & {});
+
 export interface DigitFlowDigitConfig {
   max?: number;
 }

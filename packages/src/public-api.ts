@@ -5,6 +5,7 @@ export type { DigitFlowCapabilityOptions } from './lib/capabilities';
 export type {
   DigitFlowDigitConfig,
   DigitFlowDigits,
+  DigitFlowEasing,
   DigitFlowTiming,
   DigitFlowTrend,
   FormattedNumber,
