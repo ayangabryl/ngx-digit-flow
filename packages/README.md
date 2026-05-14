@@ -64,9 +64,9 @@ Works with Claude Code and any agent that supports the [Agent Skills](https://an
 | `suffix` | `string` | `''` | Text appended after the number |
 | `animated` | `boolean` | `true` | Set `false` to disable all animation |
 | `duration` | `number` | `900` | Spin + FLIP animation duration in ms |
-| `opacityDuration` | `number` | `150` | Fade duration for appearing/disappearing elements |
+| `opacityDuration` | `number` | `duration / 2` | Fade duration for appearing/disappearing elements |
 | `spinEasing` | `string` | spring | CSS easing for the digit spin — each digit scrolls vertically on a 0-9 reel. Defaults to a 100-point damped spring. |
-| `flipEasing` | `string` | ease-out | CSS easing for the FLIP animation — existing digits slide horizontally when the digit count changes (e.g. 9→10). |
+| `flipEasing` | `string` | spring | CSS easing for the FLIP animation — existing digits slide horizontally when the digit count changes (e.g. 9→10). |
 | `transformTiming` | `DigitFlowTiming` | `duration + flipEasing` | Full WAAPI timing for layout/FLIP animations. Overrides `duration` and `flipEasing`. |
 | `spinTiming` | `DigitFlowTiming` | `transformTiming` | Full WAAPI timing for digit spin animations. Falls back to `transformTiming`. |
 | `opacityTiming` | `DigitFlowTiming` | `opacityDuration` | Full WAAPI timing for fade animations. |
@@ -77,7 +77,6 @@ Works with Claude Code and any agent that supports the [Agent Skills](https://an
 | `stagger` | `number` | `0` | Delay in ms between element animations |
 | `colorOnIncrease` | `string` | `undefined` | CSS color flashed when value increases |
 | `colorOnDecrease` | `string` | `undefined` | CSS color flashed when value decreases |
-| `spin3d` | `boolean` | `false` | 3D cylinder perspective on the digit reel — digits tilt on the X-axis as they spin. Tune via `--df-3d-angle` and `--df-3d-perspective` CSS properties. |
 
 ### Outputs
 

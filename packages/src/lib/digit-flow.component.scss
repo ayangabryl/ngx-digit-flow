@@ -148,29 +148,3 @@ ngx-digit-flow[data-animated='false'] .df-literal {
   animation: none !important;
 }
 
-// ── 3D Spin ───────────────────────────────────────────────────────────────────
-// When spin3d is active, digits render as a perspective cylinder instead of
-// a flat reel. Each digit num rotates around the X-axis proportional to how
-// far it is from the current position (--_df-offset, range −5 to +5).
-//
-// --df-3d-angle controls the tilt per offset unit. 5deg × 5 = ±25deg max lean.
-// --df-3d-perspective controls the vanishing-point distance.
-
-.df-number--3d .df-digit {
-  --df-3d-perspective: 180px;
-  --df-3d-angle:       5deg;
-  perspective: var(--df-3d-perspective);
-}
-
-.df-number--3d .df-digit__num {
-  transform:
-    rotateX(calc(var(--_df-offset) * var(--df-3d-angle) * -1))
-    translateY(var(--_df-y));
-}
-
-.df-number--3d .df-digit__num[inert] {
-  transform:
-    translateX(-50%)
-    rotateX(calc(var(--_df-offset) * var(--df-3d-angle) * -1))
-    translateY(var(--_df-y));
-}

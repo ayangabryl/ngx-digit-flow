@@ -28,13 +28,13 @@ const INPUTS = [
   { name: 'animated',        type: 'boolean',                             required: false, default: 'true',       desc: 'Enable or disable all digit animations' },
   // ── Timing ───────────────────────────────────────────────────────────────
   { name: 'duration',        type: 'number',                              required: false, default: '900',        desc: 'Spin + FLIP animation duration in ms.' },
-  { name: 'opacityDuration', type: 'number',                              required: false, default: '150',        desc: 'Fade in/out duration in ms for appearing/disappearing elements.' },
+  { name: 'opacityDuration', type: 'number',                              required: false, default: 'duration / 2', desc: 'Fade in/out duration in ms for appearing/disappearing elements.' },
   { name: 'transformTiming', type: 'DigitFlowTiming',                     required: false, default: 'duration+flipEasing', desc: 'Full WAAPI timing for the FLIP layout animation. Overrides duration and flipEasing.' },
   { name: 'spinTiming',      type: 'DigitFlowTiming',                     required: false, default: 'transformTiming', desc: 'Full WAAPI timing for the digit spin animation. Falls back to transformTiming.' },
   { name: 'opacityTiming',   type: 'DigitFlowTiming',                     required: false, default: 'opacityDuration', desc: 'Full WAAPI timing for fade animations.' },
   // ── Animation style ──────────────────────────────────────────────────────
   { name: 'spinEasing',      type: 'string',                              required: false, default: 'spring',     desc: 'CSS easing for the digit spin — each digit scrolls vertically on a 0-9 reel. Defaults to a damped spring.' },
-  { name: 'flipEasing',      type: 'string',                              required: false, default: 'ease-out',   desc: 'CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10).' },
+  { name: 'flipEasing',      type: 'string',                              required: false, default: 'spring',     desc: 'CSS easing for the FLIP animation — digits slide horizontally when the digit count changes (e.g. 9→10). Defaults to the same damped spring as spinEasing.' },
   { name: 'trend',           type: 'number | (oldValue,value)=>number',    required: false, default: 'auto',       desc: 'Controls reel direction. Use 1, -1, 0, or a custom function.' },
   // ── Features ─────────────────────────────────────────────────────────────
   { name: 'continuous',      type: 'boolean',                             required: false, default: 'false',      desc: 'Ticker mode: animate through every intermediate integer value (max 15 steps).' },
@@ -43,7 +43,6 @@ const INPUTS = [
   { name: 'stagger',         type: 'number',                              required: false, default: '0',          desc: 'Milliseconds of delay between each element\'s animation. Creates a cascade effect.' },
   { name: 'colorOnIncrease', type: 'string',                              required: false, default: 'undefined',  desc: 'CSS color flashed on the host when value increases (e.g. "#4ade80").' },
   { name: 'colorOnDecrease', type: 'string',                              required: false, default: 'undefined',  desc: 'CSS color flashed on the host when value decreases (e.g. "#f87171").' },
-  { name: 'spin3d',          type: 'boolean',                             required: false, default: 'false',      desc: 'Adds a 3D cylinder effect — digits tilt on the X-axis while spinning. Tune via --df-3d-angle and --df-3d-perspective CSS properties.' },
 ];
 
 const OUTPUTS = [

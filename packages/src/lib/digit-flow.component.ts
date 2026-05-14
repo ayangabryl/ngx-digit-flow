@@ -98,8 +98,6 @@ export class DigitFlowComponent {
   colorOnIncrease = input<string | undefined>(undefined);
   /** CSS color applied to the host when value decreases (fades back to normal). */
   colorOnDecrease = input<string | undefined>(undefined);
-  /** Adds a 3D cylinder perspective effect to spinning digits. */
-  spin3d          = input<boolean>(false);
 
   // ── Outputs ───────────────────────────────────────────────────────────────
   animationsStart  = output<void>();
@@ -112,15 +110,18 @@ export class DigitFlowComponent {
     new Intl.NumberFormat(this.locales(), this.format()).format(this.value())
   );
 
-  protected effectiveSettings = computed(() => ({
-    duration:        this.duration()        ?? 900,
-    opacityDuration: this.opacityDuration() ?? 150,
-    spinEasing:      this.spinEasing()      ?? SPIN_EASING,
-    flipEasing:      this.flipEasing()      ?? FLIP_EASING,
-    transformTiming: this.transformTiming(),
-    spinTiming:      this.spinTiming(),
-    opacityTiming:   this.opacityTiming(),
-  }));
+  protected effectiveSettings = computed(() => {
+    const duration = this.duration() ?? 900;
+    return {
+      duration,
+      opacityDuration: this.opacityDuration() ?? Math.round(duration / 2),
+      spinEasing:      this.spinEasing()      ?? SPIN_EASING,
+      flipEasing:      this.flipEasing()      ?? SPIN_EASING,
+      transformTiming: this.transformTiming(),
+      spinTiming:      this.spinTiming(),
+      opacityTiming:   this.opacityTiming(),
+    };
+  });
 
   private platformId = inject(PLATFORM_ID);
   private elRef      = inject(ElementRef<HTMLElement>);
@@ -146,6 +147,9 @@ export class DigitFlowComponent {
   private _continuousQueue: FormattedNumber[] = [];
   private _continuousValues: number[]         = [];
   private _continuousStepDuration             = 0;
+
+  // Container FLIP — captures container position before each re-render
+  private prevContainerRect: DOMRect | null = null;
 
   // Per-batch overrides (cleared after each runAnimations call)
   private _targetDisplayValue: number | null = null;
@@ -270,6 +274,9 @@ export class DigitFlowComponent {
         }
       });
     });
+
+    const numEl = (this.elRef.nativeElement as HTMLElement).querySelector<HTMLElement>('.df-number');
+    this.prevContainerRect = numEl ? numEl.getBoundingClientRect() : null;
 
     host.querySelectorAll<HTMLElement>('[data-key]').forEach(el => {
       const key = el.getAttribute('data-key')!;
@@ -398,6 +405,20 @@ export class DigitFlowComponent {
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
     });
 
+    // Container FLIP — prevents the number from jumping position when digit count changes
+    const numEl = host.querySelector<HTMLElement>('.df-number');
+    if (numEl && this.prevContainerRect && d > 0) {
+      const newContainerRect = numEl.getBoundingClientRect();
+      const cdx = this.prevContainerRect.left - newContainerRect.left;
+      if (Math.abs(cdx) > 0.5) {
+        batch.push(numEl.animate(
+          [{ transform: `translateX(${cdx}px)` }, { transform: 'none' }],
+          { duration: d, easing: settings.flipEasing, fill: 'none', composite: 'accumulate' }
+        ));
+      }
+    }
+    this.prevContainerRect = null;
+
     // Color animation on trend change — only fires on non-continuous steps to avoid
     // blocking the continuous chain (each step would otherwise add a 300ms+ animation
     // to the batch, multiplying total duration by the step count).
@@ -407,12 +428,12 @@ export class DigitFlowComponent {
       if (trend > 0 && colorIncrease) {
         batch.push(host.animate(
           [{ color: colorIncrease }, { color: '' }],
-          { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
+          { duration: Math.max(d, 400), easing: 'ease-out', fill: 'none' }
         ));
       } else if (trend < 0 && colorDecrease) {
         batch.push(host.animate(
           [{ color: colorDecrease }, { color: '' }],
-          { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
+          { duration: Math.max(d, 400), easing: 'ease-out', fill: 'none' }
         ));
       }
     }
