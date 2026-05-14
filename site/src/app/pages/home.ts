@@ -77,8 +77,8 @@ const STEPS: HeroStep[] = [
             <code>npm install ngx-digit-flow</code>
           </div>
           <div class="install install--skill">
-            <span class="install-tag">AI skill</span>
-            <code class="install-code--wrap">npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow</code>
+            <span class="install-tag">Skill</span>
+            <code>npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow</code>
           </div>
         </div>
 
@@ -175,7 +175,7 @@ const STEPS: HeroStep[] = [
       flex-direction: column;
       gap: 8px;
       width: 100%;
-      max-width: 480px;
+      max-width: 640px;
     }
 
     .install {
@@ -191,7 +191,6 @@ const STEPS: HeroStep[] = [
 
     .install--skill {
       border-style: dashed;
-      align-items: flex-start;
     }
 
     .install-tag {
@@ -207,15 +206,10 @@ const STEPS: HeroStep[] = [
 
     .install code {
       font-family: var(--mono);
-      font-size: 13px;
+      font-size: 12px;
       color: var(--ink);
       user-select: all;
-    }
-
-    .install-code--wrap {
-      white-space: normal;
-      word-break: break-all;
-      font-size: 12px;
+      white-space: nowrap;
     }
 
     .cta {
