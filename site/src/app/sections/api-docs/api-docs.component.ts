@@ -19,14 +19,26 @@ export class MyComponent {
 }`;
 
 const INPUTS = [
-  { name: 'value',          type: 'number',                    required: true,  default: '—',     desc: 'The number to display' },
-  { name: 'format',         type: 'Intl.NumberFormatOptions',  required: false, default: '{}',    desc: 'Intl.NumberFormat options (currency, percent, compact…)' },
-  { name: 'locales',        type: 'string | string[]',         required: false, default: 'undefined', desc: 'BCP 47 locale(s) for number formatting' },
-  { name: 'prefix',         type: 'string',                    required: false, default: "''",    desc: 'Custom text prepended before the number' },
-  { name: 'suffix',         type: 'string',                    required: false, default: "''",    desc: 'Custom text appended after the number' },
-  { name: 'animated',       type: 'boolean',                   required: false, default: 'true',  desc: 'Enable or disable digit animations' },
-  { name: 'duration',       type: 'number',                    required: false, default: '900',   desc: 'Animation duration in ms (spin + position)' },
-  { name: 'opacityDuration',type: 'number',                    required: false, default: '450',   desc: 'Fade in/out duration in ms' },
+  // ── Core ─────────────────────────────────────────────────────────────────
+  { name: 'value',           type: 'number',                              required: true,  default: '—',          desc: 'The number to display and animate to' },
+  { name: 'format',          type: 'Intl.NumberFormatOptions',            required: false, default: '{}',         desc: 'Intl.NumberFormat options (currency, percent, compact…)' },
+  { name: 'locales',         type: 'string | string[]',                   required: false, default: 'undefined',  desc: 'BCP 47 locale(s) for number formatting and RTL direction' },
+  { name: 'prefix',          type: 'string',                              required: false, default: "''",         desc: 'Custom text prepended before the number' },
+  { name: 'suffix',          type: 'string',                              required: false, default: "''",         desc: 'Custom text appended after the number' },
+  { name: 'animated',        type: 'boolean',                             required: false, default: 'true',       desc: 'Enable or disable all digit animations' },
+  // ── Timing ───────────────────────────────────────────────────────────────
+  { name: 'duration',        type: 'number',                              required: false, default: 'variant',    desc: 'Spin + FLIP animation duration in ms. Overrides variant duration.' },
+  { name: 'opacityDuration', type: 'number',                              required: false, default: '150',        desc: 'Fade in/out duration in ms for appearing/disappearing elements' },
+  // ── Style presets ────────────────────────────────────────────────────────
+  { name: 'variant',         type: "'default'|'gaming'|'metrics'|'finance'|'smooth'", required: false, default: "'default'", desc: 'Pre-configured animation preset. Sets duration and easing as a group.' },
+  { name: 'spinEasing',      type: 'string',                              required: false, default: 'variant',    desc: 'CSS easing for digit spin. Overrides variant\'s spin easing.' },
+  { name: 'flipEasing',      type: 'string',                              required: false, default: 'variant',    desc: 'CSS easing for FLIP layout animation. Overrides variant\'s flip easing.' },
+  // ── Features ─────────────────────────────────────────────────────────────
+  { name: 'continuous',      type: 'boolean',                             required: false, default: 'false',      desc: 'Ticker mode: animate through every intermediate integer value (max 15 steps).' },
+  { name: 'stagger',         type: 'number',                              required: false, default: '0',          desc: 'Milliseconds of delay between each element\'s animation. Creates a cascade effect.' },
+  { name: 'colorOnIncrease', type: 'string',                              required: false, default: 'undefined',  desc: 'CSS color flashed on the host when value increases (e.g. "#4ade80").' },
+  { name: 'colorOnDecrease', type: 'string',                              required: false, default: 'undefined',  desc: 'CSS color flashed on the host when value decreases (e.g. "#f87171").' },
+  { name: 'spin3d',          type: 'boolean',                             required: false, default: 'false',      desc: 'Enables a 3D cylinder perspective effect while digits spin.' },
 ];
 
 const OUTPUTS = [

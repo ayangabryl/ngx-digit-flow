@@ -15,7 +15,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { EMPTY_FORMATTED, FormattedNumber } from './digit-flow.types';
+import { EMPTY_FORMATTED, FormattedNumber, DigitFlowVariant } from './digit-flow.types';
 import { formatToData } from './formatter';
 
 // ── Easings ──────────────────────────────────────────────────────────────────
@@ -31,6 +31,28 @@ const SPIN_EASING =
 
 const FLIP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
+// Overshoot spring for gaming variant
+const GAMING_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+// ── Variant Presets ───────────────────────────────────────────────────────────
+
+interface VariantPreset {
+  duration: number;
+  spinEasing: string;
+  flipEasing: string;
+}
+
+const VARIANT_PRESETS: Record<DigitFlowVariant, VariantPreset> = {
+  default: { duration: 900,  spinEasing: SPIN_EASING,   flipEasing: FLIP_EASING },
+  gaming:  { duration: 280,  spinEasing: GAMING_EASING, flipEasing: GAMING_EASING },
+  metrics: { duration: 800,  spinEasing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', flipEasing: FLIP_EASING },
+  finance: { duration: 1400, spinEasing: SPIN_EASING,   flipEasing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)' },
+  smooth:  { duration: 750,  spinEasing: 'cubic-bezier(0.4, 0, 0.2, 1)', flipEasing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+};
+
+// Max intermediate steps for continuous mode
+const MAX_CONTINUOUS_STEPS = 15;
+
 @Component({
   selector: 'ngx-digit-flow',
   standalone: true,
@@ -41,49 +63,100 @@ const FLIP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
   host: { '[attr.data-animated]': 'animated()' },
 })
 export class DigitFlowComponent {
+  // ── Core inputs ──────────────────────────────────────────────────────────
   value           = input.required<number>();
   format          = input<Intl.NumberFormatOptions>({});
   locales         = input<string | string[] | undefined>(undefined);
   prefix          = input<string>('');
   suffix          = input<string>('');
   animated        = input<boolean>(true);
-  duration        = input<number>(900);
-  opacityDuration = input<number>(150);
 
+  // ── Timing inputs — undefined means "inherit from variant" ───────────────
+  duration        = input<number | undefined>(undefined);
+  opacityDuration = input<number | undefined>(undefined);
+
+  // ── Animation style inputs ────────────────────────────────────────────────
+  /** Pre-configured preset; overrides default duration/easing. Individual inputs take priority. */
+  variant         = input<DigitFlowVariant>('default');
+  /** Custom easing for the digit spin. Overrides variant's spinEasing. */
+  spinEasing      = input<string | undefined>(undefined);
+  /** Custom easing for the FLIP (layout shift) animation. Overrides variant's flipEasing. */
+  flipEasing      = input<string | undefined>(undefined);
+
+  // ── Feature inputs ────────────────────────────────────────────────────────
+  /**
+   * Animate through all intermediate integer values between old and new (like a ticker).
+   * Best for small delta changes (< 50). Capped at 15 intermediate steps.
+   */
+  continuous      = input<boolean>(false);
+  /**
+   * Milliseconds of delay added between each displayed element's animation start.
+   * Creates a cascading left-to-right reveal effect.
+   */
+  stagger         = input<number>(0);
+  /** CSS color applied to the host when value increases (fades back to normal). */
+  colorOnIncrease = input<string | undefined>(undefined);
+  /** CSS color applied to the host when value decreases (fades back to normal). */
+  colorOnDecrease = input<string | undefined>(undefined);
+  /** Adds a 3D cylinder perspective effect to spinning digits. */
+  spin3d          = input<boolean>(false);
+
+  // ── Outputs ───────────────────────────────────────────────────────────────
   animationsStart  = output<void>();
   animationsFinish = output<void>();
 
   protected data    = signal<FormattedNumber>(EMPTY_FORMATTED);
-  // 0–9: no guard reel needed — CSS mod() handles infinite wrapping
   protected numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   protected formattedPlainText = computed(() =>
     new Intl.NumberFormat(this.locales(), this.format()).format(this.value())
   );
 
-  private platformId      = inject(PLATFORM_ID);
-  private elRef           = inject(ElementRef<HTMLElement>);
-  private destroyRef      = inject(DestroyRef);
+  // Resolves variant + individual overrides into effective animation settings
+  protected effectiveSettings = computed(() => {
+    const preset = VARIANT_PRESETS[this.variant()] ?? VARIANT_PRESETS['default'];
+    return {
+      duration:        this.duration()        ?? preset.duration,
+      opacityDuration: this.opacityDuration() ?? 150,
+      spinEasing:      this.spinEasing()      ?? preset.spinEasing,
+      flipEasing:      this.flipEasing()      ?? preset.flipEasing,
+    };
+  });
+
+  private platformId = inject(PLATFORM_ID);
+  private elRef      = inject(ElementRef<HTMLElement>);
+  private destroyRef = inject(DestroyRef);
 
   // Snapshot state — captured BEFORE each re-render
-  private prevRects       = new Map<string, DOMRect>();
-  private prevInnerHTML   = new Map<string, string>();
-  private prevDigitD      = new Map<string, string>(); // --_df-d at snapshot
-  private prevDigitCurrent = new Map<string, string>(); // --_df-current at snapshot
-  private prevDigitValues = new Map<string, number>();  // digit value before update
-  private prevNumericValue = 0;                          // full number before update
+  private prevRects         = new Map<string, DOMRect>();
+  private prevInnerHTML     = new Map<string, string>();
+  private prevDigitD        = new Map<string, string>();
+  private prevDigitCurrent  = new Map<string, string>();
+  private prevDigitValues   = new Map<string, number>();
+  private prevNumericValue  = 0;
 
   // Animation bookkeeping
-  private animCount      = 0;
-  private _pending       = false;
-  private _destroyed     = false;
+  private animCount  = 0;
+  private _pending   = false;
+  private _destroyed = false;
   private _live: Animation[] = [];
-  // Per-digit spin animation ref-count for .is-spinning lifecycle
-  private _spinCount     = new Map<HTMLElement, number>();
+  private _spinCount = new Map<HTMLElement, number>();
+
+  // Continuous mode state
+  private _continuousQueue: FormattedNumber[] = [];
+  private _continuousValues: number[]         = [];
+  private _continuousActive                   = false;
+  private _continuousStepDuration             = 0;
+
+  // Per-batch overrides (cleared after each runAnimations call)
+  private _targetDisplayValue: number | null = null;
+  private _durationOverride: number | null   = null;
 
   constructor() {
     this.destroyRef.onDestroy(() => {
       this._destroyed = true;
+      this._continuousQueue = [];
+      this._continuousValues = [];
       for (const a of this._live) {
         try { a.cancel(); } catch { /* AbortError is normal */ }
       }
@@ -101,8 +174,34 @@ export class DigitFlowComponent {
         this.snapshot();
       }
 
-      untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
+      // Cancel any in-flight continuous queue when a new value arrives
+      this._continuousQueue  = [];
+      this._continuousValues = [];
+      this._continuousActive = false;
 
+      if (isPlatformBrowser(this.platformId) && this.animated() && this.continuous()) {
+        const from  = this.prevNumericValue;
+        const diff  = v - from;
+        const steps = Math.min(Math.abs(diff), MAX_CONTINUOUS_STEPS);
+
+        if (steps > 1) {
+          const totalDur = this.effectiveSettings().duration;
+          this._continuousStepDuration = Math.max(80, totalDur / steps);
+
+          for (let i = 1; i <= steps; i++) {
+            const iv = i === steps ? v : Math.round(from + diff * (i / steps));
+            this._continuousQueue.push(formatToData(iv, fmt, loc, pfx, sfx));
+            this._continuousValues.push(iv);
+          }
+
+          // Process first step (snapshot was just taken above)
+          this.processContinuousQueue(true);
+          return;
+        }
+      }
+
+      // Normal mode
+      untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
       if (isPlatformBrowser(this.platformId) && this.animated()) {
         this._pending = true;
       }
@@ -120,8 +219,31 @@ export class DigitFlowComponent {
     }
   }
 
+  // ─── Continuous queue ─────────────────────────────────────────────────────
+
+  private processContinuousQueue(isFirst = false): void {
+    if (this._continuousQueue.length === 0) {
+      this._continuousActive = false;
+      return;
+    }
+
+    const nextFormatted = this._continuousQueue.shift()!;
+    const nextValue     = this._continuousValues.shift()!;
+
+    if (!isFirst) {
+      // Subsequent steps: snapshot NOW (DOM settled from previous step animation)
+      this.snapshot();
+    }
+
+    this._continuousActive      = true;
+    this._targetDisplayValue    = nextValue;
+    this._durationOverride      = this._continuousStepDuration;
+
+    untracked(() => this.data.set(nextFormatted));
+    this._pending = true;
+  }
+
   // ─── Snapshot ─────────────────────────────────────────────────────────────
-  // Called BEFORE Angular re-renders so we capture current DOM positions/values.
 
   private snapshot(): void {
     const host = this.elRef.nativeElement as HTMLElement;
@@ -131,11 +253,6 @@ export class DigitFlowComponent {
     this.prevDigitCurrent.clear();
     this.prevDigitValues.clear();
 
-    // NOTE: prevNumericValue is intentionally NOT updated here.
-    // It holds the last value that was animated TO (set at end of runAnimations).
-    // Reading this.value() here would give the NEW value (effect already read it).
-
-    // Capture old digit values from current data signal (before it's updated)
     untracked(() => {
       [...this.data().integer, ...this.data().fraction].forEach(p => {
         if (p.type === 'integer' || p.type === 'fraction') {
@@ -160,23 +277,32 @@ export class DigitFlowComponent {
 
   private runAnimations(): void {
     if (this._destroyed) return;
-    const host    = this.elRef.nativeElement as HTMLElement;
-    const dur     = this.duration();
-    const opDur   = this.opacityDuration();
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const d       = reduced ? 0 : dur;
-    const od      = reduced ? 0 : opDur;
 
-    // Trend: +1 if number went up, -1 if down, 0 if same.
-    // All digits scroll in this direction (matching an odometer).
-    const newNumericValue = untracked(() => this.value());
-    const trend = Math.sign(newNumericValue - this.prevNumericValue);
+    const host      = this.elRef.nativeElement as HTMLElement;
+    const settings  = this.effectiveSettings();
+    const reduced   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Per-step override for continuous mode
+    const rawDur = this._durationOverride !== null ? this._durationOverride : settings.duration;
+    this._durationOverride = null;
+
+    const d  = reduced ? 0 : rawDur;
+    const od = reduced ? 0 : settings.opacityDuration;
+
+    // Trend: determines scroll direction and color animation
+    const newNumericValue = this._targetDisplayValue !== null
+      ? this._targetDisplayValue
+      : untracked(() => this.value());
+    this._targetDisplayValue = null;
+
+    const trend    = Math.sign(newNumericValue - this.prevNumericValue);
+    const staggerMs = this.stagger();
 
     const spinOpts: KeyframeAnimationOptions = {
-      duration: d, easing: SPIN_EASING, fill: 'none', composite: 'accumulate',
+      duration: d, easing: settings.spinEasing, fill: 'none', composite: 'accumulate',
     };
     const flipOpts: KeyframeAnimationOptions = {
-      duration: d, easing: FLIP_EASING, fill: 'none', composite: 'accumulate',
+      duration: d, easing: settings.flipEasing, fill: 'none', composite: 'accumulate',
     };
     const fadeOpts: KeyframeAnimationOptions = {
       duration: od, easing: 'ease-out', fill: 'both', composite: 'replace',
@@ -184,26 +310,28 @@ export class DigitFlowComponent {
 
     const batch: Animation[] = [];
     const newKeys = new Set<string>();
+    let elemIdx = 0;
 
     host.querySelectorAll<HTMLElement>('[data-key]').forEach(el => {
-      const key     = el.getAttribute('data-key')!;
+      const key      = el.getAttribute('data-key')!;
       newKeys.add(key);
       const newRect  = el.getBoundingClientRect();
       const prevRect = this.prevRects.get(key);
+      const staggerDelay = staggerMs > 0 ? elemIdx * staggerMs : 0;
+      elemIdx++;
 
       if (el.classList.contains('df-digit')) {
         const digit     = this.getDigitValue(key);
         const fromDigit = this.prevDigitValues.has(key)
-                            ? this.prevDigitValues.get(key)!
-                            : digit;
+          ? this.prevDigitValues.get(key)!
+          : digit;
         const delta = this.getTrendDelta(fromDigit, digit, trend);
 
         if (delta !== 0 && d > 0) {
-          // Add .is-spinning so CSS shows all digit__num spans as abs-positioned
           this.incrementSpin(el);
           const a = el.animate(
             { '--_df-d': [-delta, 0] } as PropertyIndexedKeyframes,
-            spinOpts
+            { ...spinOpts, delay: staggerDelay }
           );
           batch.push(a);
           a.finished
@@ -211,13 +339,12 @@ export class DigitFlowComponent {
             .catch(() => this.decrementSpin(el));
         }
 
-        // FLIP: horizontal shift when digit count changes (e.g. 99 → 100)
         if (prevRect) {
           const dx = prevRect.left - newRect.left;
           if (Math.abs(dx) > 0.5) {
             batch.push(el.animate(
               [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
-              flipOpts
+              { ...flipOpts, delay: staggerDelay }
             ));
           }
         } else {
@@ -225,13 +352,12 @@ export class DigitFlowComponent {
         }
 
       } else {
-        // Separator / literal: FLIP or fade in
         if (prevRect) {
           const dx = prevRect.left - newRect.left;
           if (Math.abs(dx) > 0.5) {
             batch.push(el.animate(
               [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
-              flipOpts
+              { ...flipOpts, delay: staggerDelay }
             ));
           }
         } else {
@@ -240,7 +366,7 @@ export class DigitFlowComponent {
       }
     });
 
-    // Ghost exits for removed elements
+    // Ghost exits
     this.prevRects.forEach((rect, key) => {
       if (newKeys.has(key)) return;
       const ghost = this.buildGhost(key, rect, host);
@@ -250,10 +376,34 @@ export class DigitFlowComponent {
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
     });
 
-    // Record value we just animated TO — used as "previous" for next run's trend
+    // Color animation on trend change
+    if (d > 0) {
+      const colorIncrease = this.colorOnIncrease();
+      const colorDecrease = this.colorOnDecrease();
+      if (trend > 0 && colorIncrease) {
+        batch.push(host.animate(
+          [{ color: colorIncrease }, { color: '' }],
+          { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
+        ));
+      } else if (trend < 0 && colorDecrease) {
+        batch.push(host.animate(
+          [{ color: colorDecrease }, { color: '' }],
+          { duration: Math.max(od * 4, 300), easing: 'ease-out', fill: 'none' }
+        ));
+      }
+    }
+
     this.prevNumericValue = newNumericValue;
 
-    if (batch.length === 0) return;
+    if (batch.length === 0) {
+      // Still need to continue continuous queue even with no visible animations
+      if (this._continuousQueue.length > 0) {
+        this.processContinuousQueue(false);
+      } else {
+        this._continuousActive = false;
+      }
+      return;
+    }
 
     this._live.push(...batch);
     this.animCount++;
@@ -263,8 +413,15 @@ export class DigitFlowComponent {
       const batchSet = new Set(batch);
       this._live = this._live.filter(a => !batchSet.has(a));
       this.animCount--;
+
       if (this.animCount === 0 && !this._destroyed) {
-        this.animationsFinish.emit();
+        if (this._continuousQueue.length > 0) {
+          // Continue continuous chain
+          this.processContinuousQueue(false);
+        } else {
+          this._continuousActive = false;
+          this.animationsFinish.emit();
+        }
       }
     });
   }
@@ -276,27 +433,15 @@ export class DigitFlowComponent {
     return part ? parseInt(part.value, 10) : 0;
   }
 
-  /**
-   * Trend-aware delta on a 0–(length-1) reel.
-   *
-   * Positive trend → forward scroll (digits count up through 0→9→0…)
-   * Negative trend → backward scroll (digits count down through 0→9→8…)
-   *
-   * Falls back to shortest path when trend === 0 (value unchanged overall).
-   *
-   * Examples (length=10, trend=+1): 8→2 = +4 (8,9,0,1,2)
-   * Examples (length=10, trend=-1): 2→8 = -4 (2,1,0,9,8)
-   */
   private getTrendDelta(from: number, to: number, trend: number): number {
     const length = 10;
     const diff   = to - from;
-    const t      = trend || Math.sign(diff); // fall back to shortest for zero-trend
-    if (t > 0 && to < from) return length - from + to;   // wrap forward: e.g. 8→2 = +4
-    if (t < 0 && to > from) return to - length - from;   // wrap backward: e.g. 2→8 = -4
+    const t      = trend || Math.sign(diff);
+    if (t > 0 && to < from) return length - from + to;
+    if (t < 0 && to > from) return to - length - from;
     return diff;
   }
 
-  // .is-spinning ref-count per digit element
   private incrementSpin(el: HTMLElement): void {
     const c = (this._spinCount.get(el) ?? 0) + 1;
     this._spinCount.set(el, c);
@@ -325,13 +470,10 @@ export class DigitFlowComponent {
     const savedHTML = this.prevInnerHTML.get(key);
     if (savedHTML) {
       ghost.innerHTML = savedHTML;
-      // Restore CSS variable state so digit ghosts show the right digit
       const savedD = this.prevDigitD.get(key);
       const savedC = this.prevDigitCurrent.get(key);
       if (savedD !== undefined) ghost.style.setProperty('--_df-d', savedD);
       if (savedC !== undefined) ghost.style.setProperty('--_df-current', savedC);
-      // Ghost has no .df-digit class, so the CSS rule that hides inert digit__nums
-      // doesn't apply. Explicitly hide them so only the current digit shows.
       ghost.querySelectorAll<HTMLElement>('[inert]').forEach(el => {
         el.style.display = 'none';
       });

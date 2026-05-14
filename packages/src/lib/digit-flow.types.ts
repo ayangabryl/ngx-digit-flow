@@ -17,3 +17,13 @@ export const EMPTY_FORMATTED: FormattedNumber = {
   fraction: [],
   post: [],
 };
+
+/**
+ * Pre-configured animation presets that control duration and easing.
+ * - `default`: 900ms spring (odometer feel)
+ * - `gaming`: 280ms overshoot spring (snappy, energetic)
+ * - `metrics`: 800ms ease-out (smooth dashboard)
+ * - `finance`: 1400ms spring (slow, professional)
+ * - `smooth`: 750ms material ease (clean, modern)
+ */
+export type DigitFlowVariant = 'default' | 'gaming' | 'metrics' | 'finance' | 'smooth';
