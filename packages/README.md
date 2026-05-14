@@ -41,20 +41,50 @@ export class PriceComponent {
 }
 ```
 
-## Why use it?
+## AI skill
 
-- Smooth per-digit odometer animations
-- Works with `Intl.NumberFormatOptions`
-- Supports currency, percentages, compact notation, decimals, prefixes, and suffixes
-- Signals-first Angular API
-- SSR-safe browser checks
-- Respects `prefers-reduced-motion`
-- No animation libraries
+Install the `ngx-digit-flow` skill so your AI assistant knows the full API and can wire it into your components:
+
+```bash
+npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow
+```
+
+Works with Claude Code and any agent that supports the [Agent Skills](https://anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) format.
+
+## API
+
+### Inputs
+
+| Input | Type | Default | Description |
+|---|---|---|---|
+| `value` | `number` | required | The number to display and animate |
+| `format` | `Intl.NumberFormatOptions` | `{}` | Options forwarded to `Intl.NumberFormat` |
+| `locales` | `string \| string[]` | `undefined` | BCP 47 locale string(s), including localized digit glyphs |
+| `prefix` | `string` | `''` | Text prepended before the number |
+| `suffix` | `string` | `''` | Text appended after the number |
+| `animated` | `boolean` | `true` | Set `false` to disable all animation |
+| `duration` | `number` | `variant` | Animation duration in ms |
+| `opacityDuration` | `number` | `150` | Fade duration for appearing/disappearing elements |
+| `variant` | `'default' \| 'gaming' \| 'metrics' \| 'finance' \| 'smooth'` | `'default'` | Pre-configured duration/easing preset |
+| `spinEasing` | `string` | `variant` | CSS easing for digit spin |
+| `flipEasing` | `string` | `variant` | CSS easing for layout transitions |
+| `trend` | `number \| (oldValue, value) => number` | auto | Controls reel direction: `1`, `-1`, `0`, or custom |
+| `continuous` | `boolean` | `false` | Animate through intermediate values, capped at 15 steps |
+| `stagger` | `number` | `0` | Delay in ms between element animations |
+| `colorOnIncrease` | `string` | `undefined` | CSS color flashed when value increases |
+| `colorOnDecrease` | `string` | `undefined` | CSS color flashed when value decreases |
+| `spin3d` | `boolean` | `false` | Adds a subtle 3D cylinder effect to spinning digits |
+
+### Outputs
+
+| Output | Payload | Description |
+|---|---|---|
+| `animationsStart` | `void` | Fires when a batch of animations begins |
+| `animationsFinish` | `void` | Fires when all in-flight animations settle |
 
 ## Examples
 
-### Currency
-
+**Currency**
 ```html
 <ngx-digit-flow
   [value]="revenue()"
@@ -63,8 +93,7 @@ export class PriceComponent {
 />
 ```
 
-### Compact notation
-
+**Compact notation (K / M / B)**
 ```html
 <ngx-digit-flow
   [value]="views()"
@@ -72,8 +101,7 @@ export class PriceComponent {
 />
 ```
 
-### Percentage
-
+**Percentage**
 ```html
 <ngx-digit-flow
   [value]="progress()"
@@ -81,27 +109,36 @@ export class PriceComponent {
 />
 ```
 
-### Counter
+**Localized digits**
+```html
+<ngx-digit-flow
+  [value]="12345"
+  locales="ar-EG"
+/>
+```
 
+**Forced trend direction**
+```html
+<ngx-digit-flow
+  [value]="value()"
+  [trend]="-1"
+/>
+```
+
+**Score counter**
 ```typescript
 score = signal(0);
 ```
-
 ```html
 <ngx-digit-flow [value]="score()" [duration]="500" />
-
-<button type="button" (click)="score.update(value => value - 1)">-</button>
-<button type="button" (click)="score.update(value => value + 1)">+</button>
+<button (click)="score.update(v => v - 1)">-</button>
+<button (click)="score.update(v => v + 1)">+</button>
 ```
 
-### Timer or grouped digits
-
-Use `ngxDigitFlowGroup` when multiple instances should animate together.
-
+**Group directive** (sync multiple instances)
 ```typescript
-import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
+import { DigitFlowGroupDirective } from 'ngx-digit-flow';
 ```
-
 ```html
 <div ngxDigitFlowGroup>
   <ngx-digit-flow [value]="hours" />
@@ -112,48 +149,16 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
 </div>
 ```
 
-## API
-
-### Inputs
-
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `value` | `number` | required | The number to display and animate |
-| `format` | `Intl.NumberFormatOptions` | `{}` | Options forwarded to `Intl.NumberFormat` |
-| `locales` | `string \| string[]` | `undefined` | BCP 47 locale string or list of locale strings |
-| `prefix` | `string` | `''` | Text prepended before the formatted number |
-| `suffix` | `string` | `''` | Text appended after the formatted number |
-| `animated` | `boolean` | `true` | Set to `false` to disable animation |
-| `duration` | `number` | `900` | Digit animation duration in milliseconds |
-| `opacityDuration` | `number` | `150` | Fade duration for appearing or disappearing parts |
-
-### Outputs
-
-| Output | Payload | Description |
-| --- | --- | --- |
-| `animationsStart` | `void` | Fires when an animation batch starts |
-| `animationsFinish` | `void` | Fires when all in-flight animations finish |
-
-## AI assistant setup
-
-Install the `ngx-digit-flow` skill so an AI coding assistant can understand the API and wire it into your Angular components.
-
-```bash
-npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow
-```
-
-Works with Claude Code and any coding agent that supports the Agent Skills format.
-
 ## Browser support
 
-Requires CSS `mod()` and `@property`.
+Requires CSS `mod()` and `@property`: Chrome 125+, Safari 15.4+, Firefox 118+.
 
-- Chrome 125+
-- Safari 15.4+
-- Firefox 118+
+`prefers-reduced-motion` is respected automatically — no extra code needed.
 
-`prefers-reduced-motion` is respected automatically.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

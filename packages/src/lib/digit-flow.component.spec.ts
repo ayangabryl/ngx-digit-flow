@@ -43,6 +43,12 @@ describe('DigitFlowComponent', () => {
       .join('');
   }
 
+  function visibleDigitText(): string {
+    return [...fixture.nativeElement.querySelectorAll('.df-digit')]
+      .map((digit: Element) => digit.querySelector('.df-digit__num:not([inert])')?.textContent ?? '')
+      .join('');
+  }
+
   beforeEach(async () => {
     animateCalls = [];
     holdColorAnimations = false;
@@ -140,5 +146,33 @@ describe('DigitFlowComponent', () => {
     });
 
     expect(fadeInWithDelay).toBe(true);
+  });
+
+  it('renders localized digit glyphs for non-Latin numbering systems', async () => {
+    fixture.componentRef.setInput('locales', 'ar-EG');
+    fixture.componentRef.setInput('value', 12);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(renderedValue()).toBe('١٢');
+    expect(visibleDigitText()).toBe('١٢');
+  });
+
+  it('uses a configured trend override for digit direction', async () => {
+    fixture.componentRef.setInput('value', 2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('trend', -1);
+    fixture.componentRef.setInput('value', 8);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spin = animateCalls.find(call => !Array.isArray(call.keyframes)
+      && Array.isArray(call.keyframes['--_df-d']));
+
+    expect((spin?.keyframes as PropertyIndexedKeyframes)['--_df-d']).toEqual([4, 0]);
   });
 });

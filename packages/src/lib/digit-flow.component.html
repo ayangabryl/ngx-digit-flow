@@ -18,13 +18,13 @@
           Each digit__num sets --n and [inert] so non-current digits are hidden
           until .is-spinning is applied by the animation engine.
         -->
-        <span class="df-digit" [attr.data-key]="p.key" [style.--_df-current]="p.value">
-          @for (n of numbers; track n) {
+        <span class="df-digit" [attr.data-key]="p.key" [style.--_df-current]="p.numericValue">
+          @for (n of digitGlyphs(); track n.value) {
             <span
               class="df-digit__num"
-              [style.--n]="n"
-              [attr.inert]="n !== +p.value ? '' : null"
-            >{{ n }}</span>
+              [style.--n]="n.value"
+              [attr.inert]="n.value !== p.numericValue ? '' : null"
+            >{{ n.glyph }}</span>
           }
         </span>
       } @else {
@@ -38,13 +38,13 @@
     <span class="df-section df-section--fraction">
       @for (p of data().fraction; track p.key) {
         @if (p.type === 'fraction') {
-          <span class="df-digit" [attr.data-key]="p.key" [style.--_df-current]="p.value">
-            @for (n of numbers; track n) {
+          <span class="df-digit" [attr.data-key]="p.key" [style.--_df-current]="p.numericValue">
+            @for (n of digitGlyphs(); track n.value) {
               <span
                 class="df-digit__num"
-                [style.--n]="n"
-                [attr.inert]="n !== +p.value ? '' : null"
-              >{{ n }}</span>
+                [style.--n]="n.value"
+                [attr.inert]="n.value !== p.numericValue ? '' : null"
+              >{{ n.glyph }}</span>
             }
           </span>
         } @else {

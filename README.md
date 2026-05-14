@@ -47,12 +47,21 @@ export class PriceComponent {
 |---|---|---|---|
 | `value` | `number` | required | The number to display and animate |
 | `format` | `Intl.NumberFormatOptions` | `{}` | Options forwarded to `Intl.NumberFormat` |
-| `locales` | `string \| string[]` | `undefined` | BCP 47 locale string(s) |
+| `locales` | `string \| string[]` | `undefined` | BCP 47 locale string(s), including localized digit glyphs |
 | `prefix` | `string` | `''` | Text prepended before the number |
 | `suffix` | `string` | `''` | Text appended after the number |
 | `animated` | `boolean` | `true` | Set `false` to disable all animation |
-| `duration` | `number` | `900` | Animation duration in ms |
+| `duration` | `number` | `variant` | Animation duration in ms |
 | `opacityDuration` | `number` | `150` | Fade duration for appearing/disappearing elements |
+| `variant` | `'default' \| 'gaming' \| 'metrics' \| 'finance' \| 'smooth'` | `'default'` | Pre-configured duration/easing preset |
+| `spinEasing` | `string` | `variant` | CSS easing for digit spin |
+| `flipEasing` | `string` | `variant` | CSS easing for layout transitions |
+| `trend` | `number \| (oldValue, value) => number` | auto | Controls reel direction: `1`, `-1`, `0`, or custom |
+| `continuous` | `boolean` | `false` | Animate through intermediate values, capped at 15 steps |
+| `stagger` | `number` | `0` | Delay in ms between element animations |
+| `colorOnIncrease` | `string` | `undefined` | CSS color flashed when value increases |
+| `colorOnDecrease` | `string` | `undefined` | CSS color flashed when value decreases |
+| `spin3d` | `boolean` | `false` | Adds a subtle 3D cylinder effect to spinning digits |
 
 ### Outputs
 
@@ -85,6 +94,22 @@ export class PriceComponent {
 <ngx-digit-flow
   [value]="progress()"
   [format]="{ style: 'percent', maximumFractionDigits: 1 }"
+/>
+```
+
+**Localized digits**
+```html
+<ngx-digit-flow
+  [value]="12345"
+  locales="ar-EG"
+/>
+```
+
+**Forced trend direction**
+```html
+<ngx-digit-flow
+  [value]="value()"
+  [trend]="-1"
 />
 ```
 

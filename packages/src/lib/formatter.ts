@@ -5,6 +5,34 @@ const PRE_TYPES = new Set(['currency', 'literal', 'minusSign', 'plusSign', 'nan'
 // Parts that belong after the fraction/integer
 const POST_TYPES = new Set(['percentSign', 'unit']);
 
+export interface DigitGlyph {
+  value: number;
+  glyph: string;
+}
+
+export function getDigitGlyphs(
+  locales?: string | string[],
+  options: Intl.NumberFormatOptions = {},
+): DigitGlyph[] {
+  const formatter = new Intl.NumberFormat(locales, {
+    numberingSystem: options.numberingSystem,
+    useGrouping: false,
+    maximumFractionDigits: 0,
+  });
+
+  return Array.from({ length: 10 }, (_, value) => ({
+    value,
+    glyph: formatter.format(value),
+  }));
+}
+
+function getDigitValueMap(
+  locales?: string | string[],
+  options: Intl.NumberFormatOptions = {},
+): Map<string, number> {
+  return new Map(getDigitGlyphs(locales, options).map(({ glyph, value }) => [glyph, value]));
+}
+
 export function formatToData(
   value: number,
   options: Intl.NumberFormatOptions = {},
@@ -13,6 +41,7 @@ export function formatToData(
   suffix = '',
 ): FormattedNumber {
   const formatter = new Intl.NumberFormat(locales, options);
+  const digitValues = getDigitValueMap(locales, options);
   const parts = formatter.formatToParts(value);
 
   const pre: NumberPart[] = [];
@@ -72,7 +101,12 @@ export function formatToData(
   for (let i = splitInteger.length - 1; i >= 0; i--) {
     const p = splitInteger[i];
     if (p.type === 'integer') {
-      reversedInteger.push({ type: 'integer', value: p.value, key: `i${digitIdx}` });
+      reversedInteger.push({
+        type: 'integer',
+        value: p.value,
+        key: `i${digitIdx}`,
+        numericValue: digitValues.get(p.value) ?? Number(p.value),
+      });
       digitIdx++;
     } else {
       // Group separator — keyed by digit offset to the right (e.g. g3 sits between i3 and i4)
@@ -87,7 +121,12 @@ export function formatToData(
   for (const p of fraction) {
     if (p.type === 'fraction') {
       for (const ch of p.value) {
-        keyedFraction.push({ type: 'fraction', value: ch, key: `f${++fracDigitIdx}` });
+        keyedFraction.push({
+          type: 'fraction',
+          value: ch,
+          key: `f${++fracDigitIdx}`,
+          numericValue: digitValues.get(ch) ?? Number(ch),
+        });
       }
     } else {
       keyedFraction.push({ ...p, key: 'decimal' });
