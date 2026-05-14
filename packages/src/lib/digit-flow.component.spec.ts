@@ -285,6 +285,29 @@ describe('DigitFlowComponent', () => {
     expect(fadeInWithDelay).toBe(true);
   });
 
+  it('applies stagger delay to fade-out animations for exiting elements', async () => {
+    fixture.componentRef.setInput('stagger', 25);
+    fixture.componentRef.setInput('value', 1000);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const fadeOutWithDelay = animateCalls.some((call) => {
+      const fadesOut =
+        !Array.isArray(call.keyframes) &&
+        Array.isArray(call.keyframes['--_df-d-opacity']) &&
+        (call.keyframes['--_df-d-opacity'] as number[])[0] > 0;
+      return fadesOut && typeof call.options === 'object' && (call.options.delay ?? 0) > 0;
+    });
+
+    expect(fadeOutWithDelay).toBe(true);
+  });
+
   it('does not stagger core spin or layout animations', async () => {
     mockMovingRects();
     fixture.componentRef.setInput('value', 99);

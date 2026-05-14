@@ -367,13 +367,16 @@ export class DigitFlowComponent {
     });
 
     // Ghost exits
+    let exitIdx = 0;
     this.prevRects.forEach((rect, key) => {
       if (newKeys.has(key)) return;
       const ghost = this.buildGhost(key, rect, host);
       host.appendChild(ghost);
       ghost.style.setProperty('--_df-d-opacity', '-0.999');
+      const staggerDelay = staggerMs > 0 ? exitIdx * staggerMs : 0;
+      exitIdx++;
       const a = ghost.animate({ '--_df-d-opacity': [0.999, 0] } as PropertyIndexedKeyframes, {
-        ...fadeOpts,
+        ...this.addStaggerDelay(fadeOpts, staggerDelay),
       });
       batch.push(a);
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
