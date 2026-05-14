@@ -15,6 +15,16 @@ export function canAnimateDigitFlow(options: DigitFlowCapabilityOptions = {}): b
     typeof window.Element !== 'undefined' &&
     typeof window.Element.prototype.animate === 'function' &&
     typeof window.CSS.registerProperty === 'function' &&
-    window.CSS.supports('width', 'calc(mod(2, 10) * 1px)')
+    window.CSS.supports('width', 'calc(mod(2, 10) * 1px)') &&
+    supportsLinearEasing()
   );
+}
+
+function supportsLinearEasing(): boolean {
+  try {
+    document.createElement('div').animate({ opacity: 0 }, { easing: 'linear(0, 1)' });
+    return true;
+  } catch {
+    return false;
+  }
 }

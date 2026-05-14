@@ -111,7 +111,7 @@ export class DigitFlowComponent {
     const duration = this.duration() ?? 900;
     return {
       duration,
-      opacityDuration: this.opacityDuration() ?? Math.round(duration / 2),
+      opacityDuration: this.opacityDuration() ?? 450,
       spinEasing: this.spinEasing() ?? SPIN_EASING,
       flipEasing: this.flipEasing() ?? SPIN_EASING,
       transformTiming: this.transformTiming(),

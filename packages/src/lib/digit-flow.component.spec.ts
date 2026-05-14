@@ -10,6 +10,7 @@ let animateCalls: AnimateCall[] = [];
 let holdColorAnimations = false;
 let holdAllAnimations = false;
 let prefersReducedMotion = false;
+let linearEasingSupported = true;
 
 function finishImmediatelyAnimation(): Animation {
   return {
@@ -22,6 +23,19 @@ function testAnimation(
   keyframes: PropertyIndexedKeyframes | Keyframe[],
   options?: number | KeyframeAnimationOptions,
 ): Animation {
+  const isLinearCapabilityProbe =
+    !Array.isArray(keyframes) &&
+    keyframes['opacity'] === 0 &&
+    typeof options === 'object' &&
+    options.easing === 'linear(0, 1)';
+
+  if (isLinearCapabilityProbe) {
+    if (!linearEasingSupported) {
+      throw new Error('linear() easing is not supported');
+    }
+    return finishImmediatelyAnimation();
+  }
+
   animateCalls.push({ keyframes, options });
   const colorAnimation = Array.isArray(keyframes) && keyframes.some((frame) => 'color' in frame);
   return {
@@ -84,6 +98,7 @@ describe('DigitFlowComponent', () => {
     holdColorAnimations = false;
     holdAllAnimations = false;
     prefersReducedMotion = false;
+    linearEasingSupported = true;
 
     const cssMock = {
       registerProperty: () => undefined,
@@ -431,6 +446,25 @@ describe('DigitFlowComponent', () => {
     );
   });
 
+  it('keeps the default opacity timing at 450ms like number-flow', async () => {
+    fixture.componentRef.setInput('duration', 1200);
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('value', 10);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const fade = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d-opacity']),
+    );
+
+    expect(fade?.options).toEqual(expect.objectContaining({ duration: 450 }));
+  });
+
   it('preserves user timing delays when stagger is not configured', async () => {
     mockMovingRects();
     fixture.componentRef.setInput('value', 9);
@@ -539,6 +573,16 @@ describe('DigitFlowComponent', () => {
       configurable: true,
       value: 'hidden',
     });
+
+    fixture.componentRef.setInput('value', 1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(animateCalls.length).toBe(0);
+  });
+
+  it('skips animations when linear() easing cannot be animated', async () => {
+    linearEasingSupported = false;
 
     fixture.componentRef.setInput('value', 1);
     fixture.detectChanges();
