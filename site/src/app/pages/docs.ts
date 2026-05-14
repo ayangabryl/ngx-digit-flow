@@ -401,7 +401,8 @@ export class DocsDemoComponent {
           <p class="section-desc">
             <code>[spinEasing]</code> controls the CSS easing of the vertical digit scroll.
             <code>[flipEasing]</code> controls the horizontal slide when digits appear or disappear
-            (e.g. 9→10 or $999→$1,000). Both accept any valid CSS easing string.
+            (e.g. 9→10 or $999→$1,000). Use <code>overshoot</code> for a snappier feel, or pass any
+            valid CSS easing string.
           </p>
 
           <docs-demo label="spinEasing" [code]="codeSpinEasing">
@@ -416,7 +417,7 @@ export class DocsDemoComponent {
                   [value]="easingVal()"
                   [duration]="600"
                   [format]="currencyFmt"
-                  [spinEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'"
+                  spinEasing="overshoot"
                 />
               </div>
               <div class="demo-dur-item">
@@ -425,7 +426,7 @@ export class DocsDemoComponent {
                   [value]="easingVal()"
                   [duration]="600"
                   [format]="currencyFmt"
-                  [spinEasing]="'linear'"
+                  spinEasing="linear"
                 />
               </div>
             </div>
@@ -449,7 +450,7 @@ export class DocsDemoComponent {
                   [value]="flipVal()"
                   [duration]="900"
                   [format]="currencyFmt"
-                  [flipEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'"
+                  flipEasing="overshoot"
                 />
               </div>
             </div>
@@ -711,21 +712,22 @@ export class DocsDemoComponent {
                   </tr>
                   <tr>
                     <td><code>spinEasing</code></td>
-                    <td><code>string</code></td>
+                    <td><code>DigitFlowEasing</code></td>
                     <td><code>spring</code></td>
                     <td>
                       CSS easing for the digit spin — each digit scrolls vertically on a 0–9 reel.
-                      Defaults to a damped spring.
+                      Accepts <code>spring</code>, <code>default</code>, <code>overshoot</code>, or
+                      any CSS easing string.
                     </td>
                   </tr>
                   <tr>
                     <td><code>flipEasing</code></td>
-                    <td><code>string</code></td>
+                    <td><code>DigitFlowEasing</code></td>
                     <td><code>spring</code></td>
                     <td>
                       CSS easing for the FLIP animation — digits slide horizontally when the digit
-                      count changes (e.g. 9→10). Defaults to the same damped spring as
-                      <code>spinEasing</code>.
+                      count changes (e.g. 9→10). Accepts the same named presets and raw CSS easing
+                      strings as <code>spinEasing</code>.
                     </td>
                   </tr>
                   <tr>
@@ -1507,10 +1509,10 @@ export class MyComponent {}`;
 <ngx-digit-flow [value]="n" />
 
 <!-- snappy overshoot -->
-<ngx-digit-flow [value]="n" [spinEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'" />
+<ngx-digit-flow [value]="n" spinEasing="overshoot" />
 
 <!-- mechanical linear -->
-<ngx-digit-flow [value]="n" [spinEasing]="'linear'" />`;
+<ngx-digit-flow [value]="n" spinEasing="linear" />`;
 
   protected codeFlipEasing = `<!-- default: damped spring (same as spinEasing) -->
 <ngx-digit-flow [value]="n" [format]="{ style: 'currency', currency: 'USD' }" />
@@ -1519,7 +1521,7 @@ export class MyComponent {}`;
 <ngx-digit-flow
   [value]="n"
   [format]="{ style: 'currency', currency: 'USD' }"
-  [flipEasing]="'cubic-bezier(0.34, 1.56, 0.64, 1)'"
+  flipEasing="overshoot"
 />`;
 
   protected codeTrend = `<!-- auto: follows value delta (default) -->

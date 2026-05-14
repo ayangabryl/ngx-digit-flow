@@ -446,6 +446,38 @@ describe('DigitFlowComponent', () => {
     );
   });
 
+  it('resolves named easing presets for spin and layout animations', async () => {
+    mockMovingRects();
+    fixture.componentRef.setInput('value', 9);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    mockMovingRects();
+    fixture.componentRef.setInput('spinEasing', 'overshoot');
+    fixture.componentRef.setInput('flipEasing', 'overshoot');
+    fixture.componentRef.setInput('value', 10);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spin = animateCalls.find(
+      (call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']),
+    );
+    const transform = animateCalls.find(
+      (call) =>
+        (Array.isArray(call.keyframes) && call.keyframes.some((frame) => 'transform' in frame)) ||
+        (!Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-dx'])),
+    );
+
+    expect(spin?.options).toEqual(
+      expect.objectContaining({ easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }),
+    );
+    expect(transform?.options).toEqual(
+      expect.objectContaining({ easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }),
+    );
+  });
+
   it('keeps the default opacity timing at 450ms like number-flow', async () => {
     fixture.componentRef.setInput('duration', 1200);
     fixture.componentRef.setInput('value', 9);
