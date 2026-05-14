@@ -182,7 +182,7 @@ export class DigitFlowComponent {
       if (isPlatformBrowser(this.platformId) && this.animated() && this.continuous()) {
         const from  = this.prevNumericValue;
         const diff  = v - from;
-        const steps = Math.min(Math.abs(diff), MAX_CONTINUOUS_STEPS);
+        const steps = Math.min(Math.ceil(Math.abs(diff)), MAX_CONTINUOUS_STEPS);
 
         if (steps > 1) {
           const totalDur = this.effectiveSettings().duration;
