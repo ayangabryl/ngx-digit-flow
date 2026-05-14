@@ -220,13 +220,25 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
         <!-- Temperature toggle -->
         <div class="card card--temp">
           <span class="card-label">Temperature</span>
-          <div class="card-center">
-            <ngx-digit-flow
-              [value]="tempDisplay()"
-              [format]="tempFmt"
-              [suffix]="tempUnit()"
-              [duration]="600"
-            />
+          <div class="temp-display">
+            <div class="temp-value" [style.color]="tempColor()">
+              <ngx-digit-flow
+                [value]="tempDisplay()"
+                [format]="tempFmt"
+                [suffix]="tempUnit()"
+                [duration]="600"
+              />
+            </div>
+            <span class="temp-condition" [style.color]="tempColor()">{{ tempCondition() }}</span>
+          </div>
+          <div class="temp-therm">
+            <div class="temp-therm-track">
+              <div class="temp-therm-dot" [style.left.%]="thermPct()"></div>
+            </div>
+            <div class="temp-therm-labels">
+              <span>−10°</span>
+              <span>45°</span>
+            </div>
           </div>
           <div class="temp-btns">
             <button class="temp-btn" [class.active]="tempCelsius()" (click)="tempCelsius.set(true)">°C</button>
@@ -858,6 +870,67 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
     .card--temp {
       grid-column: 4 / 5;
       grid-row: 3 / 4;
+      gap: 0;
+    }
+
+    .temp-display {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .temp-value {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      transition: color 0.5s ease;
+    }
+
+    .temp-condition {
+      font-size: 11px;
+      font-weight: 500;
+      transition: color 0.5s ease;
+    }
+
+    .temp-therm {
+      flex-shrink: 0;
+      margin-bottom: 10px;
+    }
+
+    .temp-therm-track {
+      height: 5px;
+      border-radius: 100px;
+      background: linear-gradient(90deg,
+        oklch(58% 0.22 255),
+        oklch(58% 0.18 210),
+        oklch(56% 0.18 150),
+        oklch(60% 0.22 75),
+        oklch(58% 0.24 35),
+        oklch(54% 0.24 25));
+      position: relative;
+    }
+
+    .temp-therm-dot {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px oklch(0% 0 0 / 0.18), 0 0 0 1.5px oklch(0% 0 0 / 0.07);
+      transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .temp-therm-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      font-size: 10px;
+      color: oklch(68% 0.003 265);
     }
 
     .temp-btns {
@@ -1375,7 +1448,28 @@ export class DemosComponent implements OnInit {
       : parseFloat((c * 9 / 5 + 32).toFixed(1));
   });
   protected tempFmt: Intl.NumberFormatOptions = { maximumFractionDigits: 1 };
-  protected tempUnit = computed(() => this.tempCelsius() ? ' °C' : ' °F');
+  protected tempUnit      = computed(() => this.tempCelsius() ? ' °C' : ' °F');
+  protected tempColor     = computed(() => {
+    const c = this.tempC();
+    if (c < 5)  return 'oklch(52% 0.20 255)';
+    if (c < 15) return 'oklch(50% 0.18 210)';
+    if (c < 25) return 'oklch(46% 0.16 150)';
+    if (c < 32) return 'oklch(52% 0.22 55)';
+    return              'oklch(48% 0.24 25)';
+  });
+  protected tempCondition = computed(() => {
+    const c = this.tempC();
+    if (c < 0)  return 'Freezing';
+    if (c < 10) return 'Cold';
+    if (c < 18) return 'Cool';
+    if (c < 25) return 'Comfortable';
+    if (c < 32) return 'Warm';
+    return              'Hot';
+  });
+  protected thermPct = computed(() => {
+    const MIN = -10, MAX = 45;
+    return Math.min(100, Math.max(0, (this.tempC() - MIN) / (MAX - MIN) * 100));
+  });
 
   // Transfer card
   protected readonly transferPairs = [
