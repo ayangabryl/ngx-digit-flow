@@ -2,170 +2,164 @@
 name: ngx-digit-flow
 description: >
   Install, configure, and use ngx-digit-flow, the Angular digit animation library
-  that animates individual digits slot-machine style (like number-flow but for Angular).
-  Use this skill whenever a user wants to add animated number displays, slot-machine
-  digit counters, odometer-style counting, or any live number transitions in an Angular app.
-  Trigger on: "add ngx-digit-flow", "install ngx-digit-flow", "animated numbers Angular",
-  "digit animation", "number counter animation", "slot machine numbers", "odometer Angular",
-  "ngx-digit-flow", or any request to make numbers animate digit-by-digit in Angular.
+  that animates numbers with number-flow-inspired reels, accumulated WAAPI motion,
+  continuous ticker visuals, and locale-aware digit glyphs. Use when adding animated
+  counters, prices, timers, odometers, scoreboards, dashboards, or any live number
+  transition in Angular.
 ---
 
 # ngx-digit-flow
 
-An Angular library that animates individual digits independently — slot-machine / odometer style.
-Each digit has a vertical reel (0–9) that scrolls to the new value when the number changes.
-Built on Web Animations API + CSS `@property`. Zero dependencies. SSR-safe. Signals-first.
+`ngx-digit-flow` is a standalone Angular component for polished digit-by-digit number animation.
+It is zero-dependency, SSR-safe, signal-friendly, locale-aware, and built on the Web Animations API,
+CSS `@property`, and CSS math.
 
-## Installation
+Use it when a user wants animated numbers in Angular and would otherwise reach for `number-flow`.
+
+## Install
 
 ```bash
 npm install ngx-digit-flow
 ```
 
-No additional setup. The library is standalone — just import and use.
-
-## Quick start
+## Quick Start
 
 ```typescript
-// In your Angular component
+import { Component, signal } from '@angular/core';
 import { DigitFlowComponent } from 'ngx-digit-flow';
 
 @Component({
+  selector: 'app-price',
   imports: [DigitFlowComponent],
-  template: `<ngx-digit-flow [value]="price()" [format]="{ style: 'currency', currency: 'USD' }" />`
+  template: `
+    <ngx-digit-flow [value]="price()" [format]="{ style: 'currency', currency: 'USD' }" />
+  `,
 })
-export class PriceDisplayComponent {
-  price = signal(182.50);
+export class PriceComponent {
+  price = signal(182.5);
 }
 ```
 
-## All inputs
+## Public API
 
-| Input | Type | Default | Description |
-|---|---|---|---|
-| `value` | `number` | **required** | The number to display and animate |
-| `format` | `Intl.NumberFormatOptions` | `{}` | Standard `Intl.NumberFormat` options |
-| `locales` | `string \| string[]` | `undefined` | BCP 47 locale(s) passed to `Intl.NumberFormat` |
-| `prefix` | `string` | `''` | Text prepended before the number (e.g. `'~'`) |
-| `suffix` | `string` | `''` | Text appended after the number (e.g. `' pts'`) |
-| `animated` | `boolean` | `true` | Set `false` to disable all animation |
-| `duration` | `number` | `900` | Spin + FLIP animation duration in ms |
-| `opacityDuration` | `number` | `150` | Fade-in/out duration for appearing/disappearing elements |
+| Input                     | Type                                    | Default                 | Guidance                                                                                                                                                    |
+| ------------------------- | --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`                   | `number`                                | required                | The number to display and animate.                                                                                                                          |
+| `format`                  | `Intl.NumberFormatOptions`              | `{}`                    | Forwarded to `Intl.NumberFormat`; use for currency, percent, compact notation, grouping, fraction digits.                                                   |
+| `locales`                 | `string \| string[]`                    | `undefined`             | Locale and numbering system support, including non-Latin digit glyphs.                                                                                      |
+| `prefix`                  | `string`                                | `''`                    | Custom text before the formatted number. Prefer `format` for real currency/sign/unit formatting.                                                            |
+| `suffix`                  | `string`                                | `''`                    | Custom text after the formatted number. Prefer `format` for percent/unit when possible.                                                                     |
+| `animated`                | `boolean`                               | `true`                  | Set `false` to disable all animation.                                                                                                                       |
+| `duration`                | `number`                                | `900`                   | Shared spin + layout duration in milliseconds.                                                                                                              |
+| `opacityDuration`         | `number`                                | `450`                   | Presence fade duration for entering/exiting digits, separators, and literals.                                                                               |
+| `spinEasing`              | `DigitFlowEasing`                       | `spring`                | Named preset (`spring`, `default`, `overshoot`) or any CSS easing string. For string literals, prefer `spinEasing="overshoot"` over `[spinEasing]="'...'"`. |
+| `flipEasing`              | `DigitFlowEasing`                       | `spring`                | Same presets/raw CSS support for horizontal layout motion.                                                                                                  |
+| `transformTiming`         | `DigitFlowTiming`                       | `duration + flipEasing` | Full WAAPI timing for layout/FLIP and container width motion. Overrides `duration`/`flipEasing`.                                                            |
+| `spinTiming`              | `DigitFlowTiming`                       | `transformTiming`       | Full WAAPI timing for vertical digit reel motion. Overrides `duration`/`spinEasing`.                                                                        |
+| `opacityTiming`           | `DigitFlowTiming`                       | `opacityDuration`       | Full WAAPI timing for presence fades.                                                                                                                       |
+| `trend`                   | `number \| (oldValue, value) => number` | auto                    | Controls reel direction. Use `1` up, `-1` down, `0` per-digit shortest direction, or a function.                                                            |
+| `continuous`              | `boolean`                               | `false`                 | Number-flow-style visual continuity: lower unchanged digits loop one full reel when a higher-place digit changes.                                           |
+| `digits`                  | `Record<number, { max?: number }>`      | `{}`                    | Custom reel ranges by decimal position, e.g. `{ 1: { max: 5 } }` for clock tens.                                                                            |
+| `respectMotionPreference` | `boolean`                               | `true`                  | Skips animations when `prefers-reduced-motion: reduce` is active.                                                                                           |
+| `stagger`                 | `number`                                | `0`                     | Delay in ms between entering/exiting presence animations only. Core spin and layout remain synchronized.                                                    |
+| `colorOnIncrease`         | `string`                                | `undefined`             | Flash color when value increases.                                                                                                                           |
+| `colorOnDecrease`         | `string`                                | `undefined`             | Flash color when value decreases.                                                                                                                           |
 
-## Outputs
+| Output             | Payload | Guidance                                                                                     |
+| ------------------ | ------- | -------------------------------------------------------------------------------------------- |
+| `animationsStart`  | `void`  | Fires once when an animation batch starts. Interrupted batches do not emit duplicate starts. |
+| `animationsFinish` | `void`  | Fires once when all in-flight batches settle, including interrupted/out-of-order batches.    |
 
-| Output | Payload | Description |
-|---|---|---|
-| `animationsStart` | `void` | Fires when a batch of animations begins |
-| `animationsFinish` | `void` | Fires when all in-flight animations settle |
+## Best-Practice Defaults
 
-## Common usage examples
+Prefer the standard component before reaching for timing overrides:
 
-### Currency
+```html
+<ngx-digit-flow [value]="n" />
+```
+
+For a snappier visual, use the named preset:
+
+```html
+<ngx-digit-flow [value]="n" spinEasing="overshoot" />
+```
+
+For currency and product metrics:
 
 ```html
 <ngx-digit-flow
   [value]="revenue()"
   [format]="{ style: 'currency', currency: 'USD' }"
-  [duration]="600"
+  [continuous]="true"
 />
 ```
 
-### Score counter with +/− buttons
-
-```typescript
-score = signal(0);
-```
-```html
-<ngx-digit-flow [value]="score()" [duration]="500" />
-<button (click)="score.update(v => v - 1)">−</button>
-<button (click)="score.update(v => v + 1)">+</button>
-```
-
-### Compact notation (K / M / B)
+For compact dashboards:
 
 ```html
-<ngx-digit-flow
-  [value]="views()"
-  [format]="{ notation: 'compact', maximumFractionDigits: 1 }"
-/>
+<ngx-digit-flow [value]="views()" [format]="{ notation: 'compact', maximumFractionDigits: 1 }" />
 ```
 
-### Percentage
+For countdown or clock-like reels:
 
 ```html
-<ngx-digit-flow
-  [value]="progress()"
-  [format]="{ style: 'percent', maximumFractionDigits: 1 }"
-/>
+<ngx-digit-flow [value]="seconds()" [digits]="{ 1: { max: 5 } }" [trend]="-1" />
 ```
 
-### Countdown timer
+## Current Animation Model
 
-```typescript
-seconds = signal(60);
+The implementation intentionally follows number-flow's core approach:
 
-ngOnInit() {
-  setInterval(() => this.seconds.update(s => Math.max(0, s - 1)), 1000);
-}
-```
-```html
-<ngx-digit-flow [value]="seconds()" [suffix]="'s'" [duration]="600" />
-```
+- **One visual update, not queued DOM steps.** Continuous mode does not render `121, 122, ...` as intermediate Angular states. It creates the illusion by spinning lower unchanged digits one full reel.
+- **CSS custom-property deltas.** `--_df-d`, `--_df-d-opacity`, `--_df-d-width`, and `--_df-dx` are animated as typed CSS properties.
+- **`composite: 'accumulate'`.** Rapid changes stack without snapping because WAAPI animations accumulate deltas.
+- **CSS `mod()` reel math.** Each digit computes its circular position from `current + delta`, so reels wrap smoothly.
+- **Number-flow-style timing.** Default spin and layout use a 100-point spring `linear(...)`; opacity defaults to 450ms ease-out.
+- **Presence stagger only.** `stagger` delays newly entering/exiting digits and separators. Do not stagger core spin or layout because it desynchronizes the number.
+- **Capability-gated animation.** Animation requires WAAPI, CSS `@property`, CSS `mod()`, and WAAPI `linear(...)` easing support. Otherwise the component still renders the final value.
 
-### Locale-aware
+## Agent Implementation Checklist
 
-```html
-<ngx-digit-flow
-  [value]="amount()"
-  [locales]="'de-DE'"
-  [format]="{ style: 'currency', currency: 'EUR' }"
-/>
-```
+When adding `ngx-digit-flow` to an Angular component:
 
-### Disable animation (e.g. for reduced-motion or SSR)
-
-```html
-<ngx-digit-flow [value]="count()" [animated]="false" />
-```
-
-## Wiring into a feature component
-
-When a user asks you to add `ngx-digit-flow` to an existing component, follow this pattern:
-
-1. **Install** — run `npm install ngx-digit-flow` (or confirm they've done it)
-2. **Import** — add `DigitFlowComponent` to the `imports` array of the host component
-3. **Replace** the static number rendering with `<ngx-digit-flow [value]="..." />`
-4. **Add format** — infer the right `Intl.NumberFormatOptions` from context (currency, percent, etc.)
-5. **Choose duration** — `600–900ms` for dashboards/tickers, `400–500ms` for interactive controls
-
-Keep the reactive source (signal, observable via `async`, etc.) as-is — `ngx-digit-flow` only needs a `number` input.
-
-## How the animation works (for context)
-
-Knowing this helps when users ask to customize or debug:
-
-- **CSS `@property --_df-d`** — A typed `<number>` custom property registered via `@property`. The browser can interpolate and accumulate it.
-- **`composite: 'accumulate'`** — Multiple in-flight WAAPI animations ADD their `--_df-d` contributions. Rapid value changes stack cleanly without JS position tracking.
-- **CSS `mod()` infinite reel** — Each digit span calculates its vertical offset via `mod(10 + n - mod(current + delta, 10), 10)`, giving a truly infinite reel. No guard-reel overflow is possible regardless of how fast values change.
-- **Trend-aware direction** — When a number increases, all digits scroll upward (like an odometer counting up). When it decreases, they scroll downward. The direction is determined by `Math.sign(newValue − prevValue)`.
-- **FLIP** — When digit count changes (e.g. 99 → 100), existing digits animate horizontally to their new positions using `getBoundingClientRect()` snapshots.
-- **`prefers-reduced-motion`** — Automatically sets duration to 0 when the user's OS preference requests reduced motion.
-- **SSR-safe** — All Web Animations API calls are gated behind `isPlatformBrowser()`.
+1. Install the package if missing.
+2. Import `DigitFlowComponent` in the standalone component `imports`.
+3. Replace static number text with `<ngx-digit-flow [value]="..." />`.
+4. Prefer `format`/`locales` over hand-built prefixes/suffixes for currency, percent, units, compact notation, and localized digits.
+5. Use `continuous` for counters where higher-place changes should feel like they tick through values.
+6. Use `spinEasing="overshoot"` for a playful/snappy feel; keep the default spring for polished dashboard motion.
+7. Use `stagger` only to reveal entering/exiting parts; do not expect it to affect same-width number updates.
+8. Preserve accessibility: the component renders screen-reader text; do not hide it with extra `aria-hidden` wrappers.
 
 ## Troubleshooting
 
-**Numbers show but don't animate**
-- Check browser support: requires Chrome 125+, Safari 15.4+, Firefox 118+ (needs CSS `mod()` and `@property`)
-- Check `[animated]="true"` (it's the default, but verify it's not accidentally bound to false)
-- Check `prefers-reduced-motion` system setting
+**Numbers render but do not animate**
 
-**Digits misaligned or wrong size**
-- `ngx-digit-flow` renders as `inline-block`. Wrap in a `flex` or `inline-flex` container if you need alignment control.
-- Font must be loaded before initial render — use `font-display: block` if using a web font
+- Browser may not support CSS `mod()`, CSS `@property`, WAAPI, or WAAPI `linear(...)`.
+- `animated` may be false.
+- The document may be hidden.
+- `prefers-reduced-motion` may be active while `respectMotionPreference` is true.
 
-**Value jumps instead of animating on first change**
-- This is expected — the initial render shows the value instantly; animation only runs on *changes*
+**`stagger` looks like nothing happens**
 
-**`animationsFinish` never fires**
-- Only emitted when `animated` is true and the browser supports the required CSS features
+- Same-shape updates intentionally look the same. `stagger` only affects entering/exiting parts such as new digits, removed digits, group separators, literals, or decimals.
+
+**Continuous looks different from a JS counter**
+
+- This is expected and matches number-flow's approach. It is a visual continuity effect, not a JavaScript loop through every integer.
+
+**Custom digit ranges show wrong values**
+
+- Ensure `digits` is keyed by decimal position from the right: `i0`/position `0` is ones, `1` is tens, `2` is hundreds.
+
+**Need to coordinate multiple values**
+
+- Import `DigitFlowGroupDirective` and wrap related instances:
+
+```html
+<div ngxDigitFlowGroup>
+  <ngx-digit-flow [value]="hours()" />
+  <span>:</span>
+  <ngx-digit-flow [value]="minutes()" [digits]="{ 1: { max: 5 } }" />
+</div>
+```
