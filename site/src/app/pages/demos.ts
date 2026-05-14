@@ -112,16 +112,53 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
 
         <!-- Progress -->
         <div class="card card--progress">
-          <span class="card-label">Progress</span>
-          <div class="card-center">
-            <ngx-digit-flow
-              [value]="progress()"
-              [format]="progressFmt"
-              [duration]="220"
-            />
+          <div class="progress-head">
+            <span class="card-label">Progress</span>
+            <button class="progress-play-btn" (click)="progressPaused.update(v => !v)" [attr.aria-label]="progressPaused() ? 'Play' : 'Pause'">
+              @if (progressPaused()) {
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg>
+              } @else {
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="2" y="2" width="3" height="8" rx="1"/><rect x="7" y="2" width="3" height="8" rx="1"/></svg>
+              }
+            </button>
           </div>
-          <div class="progress-track">
-            <div class="progress-fill" [style.width.%]="progress() * 100"></div>
+
+          <div class="progress-stage">
+            @if (progressStyle() === 'linear') {
+              <div class="progress-pct">
+                <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
+              </div>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" [style.width.%]="progress() * 100"></div>
+              </div>
+            } @else if (progressStyle() === 'steps') {
+              <div class="progress-pct">
+                <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
+              </div>
+              <div class="progress-segs">
+                @for (filled of progressSegments(); track $index) {
+                  <div class="progress-seg" [class.filled]="filled"></div>
+                }
+              </div>
+            } @else {
+              <div class="progress-ring-wrap">
+                <svg class="progress-ring" viewBox="0 0 72 72">
+                  <circle class="ring-bg" cx="36" cy="36" r="28"/>
+                  <circle class="ring-fill" cx="36" cy="36" r="28"
+                    [style.stroke-dashoffset]="ringOffset()"
+                  />
+                </svg>
+                <div class="progress-ring-label">
+                  <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="progress-style-tabs">
+            <button [class.active]="progressStyle() === 'linear'"  (click)="progressStyle.set('linear')">Linear</button>
+            <button [class.active]="progressStyle() === 'steps'"   (click)="progressStyle.set('steps')">Steps</button>
+            <button [class.active]="progressStyle() === 'ring'"    (click)="progressStyle.set('ring')">Ring</button>
           </div>
         </div>
 
@@ -466,22 +503,153 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
     .card--progress {
       grid-column: 4 / 5;
       grid-row: 2 / 3;
+      gap: 0;
     }
 
-    .progress-track {
-      height: 5px;
-      background: oklch(92% 0.002 265);
+    .progress-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      margin-bottom: 4px;
+    }
+
+    .progress-play-btn {
+      width: 26px;
+      height: 26px;
+      border: 1px solid oklch(88% 0.002 265);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, border-color 0.12s;
+      padding: 0;
+    }
+    .progress-play-btn:hover { background: oklch(95% 0.002 265); border-color: oklch(70% 0.003 265); }
+
+    .progress-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .progress-pct {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    /* ── Linear ── */
+    .progress-bar-track {
+      height: 8px;
+      background: oklch(93% 0.003 265);
       border-radius: 100px;
       overflow: hidden;
       flex-shrink: 0;
-      margin-top: 8px;
     }
 
-    .progress-fill {
+    .progress-bar-fill {
       height: 100%;
-      background: oklch(56% 0.22 255);
       border-radius: 100px;
+      background: linear-gradient(90deg, oklch(62% 0.22 255), oklch(50% 0.20 255));
       transition: width 0.22s linear;
+      box-shadow: 0 0 6px oklch(56% 0.22 255 / 0.5);
+    }
+
+    /* ── Steps ── */
+    .progress-segs {
+      display: flex;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .progress-seg {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+      background: oklch(93% 0.003 265);
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .progress-seg.filled {
+      background: oklch(56% 0.22 255);
+      transform: scaleY(1.25);
+    }
+
+    /* ── Ring ── */
+    .progress-ring-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .progress-ring {
+      width: 100%;
+      max-width: 90px;
+      height: auto;
+      display: block;
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: oklch(93% 0.003 265);
+      stroke-width: 6;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke: oklch(56% 0.22 255);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 175.93;
+      transform: rotate(-90deg);
+      transform-origin: 36px 36px;
+      transition: stroke-dashoffset 0.22s linear;
+    }
+
+    .progress-ring-label {
+      position: absolute;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    /* ── Style tabs ── */
+    .progress-style-tabs {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+      background: oklch(94% 0.003 265);
+      border-radius: 100px;
+      padding: 3px;
+    }
+
+    .progress-style-tabs button {
+      flex: 1;
+      font-family: var(--font);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 4px 0;
+      border: none;
+      border-radius: 100px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .progress-style-tabs button.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 1px 3px oklch(0% 0 0 / 0.08);
     }
 
     /* ── Slider: col 1–2, row 3 ──────────────── */
@@ -911,11 +1079,17 @@ export class DemosComponent implements OnInit {
   private compactValues = [1200, 15_400, 2_100_000, 150_000_000];
   private compactIdx = 0;
 
-  protected progress = signal(0);
-  protected progressFmt: Intl.NumberFormatOptions = {
-    style: 'percent',
-    maximumFractionDigits: 0,
-  };
+  protected progress       = signal(0);
+  protected progressPaused = signal(false);
+  protected progressStyle  = signal<'linear' | 'steps' | 'ring'>('linear');
+  protected progressFmt: Intl.NumberFormatOptions = { style: 'percent', maximumFractionDigits: 0 };
+
+  protected progressSegments = computed(() =>
+    Array.from({ length: 10 }, (_, i) => this.progress() >= (i + 0.5) / 10)
+  );
+
+  protected readonly ringCircumference = 2 * Math.PI * 28;
+  protected ringOffset = computed(() => this.ringCircumference * (1 - this.progress()));
 
   // AAPL stock
   protected readonly ticker = 'AAPL';
@@ -1050,7 +1224,9 @@ export class DemosComponent implements OnInit {
     }, 2000));
 
     ids.push(setInterval(() => {
-      this.progress.update(v => v >= 1 ? 0 : parseFloat((v + 0.025).toFixed(3)));
+      if (!this.progressPaused()) {
+        this.progress.update(v => v >= 1 ? 0 : parseFloat((v + 0.025).toFixed(3)));
+      }
     }, 200));
 
     // Stock ticker + sparkline history
