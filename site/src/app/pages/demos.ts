@@ -87,13 +87,23 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
 
         <!-- Score -->
         <div class="card card--score">
-          <span class="card-label">Score</span>
-          <div class="card-center">
-            <ngx-digit-flow [value]="score()" [duration]="500" />
+          <div class="score-head">
+            <span class="card-label">Score</span>
+            <span class="score-best">Best&nbsp;<strong>{{ scoreBest() }}</strong></span>
+          </div>
+          <div class="score-stage">
+            <div class="score-number" [class.trend-up]="scoreTrend() === 'up'" [class.trend-down]="scoreTrend() === 'down'">
+              <ngx-digit-flow [value]="score()" [duration]="400" />
+            </div>
+            @if (scoreDelta() !== 0) {
+              <span class="score-delta" [class.pos]="scoreDelta() > 0" [class.neg]="scoreDelta() < 0">
+                {{ scoreDelta() > 0 ? '+' + scoreDelta() : scoreDelta() }}
+              </span>
+            }
           </div>
           <div class="score-btns">
-            <button class="score-btn" (click)="score.update(v => v - 1)">−</button>
-            <button class="score-btn" (click)="score.update(v => v + 1)">+</button>
+            <button class="score-btn score-btn--dec" (click)="changeScore(-1)">−</button>
+            <button class="score-btn score-btn--inc" (click)="changeScore(1)">+</button>
           </div>
         </div>
 
@@ -463,6 +473,63 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
     .card--score {
       grid-column: 4 / 5;
       grid-row: 1 / 2;
+      gap: 0;
+    }
+
+    .score-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .score-best {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .score-best strong {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: oklch(46% 0.16 55);
+    }
+
+    .score-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .score-number {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .score-number.trend-up   { color: oklch(42% 0.18 145); }
+    .score-number.trend-down { color: oklch(44% 0.18 25);  }
+
+    .score-delta {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      animation: scoreFloat 0.65s ease-out forwards;
+      pointer-events: none;
+    }
+
+    .score-delta.pos { color: oklch(42% 0.18 145); }
+    .score-delta.neg { color: oklch(44% 0.18 25);  }
+
+    @keyframes scoreFloat {
+      0%   { opacity: 1; transform: translateY(-50%); }
+      100% { opacity: 0; transform: translateY(-140%); }
     }
 
     .score-btns {
@@ -474,17 +541,35 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
     .score-btn {
       flex: 1;
       height: 34px;
-      border: 1px solid oklch(88% 0.002 265);
       border-radius: 100px;
-      background: transparent;
       font-size: 20px;
       font-family: var(--font);
       line-height: 1;
-      color: var(--ink);
       cursor: pointer;
-      transition: background 0.12s;
+      transition: all 0.12s;
+      padding: 0;
     }
-    .score-btn:hover { background: oklch(96% 0.001 265); }
+
+    .score-btn--dec {
+      border: 1px solid oklch(88% 0.002 265);
+      background: transparent;
+      color: var(--muted);
+    }
+    .score-btn--dec:hover {
+      border-color: oklch(44% 0.18 25);
+      color: oklch(44% 0.18 25);
+      background: oklch(97% 0.04 25);
+    }
+
+    .score-btn--inc {
+      border: 1px solid oklch(52% 0.20 145);
+      background: oklch(52% 0.20 145);
+      color: #fff;
+    }
+    .score-btn--inc:hover {
+      background: oklch(44% 0.20 145);
+      border-color: oklch(44% 0.20 145);
+    }
 
     /* ── Compact: col 3, row 2 ───────────────── */
     .card--compact {
@@ -1068,8 +1153,12 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
   `],
 })
 export class DemosComponent implements OnInit {
-  protected countdown = signal(30);
-  protected score = signal(0);
+  protected countdown  = signal(30);
+  protected score      = signal(0);
+  protected scoreBest  = signal(0);
+  protected scoreTrend = signal<'up' | 'down' | 'neutral'>('neutral');
+  protected scoreDelta = signal(0);
+  private   scoreTrendTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected compact = signal(1200);
   protected compactFmt: Intl.NumberFormatOptions = {
@@ -1269,7 +1358,24 @@ export class DemosComponent implements OnInit {
       this.socialComments.update(v => v + 1);
     }, 6000));
 
-    this.destroyRef.onDestroy(() => ids.forEach(id => clearInterval(id)));
+    this.destroyRef.onDestroy(() => {
+      ids.forEach(id => clearInterval(id));
+      if (this.scoreTrendTimer) clearTimeout(this.scoreTrendTimer);
+    });
+  }
+
+  protected changeScore(delta: number): void {
+    this.score.update(v => v + delta);
+    this.scoreBest.update(v => Math.max(v, this.score()));
+    this.scoreTrend.set(delta > 0 ? 'up' : 'down');
+    this.scoreDelta.set(0);
+    setTimeout(() => this.scoreDelta.set(delta));
+    if (this.scoreTrendTimer) clearTimeout(this.scoreTrendTimer);
+    this.scoreTrendTimer = setTimeout(() => {
+      this.scoreTrend.set('neutral');
+      this.scoreDelta.set(0);
+      this.scoreTrendTimer = null;
+    }, 650);
   }
 
   protected triggerDuration(): void {
