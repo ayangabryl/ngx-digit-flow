@@ -195,27 +195,43 @@ export class DigitFlowComponent {
         const from  = this.prevNumericValue;
         const diff  = v - from;
         // Use floor so each step spans at least one full integer, preventing
-        // Math.round from producing duplicate consecutive intermediate values
-        // (e.g. 0→2.1 with ceil=3 steps yields [1,1,2.1]; floor=2 yields [1,2.1]).
+        // Math.round from producing duplicate consecutive intermediate values.
         const steps = Math.min(Math.max(1, Math.floor(Math.abs(diff))), MAX_CONTINUOUS_STEPS);
 
         if (steps > 1) {
-          const totalDur = this.effectiveSettings().duration;
-          this._continuousStepDuration = Math.max(80, totalDur / steps);
-
+          // Pre-build all intermediate formatted numbers so we can check structure.
+          const intermediateValues: number[]          = [];
+          const intermediateFormatted: FormattedNumber[] = [];
           for (let i = 1; i <= steps; i++) {
             const iv = i === steps ? v : Math.round(from + diff * (i / steps));
-            this._continuousQueue.push(formatToData(iv, fmt, loc, pfx, sfx));
-            this._continuousValues.push(iv);
+            intermediateValues.push(iv);
+            intermediateFormatted.push(formatToData(iv, fmt, loc, pfx, sfx));
           }
 
-          // Process first step (snapshot was just taken above)
-          this.processContinuousQueue(true);
-          return;
+          // Only step-chain when the DOM structure changes at some intermediate value
+          // (e.g. 9→10 adds a digit). For pure value changes within the same structure,
+          // N consecutive tiny spring animations look choppy — one smooth animation is
+          // both visually superior and semantically equivalent (the reel scrolls through
+          // every intermediate digit naturally).
+          const curIntLen  = untracked(() => this.data().integer.length);
+          const curFracLen = untracked(() => this.data().fraction.length);
+          const hasStructureChange = intermediateFormatted.some(
+            f => f.integer.length !== curIntLen || f.fraction.length !== curFracLen
+          );
+
+          if (hasStructureChange) {
+            const totalDur = this.effectiveSettings().duration;
+            this._continuousStepDuration = Math.max(80, totalDur / steps);
+            this._continuousQueue  = intermediateFormatted;
+            this._continuousValues = intermediateValues;
+            this.processContinuousQueue(true);
+            return;
+          }
+          // No structure change: fall through to the single-animation path below.
         }
       }
 
-      // Normal mode
+      // Normal single animation — also used by continuous mode when structure is stable.
       untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
       if (isPlatformBrowser(this.platformId) && this.animated()) {
         this._pending = true;
