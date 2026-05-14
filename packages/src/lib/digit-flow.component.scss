@@ -26,6 +26,10 @@
 ngx-digit-flow {
   display: inline-block;
   position: relative;
+  direction: ltr;
+  isolation: isolate;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .df-number {
@@ -42,9 +46,11 @@ ngx-digit-flow {
   // ── Mask (number-flow blur-vignette technique) ──────────────────────────────
   --df-mask-height: 0.25em;
   --df-mask-width: 0.5em;
-  --df-half-mask-h: calc(var(--df-mask-height) / 2);
+  --df-half-mask-h: round(nearest, calc(var(--df-mask-height) / 2), 1px);
+  --df-resolved-mask-height: calc(var(--df-half-mask-h) * 2);
+  --df-scaled-mask-width: calc(var(--df-mask-width) / var(--_df-scale-x));
 
-  margin: calc(-1 * var(--df-half-mask-h)) calc(-1 * var(--df-mask-width));
+  margin: 0 calc(-1 * var(--df-mask-width));
 }
 
 .df-number__inner {
@@ -60,15 +66,15 @@ ngx-digit-flow {
     linear-gradient(
       to right,
       transparent 0,
-      #000 var(--df-mask-width),
-      #000 calc(100% - var(--df-mask-width)),
+      #000 var(--df-scaled-mask-width),
+      #000 calc(100% - var(--df-scaled-mask-width)),
       transparent 100%
     ),
     linear-gradient(
       to bottom,
       transparent 0,
-      #000 var(--df-mask-height),
-      #000 calc(100% - var(--df-mask-height)),
+      #000 var(--df-resolved-mask-height),
+      #000 calc(100% - var(--df-resolved-mask-height)),
       transparent 100%
     ),
     radial-gradient(at bottom right, #000 0, transparent 71%),
@@ -77,12 +83,12 @@ ngx-digit-flow {
     radial-gradient(at top right, #000 0, transparent 71%);
 
   -webkit-mask-size:
-    100% calc(100% - var(--df-mask-height) * 2),
-    calc(100% - var(--df-mask-width) * 2) 100%,
-    var(--df-mask-width) var(--df-mask-height),
-    var(--df-mask-width) var(--df-mask-height),
-    var(--df-mask-width) var(--df-mask-height),
-    var(--df-mask-width) var(--df-mask-height);
+    100% calc(100% - var(--df-resolved-mask-height) * 2),
+    calc(100% - var(--df-scaled-mask-width) * 2) 100%,
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height),
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height),
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height),
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height);
 
   -webkit-mask-position:
     center,
@@ -97,15 +103,15 @@ ngx-digit-flow {
     linear-gradient(
       to right,
       transparent 0,
-      #000 var(--df-mask-width),
-      #000 calc(100% - var(--df-mask-width)),
+      #000 var(--df-scaled-mask-width),
+      #000 calc(100% - var(--df-scaled-mask-width)),
       transparent 100%
     ),
     linear-gradient(
       to bottom,
       transparent 0,
-      #000 var(--df-mask-height),
-      #000 calc(100% - var(--df-mask-height)),
+      #000 var(--df-resolved-mask-height),
+      #000 calc(100% - var(--df-resolved-mask-height)),
       transparent 100%
     ),
     radial-gradient(at bottom right, #000 0, transparent 71%),
@@ -114,12 +120,12 @@ ngx-digit-flow {
     radial-gradient(at top right, #000 0, transparent 71%);
 
   mask-size:
-    100% calc(100% - var(--df-mask-height) * 2),
-    calc(100% - var(--df-mask-width) * 2) 100%,
-    var(--df-mask-width) var(--df-mask-height),
-    var(--df-mask-width) var(--df-mask-height),
-    var(--df-mask-width) var(--df-mask-height),
-    var(--df-mask-width) var(--df-mask-height);
+    100% calc(100% - var(--df-resolved-mask-height) * 2),
+    calc(100% - var(--df-scaled-mask-width) * 2) 100%,
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height),
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height),
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height),
+    var(--df-scaled-mask-width) var(--df-resolved-mask-height);
 
   mask-position:
     center,
@@ -140,7 +146,7 @@ ngx-digit-flow {
   display: inline-block;
   position: relative;
   // Height = one padded row
-  height: calc(1em + var(--df-mask-height, 0.25em));
+  height: calc(1em + var(--df-resolved-mask-height, 0.25em));
   // Horizontal bleed for round glyphs (6, 9); vertical clip handled by mask
   clip-path: inset(0 -0.2em);
   vertical-align: top;
