@@ -11,6 +11,7 @@ let holdColorAnimations = false;
 let holdAllAnimations = false;
 let prefersReducedMotion = false;
 let linearEasingSupported = true;
+let heldAnimationResolvers: (() => void)[] = [];
 
 function finishImmediatelyAnimation(): Animation {
   return {
@@ -41,7 +42,7 @@ function testAnimation(
   return {
     finished:
       holdAllAnimations || (colorAnimation && holdColorAnimations)
-        ? new Promise(() => undefined)
+        ? new Promise<void>((resolve) => heldAnimationResolvers.push(resolve))
         : Promise.resolve(),
     cancel: () => undefined,
   } as unknown as Animation;
@@ -99,6 +100,7 @@ describe('DigitFlowComponent', () => {
     holdAllAnimations = false;
     prefersReducedMotion = false;
     linearEasingSupported = true;
+    heldAnimationResolvers = [];
 
     const cssMock = {
       registerProperty: () => undefined,
@@ -598,6 +600,30 @@ describe('DigitFlowComponent', () => {
     await fixture.whenStable();
 
     expect(starts).toBe(1);
+  });
+
+  it('emits finish when an older interrupted batch resolves after a newer shorter batch', async () => {
+    let finishes = 0;
+    fixture.componentInstance.animationsFinish.subscribe(() => finishes++);
+
+    holdAllAnimations = true;
+    fixture.componentRef.setInput('value', 1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    holdAllAnimations = false;
+    fixture.componentRef.setInput('value', 2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await Promise.resolve();
+
+    expect(finishes).toBe(0);
+
+    heldAnimationResolvers.forEach((resolve) => resolve());
+    await fixture.whenStable();
+    await Promise.resolve();
+
+    expect(finishes).toBe(1);
   });
 
   it('skips animations while the document is hidden', async () => {
