@@ -7,7 +7,6 @@ export type {
   DigitFlowDigits,
   DigitFlowTiming,
   DigitFlowTrend,
-  DigitFlowVariant,
   FormattedNumber,
   NumberPart,
 } from './lib/digit-flow.types';

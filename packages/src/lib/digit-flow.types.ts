@@ -19,16 +19,6 @@ export const EMPTY_FORMATTED: FormattedNumber = {
   post: [],
 };
 
-/**
- * Pre-configured animation presets that control duration and easing.
- * - `default`: 900ms spring (odometer feel)
- * - `gaming`: 280ms overshoot spring (snappy, energetic)
- * - `metrics`: 800ms ease-out (smooth dashboard)
- * - `finance`: 1400ms spring (slow, professional)
- * - `smooth`: 750ms material ease (clean, modern)
- */
-export type DigitFlowVariant = 'default' | 'gaming' | 'metrics' | 'finance' | 'smooth';
-
 export type DigitFlowTrend = number | ((oldValue: number, value: number) => number);
 
 export type DigitFlowTiming = Omit<KeyframeAnimationOptions, 'composite'>;
