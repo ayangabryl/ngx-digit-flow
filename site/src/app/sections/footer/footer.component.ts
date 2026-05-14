@@ -11,15 +11,9 @@ import { Component } from '@angular/core';
           <span class="footer__tag">Built for Angular</span>
         </div>
         <div class="footer__links">
-          <a href="https://github.com/barvian/number-flow" target="_blank" rel="noopener">
-            Inspired by number-flow
-          </a>
-          <span class="footer__dot">·</span>
           <a href="https://angular.dev" target="_blank" rel="noopener">Angular</a>
         </div>
-        <p class="footer__copy">
-          MIT License · Signals-first · Zero runtime dependencies
-        </p>
+        <p class="footer__copy">MIT License · Signals-first · Zero runtime dependencies</p>
       </div>
     </footer>
   `,

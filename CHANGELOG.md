@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.6 - 2026-05-15
+
+### Changed
+
+- Removed external project references from package metadata, site footer, changelog wording, code comments, tests, and the bundled agent skill.
+- Updated package keywords so `ngx-digit-flow` is described independently.
+
 ## 0.0.5 - 2026-05-15
 
 ### Added
@@ -10,7 +17,7 @@
 
 ### Changed
 
-- Reworked the animation engine to more closely match number-flow's primitives:
+- Reworked the animation engine around reel-based WAAPI primitives:
   - one WAAPI animation per digit update,
   - accumulated CSS custom-property deltas,
   - spring timing for spin and layout motion,

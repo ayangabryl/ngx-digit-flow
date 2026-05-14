@@ -43,7 +43,7 @@ ngx-digit-flow {
   --_df-scale-x: calc(1 + var(--_df-d-width) / var(--_df-width));
   transform: translateX(var(--_df-dx)) scaleX(var(--_df-scale-x));
 
-  // ── Mask (number-flow blur-vignette technique) ──────────────────────────────
+  // ── Masked edge fade ────────────────────────────────────────────────────────
   --df-mask-height: 0.25em;
   --df-mask-width: 0.5em;
   --df-half-mask-h: round(nearest, calc(var(--df-mask-height) / 2), 1px);
