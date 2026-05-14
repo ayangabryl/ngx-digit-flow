@@ -213,7 +213,7 @@ describe('DigitFlowComponent', () => {
     expect(spinDeltas).toEqual(expect.arrayContaining([-2, -10]));
   });
 
-  it('spins newly inserted digits from zero like number-flow', async () => {
+  it('spins newly inserted digits from zero', async () => {
     fixture.componentRef.setInput('value', 0);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -480,7 +480,7 @@ describe('DigitFlowComponent', () => {
     );
   });
 
-  it('keeps the default opacity timing at 450ms like number-flow', async () => {
+  it('keeps the default opacity timing at 450ms', async () => {
     fixture.componentRef.setInput('duration', 1200);
     fixture.componentRef.setInput('value', 9);
     fixture.detectChanges();

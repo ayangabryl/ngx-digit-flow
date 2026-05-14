@@ -28,7 +28,7 @@ import { canAnimateDigitFlow } from './capabilities';
 
 // ── Easings ──────────────────────────────────────────────────────────────────
 
-// number-flow's spring — 100-point linear() approximation of a damped spring.
+// 100-point linear() approximation of a damped spring.
 const SPIN_EASING =
   'linear(0,.005,.019,.039,.066,.096,.129,.165,.202,.24,.278,.316,.354,.39,.426,.461,' +
   '.494,.526,.557,.586,.614,.64,.665,.689,.711,.731,.751,.769,.786,.802,.817,.831,.844,' +
@@ -86,7 +86,7 @@ export class DigitFlowComponent {
   /**
    * When a higher-place digit changes, spin all lower-place unchanged digits a full reel
    * loop — giving the illusion that the whole number is ticking through intermediate values.
-   * Matches number-flow's continuous plugin behaviour.
+   * Uses one synchronized visual update instead of queued intermediate states.
    */
   continuous = input<boolean>(false);
   /** Configure digit reels by decimal position. Useful for clocks, e.g. `{ 1: { max: 5 } }`. */
@@ -288,7 +288,7 @@ export class DigitFlowComponent {
     // ── Continuous mode: find the first changed digit position.
     // Unchanged digits below that position spin a full reel loop, giving the visual
     // illusion of ticking through intermediate values — same technique as
-    // number-flow's continuous plugin. No step-chaining needed; it's one animation.
+    // No step-chaining needed; it's one animation.
     const continuousStartPos =
       this.continuous() && d > 0 && trend !== 0 ? this.getContinuousStartPos() : undefined;
 

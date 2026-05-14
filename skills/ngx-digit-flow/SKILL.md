@@ -2,7 +2,7 @@
 name: ngx-digit-flow
 description: >
   Install, configure, and use ngx-digit-flow, the Angular digit animation library
-  that animates numbers with number-flow-inspired reels, accumulated WAAPI motion,
+  that animates numbers with reel-based digit motion, accumulated WAAPI animation,
   continuous ticker visuals, and locale-aware digit glyphs. Use when adding animated
   counters, prices, timers, odometers, scoreboards, dashboards, or any live number
   transition in Angular.
@@ -14,7 +14,7 @@ description: >
 It is zero-dependency, SSR-safe, signal-friendly, locale-aware, and built on the Web Animations API,
 CSS `@property`, and CSS math.
 
-Use it when a user wants animated numbers in Angular and would otherwise reach for `number-flow`.
+Use it when a user wants polished animated numbers in Angular.
 
 ## Install
 
@@ -58,7 +58,7 @@ export class PriceComponent {
 | `spinTiming`              | `DigitFlowTiming`                       | `transformTiming`       | Full WAAPI timing for vertical digit reel motion. Overrides `duration`/`spinEasing`.                                                 |
 | `opacityTiming`           | `DigitFlowTiming`                       | `opacityDuration`       | Full WAAPI timing for presence fades.                                                                                                |
 | `trend`                   | `number \| (oldValue, value) => number` | auto                    | Controls reel direction. Use `1` up, `-1` down, `0` per-digit shortest direction, or a function.                                     |
-| `continuous`              | `boolean`                               | `false`                 | Number-flow-style visual continuity: lower unchanged digits loop one full reel when a higher-place digit changes.                    |
+| `continuous`              | `boolean`                               | `false`                 | Visual continuity mode: lower unchanged digits loop one full reel when a higher-place digit changes.                                 |
 | `digits`                  | `Record<number, { max?: number }>`      | `{}`                    | Custom reel ranges by decimal position, e.g. `{ 1: { max: 5 } }` for clock tens.                                                     |
 | `respectMotionPreference` | `boolean`                               | `true`                  | Skips animations when `prefers-reduced-motion: reduce` is active.                                                                    |
 | `stagger`                 | `number`                                | `0`                     | Delay in ms between entering/exiting presence animations only. Core spin and layout remain synchronized.                             |
@@ -104,13 +104,13 @@ For countdown or clock-like reels:
 
 ## Current Animation Model
 
-The implementation intentionally follows number-flow's core approach:
+The implementation uses a reel-based WAAPI animation model:
 
 - **One visual update, not queued DOM steps.** Continuous mode does not render `121, 122, ...` as intermediate Angular states. It creates the illusion by spinning lower unchanged digits one full reel.
 - **CSS custom-property deltas.** `--_df-d`, `--_df-d-opacity`, `--_df-d-width`, and `--_df-dx` are animated as typed CSS properties.
 - **`composite: 'accumulate'`.** Rapid changes stack without snapping because WAAPI animations accumulate deltas.
 - **CSS `mod()` reel math.** Each digit computes its circular position from `current + delta`, so reels wrap smoothly.
-- **Number-flow-style timing.** Default spin and layout use a 100-point spring `linear(...)`; opacity defaults to 450ms ease-out.
+- **Spring timing.** Default spin and layout use a 100-point spring `linear(...)`; opacity defaults to 450ms ease-out.
 - **Presence stagger only.** `stagger` delays newly entering/exiting digits and separators. Do not stagger core spin or layout because it desynchronizes the number.
 - **Capability-gated animation.** Animation requires WAAPI, CSS `@property`, CSS `mod()`, and WAAPI `linear(...)` easing support. Otherwise the component still renders the final value.
 
@@ -142,7 +142,7 @@ When adding `ngx-digit-flow` to an Angular component:
 
 **Continuous looks different from a JS counter**
 
-- This is expected and matches number-flow's approach. It is a visual continuity effect, not a JavaScript loop through every integer.
+- This is expected. It is a visual continuity effect, not a JavaScript loop through every integer.
 
 **Custom digit ranges show wrong values**
 
