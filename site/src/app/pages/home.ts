@@ -70,7 +70,7 @@ const STEPS: HeroStep[] = [
         <h1 class="tagline">Numbers that feel alive.</h1>
 
         <p class="sub">
-          Individual digit animations for Angular — powered by Web Animations API
+          Individual digit animations for Angular, powered by Web Animations API
           and <code>Intl.NumberFormat</code>. Signals-first. Zero dependencies. SSR-safe.
         </p>
 
@@ -228,12 +228,13 @@ const STEPS: HeroStep[] = [
       font-size: 12px;
       color: var(--ink);
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      overflow-x: auto;
       flex: 1;
       min-width: 0;
       user-select: all;
+      scrollbar-width: none;
     }
+    .install-code::-webkit-scrollbar { display: none; }
 
     .copy-btn {
       flex-shrink: 0;

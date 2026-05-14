@@ -4,6 +4,8 @@ Individual digit animations for Angular. Each digit has a vertical reel (0-9) th
 
 Built on Web Animations API + CSS `@property`. Zero dependencies. SSR-safe. Signals-first.
 
+**Website:** [ngx-digit-flow.ayangabryl.com](https://ngx-digit-flow.ayangabryl.com)
+
 [![npm](https://img.shields.io/npm/v/ngx-digit-flow)](https://www.npmjs.com/package/ngx-digit-flow)
 [![license](https://img.shields.io/github/license/ayangabryl/ngx-digit-flow)](LICENSE)
 

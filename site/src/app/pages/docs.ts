@@ -384,96 +384,109 @@ export class DocsDemoComponent {
         <section class="docs-section" id="api-reference" data-section="api-reference">
           <h2 class="section-heading">API Reference</h2>
 
-          <h3 class="sub-heading">DigitFlowComponent — Inputs</h3>
-          <div class="table-wrap">
-            <table class="api-table">
-              <thead>
-                <tr>
-                  <th>Input</th>
-                  <th>Type</th>
-                  <th>Default</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>value</code></td>
-                  <td><code>number</code></td>
-                  <td><em>required</em></td>
-                  <td>The number to display and animate.</td>
-                </tr>
-                <tr>
-                  <td><code>format</code></td>
-                  <td><code>Intl.NumberFormatOptions</code></td>
-                  <td><code>{{ '{}' }}</code></td>
-                  <td>Options forwarded to <code>Intl.NumberFormat</code>.</td>
-                </tr>
-                <tr>
-                  <td><code>locales</code></td>
-                  <td><code>string | string[]</code></td>
-                  <td><code>undefined</code></td>
-                  <td>BCP 47 locale string(s) for formatting.</td>
-                </tr>
-                <tr>
-                  <td><code>prefix</code></td>
-                  <td><code>string</code></td>
-                  <td><code>''</code></td>
-                  <td>Static text prepended before the number.</td>
-                </tr>
-                <tr>
-                  <td><code>suffix</code></td>
-                  <td><code>string</code></td>
-                  <td><code>''</code></td>
-                  <td>Static text appended after the number.</td>
-                </tr>
-                <tr>
-                  <td><code>animated</code></td>
-                  <td><code>boolean</code></td>
-                  <td><code>true</code></td>
-                  <td>Enables or disables all animations.</td>
-                </tr>
-                <tr>
-                  <td><code>duration</code></td>
-                  <td><code>number</code></td>
-                  <td><code>900</code></td>
-                  <td>Digit spin / FLIP duration in milliseconds.</td>
-                </tr>
-                <tr>
-                  <td><code>opacityDuration</code></td>
-                  <td><code>number</code></td>
-                  <td><code>450</code></td>
-                  <td>Fade-in / fade-out duration for appearing and exiting elements.</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="api-group">
+            <div class="api-group-label">
+              <span class="api-component-name">DigitFlowComponent</span>
+              <span class="api-kind-badge">Inputs</span>
+            </div>
+            <div class="table-wrap">
+              <table class="api-table">
+                <thead>
+                  <tr>
+                    <th>Input</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>value</code></td>
+                    <td><code>number</code></td>
+                    <td><span class="badge-req">required</span></td>
+                    <td>The number to display and animate.</td>
+                  </tr>
+                  <tr>
+                    <td><code>format</code></td>
+                    <td><code>Intl.NumberFormatOptions</code></td>
+                    <td><code>{{ '{}' }}</code></td>
+                    <td>Options forwarded to <code>Intl.NumberFormat</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><code>locales</code></td>
+                    <td><code>string | string[]</code></td>
+                    <td><code>undefined</code></td>
+                    <td>BCP 47 locale string(s) for formatting.</td>
+                  </tr>
+                  <tr>
+                    <td><code>prefix</code></td>
+                    <td><code>string</code></td>
+                    <td><code>''</code></td>
+                    <td>Static text prepended before the number.</td>
+                  </tr>
+                  <tr>
+                    <td><code>suffix</code></td>
+                    <td><code>string</code></td>
+                    <td><code>''</code></td>
+                    <td>Static text appended after the number.</td>
+                  </tr>
+                  <tr>
+                    <td><code>animated</code></td>
+                    <td><code>boolean</code></td>
+                    <td><code>true</code></td>
+                    <td>Enables or disables all animations.</td>
+                  </tr>
+                  <tr>
+                    <td><code>duration</code></td>
+                    <td><code>number</code></td>
+                    <td><code>900</code></td>
+                    <td>Digit spin / FLIP duration in milliseconds.</td>
+                  </tr>
+                  <tr>
+                    <td><code>opacityDuration</code></td>
+                    <td><code>number</code></td>
+                    <td><code>150</code></td>
+                    <td>Fade-in / fade-out duration for appearing and exiting elements.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <h3 class="sub-heading">DigitFlowComponent — Outputs</h3>
-          <div class="table-wrap">
-            <table class="api-table">
-              <thead>
-                <tr>
-                  <th>Output</th>
-                  <th>Payload</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>animationsStart</code></td>
-                  <td><code>void</code></td>
-                  <td>Fires each time a new batch of animations begins.</td>
-                </tr>
-                <tr>
-                  <td><code>animationsFinish</code></td>
-                  <td><code>void</code></td>
-                  <td>Fires when all currently running animations have settled.</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="api-group">
+            <div class="api-group-label">
+              <span class="api-component-name">DigitFlowComponent</span>
+              <span class="api-kind-badge api-kind-badge--out">Outputs</span>
+            </div>
+            <div class="table-wrap">
+              <table class="api-table">
+                <thead>
+                  <tr>
+                    <th>Output</th>
+                    <th>Payload</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>animationsStart</code></td>
+                    <td><code>void</code></td>
+                    <td>Fires each time a new batch of animations begins.</td>
+                  </tr>
+                  <tr>
+                    <td><code>animationsFinish</code></td>
+                    <td><code>void</code></td>
+                    <td>Fires when all currently running animations have settled.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <h3 class="sub-heading">DigitFlowGroupDirective</h3>
+          <div class="api-group-label" style="margin-top:8px;margin-bottom:10px">
+            <span class="api-component-name">DigitFlowGroupDirective</span>
+            <span class="api-kind-badge">Directive</span>
+          </div>
           <pre class="code-block">{{ codeGroupImport }}</pre>
         </section>
 
@@ -691,7 +704,47 @@ export class DocsDemoComponent {
     }
 
     /* API table */
-    .table-wrap { overflow-x: auto; margin-bottom: 8px; }
+    .api-group {
+      margin-bottom: 28px;
+    }
+
+    .api-group-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .api-component-name {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .api-kind-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: oklch(93% 0.015 255);
+      color: oklch(42% 0.18 255);
+    }
+
+    .api-kind-badge--out {
+      background: oklch(93% 0.015 145);
+      color: oklch(40% 0.15 145);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid oklch(91% 0.005 265);
+      border-radius: 12px;
+      overflow: hidden;
+    }
 
     .api-table {
       width: 100%;
@@ -699,37 +752,63 @@ export class DocsDemoComponent {
       font-size: 13px;
     }
 
-    .api-table th,
+    .api-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: oklch(58% 0.005 265);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: oklch(98.5% 0.002 265);
+      border-bottom: 1px solid oklch(91% 0.005 265);
+      white-space: nowrap;
+    }
+
     .api-table td {
       text-align: left;
-      padding: 10px 14px;
-      border-bottom: 1px solid oklch(93% 0.004 265);
+      padding: 12px 16px;
+      border-bottom: 1px solid oklch(95% 0.003 265);
+      vertical-align: top;
+      color: oklch(28% 0.005 265);
+      line-height: 1.5;
     }
 
-    .api-table th {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: oklch(98.5% 0.003 265);
+    .api-table tbody tr:hover td {
+      background: oklch(99% 0.001 265);
     }
 
-    .api-table td code {
+    .api-table tr:last-child td { border-bottom: none; }
+
+    .api-table td:first-child code {
       font-family: var(--mono);
       font-size: 12px;
-      background: oklch(94% 0.004 265);
+      font-weight: 600;
+      color: oklch(38% 0.12 255);
+      background: oklch(94% 0.015 255);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
+    .api-table td:not(:first-child) code {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink);
+      background: oklch(95% 0.003 265);
       padding: 1px 5px;
       border-radius: 4px;
     }
 
-    .api-table td em {
-      color: var(--muted);
-      font-style: normal;
+    .badge-req {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: oklch(50% 0.17 30);
+      background: oklch(95% 0.07 30);
+      padding: 2px 7px;
+      border-radius: 4px;
     }
-
-    .api-table tr:last-child td { border-bottom: none; }
 
     @media (max-width: 900px) {
       .docs-page {

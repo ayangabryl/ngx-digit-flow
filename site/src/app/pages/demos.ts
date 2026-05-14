@@ -155,15 +155,19 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
         <!-- Pricing tiers -->
         <div class="card card--pricing">
           <span class="card-label">Pricing</span>
-          <div class="pricing-tier">{{ pricingTier() }}</div>
-          <div class="card-center">
-            <ngx-digit-flow
-              [value]="pricingVal()"
-              [format]="pricingFmt"
-              [duration]="700"
-            />
+          <div class="pricing-body">
+            <span class="pricing-tier-badge" [class]="'tier-' + pricingTierSlug()">
+              {{ pricingTier() }}
+            </span>
+            <div class="pricing-amount">
+              <ngx-digit-flow
+                [value]="pricingVal()"
+                [format]="pricingFmt"
+                [duration]="700"
+              />
+            </div>
+            <span class="pricing-cycle">per month</span>
           </div>
-          <div class="pricing-cycle">/ month</div>
         </div>
 
         <!-- Temperature toggle -->
@@ -224,6 +228,67 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
           </div>
         </div>
 
+        <!-- Social counter -->
+        <div class="card card--social">
+          <span class="card-label">Social</span>
+          <div class="social-post">
+            <img class="social-avatar" src="https://profilio.ai/brand/profilio-logo-32.png" alt="avatar" />
+            <p class="social-body">Numbers that feel alive. ngx-digit-flow makes every counter a micro-experience in Angular.</p>
+          </div>
+          <div class="social-stats">
+            <button class="social-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <ngx-digit-flow [value]="socialComments()" [format]="compactFmt" [duration]="400" />
+            </button>
+            <button class="social-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              <ngx-digit-flow [value]="socialReposts()" [format]="compactFmt" [duration]="400" />
+            </button>
+            <button class="social-stat social-stat--heart" [class.liked]="socialLiked()" (click)="toggleLike()">
+              <svg width="15" height="15" viewBox="0 0 24 24" [attr.fill]="socialLiked() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              <ngx-digit-flow [value]="socialLikes()" [format]="compactFmt" [duration]="400" />
+            </button>
+            <button class="social-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <ngx-digit-flow [value]="socialViews()" [format]="compactFmt" [duration]="400" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Cart -->
+        <div class="card card--cart">
+          <span class="card-label">Cart</span>
+          <div class="cart-items">
+            <div class="cart-item">
+              <span class="cart-name">Pro Plan</span>
+              <div class="cart-right">
+                <div class="cart-qty-ctrl">
+                  <button class="cart-qty-btn" (click)="cartQty1.update(v => v > 0 ? v - 1 : 0)">−</button>
+                  <ngx-digit-flow class="cart-qty-num" [value]="cartQty1()" [duration]="200" />
+                  <button class="cart-qty-btn" (click)="cartQty1.update(v => v + 1)">+</button>
+                </div>
+                <ngx-digit-flow class="cart-price" [value]="cartQty1() * 29.99" [format]="cartFmt" [duration]="350" />
+              </div>
+            </div>
+            <div class="cart-item">
+              <span class="cart-name">Add-on</span>
+              <div class="cart-right">
+                <div class="cart-qty-ctrl">
+                  <button class="cart-qty-btn" (click)="cartQty2.update(v => v > 0 ? v - 1 : 0)">−</button>
+                  <ngx-digit-flow class="cart-qty-num" [value]="cartQty2()" [duration]="200" />
+                  <button class="cart-qty-btn" (click)="cartQty2.update(v => v + 1)">+</button>
+                </div>
+                <ngx-digit-flow class="cart-price" [value]="cartQty2() * 9.99" [format]="cartFmt" [duration]="350" />
+              </div>
+            </div>
+          </div>
+          <div class="cart-divider"></div>
+          <div class="cart-total">
+            <span class="cart-total-label">Total</span>
+            <ngx-digit-flow class="cart-total-val" [value]="cartTotal()" [format]="cartFmt" [duration]="500" />
+          </div>
+        </div>
+
       </div>
     </div>
   `,
@@ -264,7 +329,7 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
     .bento {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: 216px 216px 216px 216px;
+      grid-template-rows: 216px 216px 216px 216px 216px;
       gap: 12px;
     }
 
@@ -479,22 +544,42 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
     .card--pricing {
       grid-column: 3 / 4;
       grid-row: 3 / 4;
+      justify-content: space-between;
     }
 
-    .pricing-tier {
-      font-family: var(--font);
+    .pricing-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .pricing-tier-badge {
       font-size: 11px;
-      color: oklch(52% 0.16 255);
       font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 3px 10px;
+      border-radius: 100px;
+      align-self: flex-start;
       flex-shrink: 0;
-      margin-top: 2px;
-      letter-spacing: 0;
+    }
+
+    .tier-starter    { background: oklch(93% 0.07 145); color: oklch(38% 0.16 145); }
+    .tier-pro        { background: oklch(93% 0.07 255); color: oklch(40% 0.18 255); }
+    .tier-business   { background: oklch(93% 0.07 300); color: oklch(40% 0.18 300); }
+    .tier-enterprise { background: oklch(93% 0.09 55);  color: oklch(40% 0.18 55);  }
+
+    .pricing-amount {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
     }
 
     .pricing-cycle {
-      font-family: var(--font);
       font-size: 11px;
-      color: oklch(68% 0.003 265);
+      color: oklch(62% 0.003 265);
       flex-shrink: 0;
     }
 
@@ -611,6 +696,167 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
       border-color: oklch(56% 0.22 255);
     }
 
+    /* ── Social: col 1–2, row 5 ────────────── */
+    .card--social {
+      grid-column: 1 / 3;
+      grid-row: 5 / 6;
+    }
+
+    .social-post {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      margin-top: 10px;
+    }
+
+    .social-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      object-fit: cover;
+    }
+
+    .social-body {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .social-stats {
+      display: flex;
+      flex-shrink: 0;
+      border-top: 1px solid oklch(94% 0.002 265);
+      margin: 0 -22px;
+      padding: 0 22px;
+    }
+
+    .social-stat {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: oklch(55% 0.005 265);
+      padding: 10px 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: color 0.15s;
+      font-family: var(--font);
+    }
+
+    .social-stat:hover { color: var(--ink); }
+    .social-stat--heart:hover { color: oklch(55% 0.20 10); }
+    .social-stat--heart.liked { color: oklch(55% 0.20 10); }
+
+    /* ── Cart: col 3–4, row 5 ────────────── */
+    .card--cart {
+      grid-column: 3 / 5;
+      grid-row: 5 / 6;
+    }
+
+    .cart-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .cart-name {
+      font-size: 13px;
+      color: var(--ink);
+      flex: 1;
+    }
+
+    .cart-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cart-qty-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      border: 1px solid oklch(88% 0.002 265);
+      border-radius: 100px;
+      padding: 2px 6px;
+    }
+
+    .cart-qty-btn {
+      width: 22px;
+      height: 22px;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      line-height: 1;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.12s;
+      padding: 0;
+      font-family: var(--font);
+    }
+    .cart-qty-btn:hover { background: oklch(94% 0.002 265); }
+
+    .cart-qty-num {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 18px;
+      text-align: center;
+      color: var(--ink);
+      display: inline-flex;
+      justify-content: center;
+    }
+
+    .cart-price {
+      font-size: 13px;
+      font-weight: 500;
+      min-width: 56px;
+      text-align: right;
+      color: oklch(45% 0.003 265);
+    }
+
+    .cart-divider {
+      height: 1px;
+      background: oklch(92% 0.002 265);
+      flex-shrink: 0;
+      margin: auto 0 8px;
+    }
+
+    .cart-total {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .cart-total-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .cart-total-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
     /* ── Responsive ─────────────────────────── */
     @media (max-width: 900px) {
       .demos-page { padding: 32px 20px 48px; }
@@ -628,6 +874,8 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
       .card--temp      { grid-column: 2 / 3; grid-row: 5 / 6; }
       .card--duration  { grid-column: 1 / 3; grid-row: 6 / 7; }
       .card--locale    { grid-column: 1 / 3; grid-row: 7 / 8; }
+      .card--social    { grid-column: 1 / 3; grid-row: 8 / 9; }
+      .card--cart      { grid-column: 1 / 3; grid-row: 9 / 10; }
       .trend-price     { font-size: 3rem; }
       .sparkline-wrap  { height: 52px; }
       .card-center     { font-size: 2.8rem; }
@@ -645,7 +893,9 @@ import { DigitFlowComponent, DigitFlowGroupDirective } from 'ngx-digit-flow';
       .card--pricing,
       .card--temp,
       .card--duration,
-      .card--locale { grid-column: 1 / 2; grid-row: auto; }
+      .card--locale,
+      .card--social,
+      .card--cart { grid-column: 1 / 2; grid-row: auto; }
     }
   `],
 })
@@ -729,8 +979,9 @@ export class DemosComponent implements OnInit {
     { label: 'Enterprise', price: 199.00 },
   ];
   private pricingIdx = 0;
-  protected pricingVal  = signal(this.pricingTiers[0].price);
-  protected pricingTier = signal(this.pricingTiers[0].label);
+  protected pricingVal      = signal(this.pricingTiers[0].price);
+  protected pricingTier     = signal(this.pricingTiers[0].label);
+  protected pricingTierSlug = computed(() => this.pricingTier().toLowerCase());
   protected pricingFmt: Intl.NumberFormatOptions = {
     style: 'currency',
     currency: 'USD',
@@ -768,6 +1019,21 @@ export class DemosComponent implements OnInit {
     currency: 'USD',
   });
   protected localeStr = signal<string>('en-US');
+
+  // Social counter
+  protected socialComments = signal(40);
+  protected socialReposts  = signal(2_100);
+  protected socialLikes    = signal(21_000);
+  protected socialViews    = signal(429_000);
+  protected socialLiked    = signal(false);
+
+  // Cart
+  protected cartQty1  = signal(1);
+  protected cartQty2  = signal(2);
+  protected cartFmt: Intl.NumberFormatOptions = { style: 'currency', currency: 'USD', minimumFractionDigits: 2 };
+  protected cartTotal = computed(() =>
+    parseFloat((this.cartQty1() * 29.99 + this.cartQty2() * 9.99).toFixed(2))
+  );
 
   private destroyRef = inject(DestroyRef);
 
@@ -815,6 +1081,18 @@ export class DemosComponent implements OnInit {
       this.tempC.set(c);
     }, 800));
 
+    // Social counter live increments
+    ids.push(setInterval(() => {
+      this.socialLikes.update(v => v + Math.floor(Math.random() * 12 + 4));
+      this.socialViews.update(v => v + Math.floor(Math.random() * 300 + 80));
+    }, 1200));
+    ids.push(setInterval(() => {
+      this.socialReposts.update(v => v + Math.floor(Math.random() * 3 + 1));
+    }, 3500));
+    ids.push(setInterval(() => {
+      this.socialComments.update(v => v + 1);
+    }, 6000));
+
     this.destroyRef.onDestroy(() => ids.forEach(id => clearInterval(id)));
   }
 
@@ -830,5 +1108,11 @@ export class DemosComponent implements OnInit {
 
   protected onSliderChange(event: Event): void {
     this.sliderVal.set(+(event.target as HTMLInputElement).value);
+  }
+
+  protected toggleLike(): void {
+    const liked = !this.socialLiked();
+    this.socialLiked.set(liked);
+    this.socialLikes.update(v => liked ? v + 1 : v - 1);
   }
 }
