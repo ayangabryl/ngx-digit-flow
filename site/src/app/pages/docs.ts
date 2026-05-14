@@ -546,8 +546,9 @@ export class DocsDemoComponent {
         <section class="docs-section" id="stagger" data-section="stagger">
           <h2 class="section-heading">Stagger</h2>
           <p class="section-desc">
-            <code>[stagger]</code> adds a delay in milliseconds between presence animations for
-            newly entering or exiting parts. Core digit spin and layout motion stay synchronized.
+            <code>[stagger]</code> delays newly entering and exiting digits or separators.
+            Same-width value updates intentionally look the same because core digit spin and layout
+            motion stay synchronized.
           </p>
 
           <docs-demo label="stagger" [code]="codeStagger">
@@ -1361,8 +1362,8 @@ export class DocsComponent implements OnInit, AfterViewInit {
   protected contVal = signal(120);
 
   // Stagger
-  protected staggerVal = signal(12345);
-  private staggerValues = [12345, 98765, 50505, 30003, 81818];
+  protected staggerVal = signal(999);
+  private staggerValues = [999, 12000, 85, 1000000, 4500, 7];
   private staggerIdx = 0;
 
   // Color flash
@@ -1539,10 +1540,10 @@ export class MyComponent {}`;
 <!-- visually tick through intermediate values with one smooth animation -->
 <ngx-digit-flow [value]="n" [duration]="500" [continuous]="true" />`;
 
-  protected codeStagger = `<!-- all elements animate simultaneously (default) -->
+  protected codeStagger = `<!-- all core digit motion stays synchronized (default) -->
 <ngx-digit-flow [value]="n" />
 
-<!-- 60ms cascade for entering/exiting parts -->
+<!-- 60ms cascade when digits/separators enter or exit -->
 <ngx-digit-flow [value]="n" [stagger]="60" />`;
 
   protected codeColorFlash = `<ngx-digit-flow
