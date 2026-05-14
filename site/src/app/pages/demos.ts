@@ -286,21 +286,28 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
         <!-- Currency / locale -->
         <div class="card card--locale">
           <span class="card-label">Locale</span>
-          <div class="card-center">
-            <ngx-digit-flow
-              [value]="1_234_567.89"
+          <div class="locale-primary">
+            <span class="locale-flag">{{ localeActive().flag }}</span>
+            <ngx-digit-flow class="locale-primary-val"
+              [value]="localeNum()"
               [format]="localeFmt()"
               [locales]="localeStr()"
-              [duration]="900"
+              [duration]="700"
             />
           </div>
-          <div class="locale-btns">
-            @for (opt of localeOptions; track opt.locale) {
-              <button
-                class="locale-btn"
-                [class.active]="localeStr() === opt.locale"
-                (click)="setLocale(opt)"
-              >{{ opt.label }}</button>
+          <div class="locale-others">
+            @for (opt of localeOthers(); track opt.locale) {
+              <button class="locale-other-row" (click)="setLocale(opt)">
+                <span class="locale-other-flag">{{ opt.flag }}</span>
+                <span class="locale-other-code">{{ opt.label }}</span>
+                <ngx-digit-flow class="locale-other-val"
+                  [value]="localeNum()"
+                  [format]="opt.localeFmt"
+                  [locales]="opt.locale"
+                  [duration]="700"
+                />
+                <svg class="locale-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
             }
           </div>
         </div>
@@ -1109,31 +1116,80 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
     .card--locale {
       grid-column: 3 / 5;
       grid-row: 4 / 5;
+      gap: 0;
     }
 
-    .locale-btns {
+    .locale-primary {
+      flex: 1;
       display: flex;
-      gap: 6px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .locale-flag {
+      font-size: 22px;
+      line-height: 1;
       flex-shrink: 0;
     }
 
-    .locale-btn {
-      font-family: var(--font);
-      font-size: 12px;
-      font-weight: 500;
-      padding: 6px 14px;
-      border: 1px solid oklch(88% 0.002 265);
-      border-radius: 100px;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.12s;
+    .locale-primary-val {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
     }
-    .locale-btn:hover { color: var(--ink); border-color: oklch(70% 0.003 265); }
-    .locale-btn.active {
-      background: oklch(56% 0.22 255);
-      color: #fff;
-      border-color: oklch(56% 0.22 255);
+
+    .locale-others {
+      flex-shrink: 0;
+      border-top: 1px solid oklch(93% 0.002 265);
+      padding-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 0 -22px;
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+
+    .locale-other-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: transparent;
+      border: none;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: background 0.12s;
+      width: 100%;
+      text-align: left;
+      margin: 0 -10px;
+      width: calc(100% + 20px);
+    }
+
+    .locale-other-row:hover { background: oklch(96% 0.003 265); }
+
+    .locale-other-flag { font-size: 16px; line-height: 1; flex-shrink: 0; }
+
+    .locale-other-code {
+      font-size: 11px;
+      font-weight: 600;
+      color: oklch(58% 0.005 265);
+      min-width: 28px;
+      letter-spacing: 0.02em;
+    }
+
+    .locale-other-val {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink);
+      flex: 1;
+    }
+
+    .locale-chevron {
+      color: oklch(75% 0.003 265);
+      flex-shrink: 0;
     }
 
     /* ── Social: col 1–2, row 5 ────────────── */
@@ -1497,15 +1553,15 @@ export class DemosComponent implements OnInit {
   };
 
   protected localeOptions = [
-    { label: 'USD', locale: 'en-US', currency: 'USD' },
-    { label: 'EUR', locale: 'de-DE', currency: 'EUR' },
-    { label: 'JPY', locale: 'ja-JP', currency: 'JPY' },
+    { label: 'USD', locale: 'en-US', currency: 'USD', flag: '🇺🇸', localeFmt: { style: 'currency', currency: 'USD' } as Intl.NumberFormatOptions },
+    { label: 'EUR', locale: 'de-DE', currency: 'EUR', flag: '🇩🇪', localeFmt: { style: 'currency', currency: 'EUR' } as Intl.NumberFormatOptions },
+    { label: 'JPY', locale: 'ja-JP', currency: 'JPY', flag: '🇯🇵', localeFmt: { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 } as Intl.NumberFormatOptions },
   ];
-  protected localeFmt = signal<Intl.NumberFormatOptions>({
-    style: 'currency',
-    currency: 'USD',
-  });
-  protected localeStr = signal<string>('en-US');
+  protected localeStr    = signal('en-US');
+  protected localeFmt    = computed(() => this.localeOptions.find(o => o.locale === this.localeStr())!.localeFmt);
+  protected localeActive = computed(() => this.localeOptions.find(o => o.locale === this.localeStr())!);
+  protected localeOthers = computed(() => this.localeOptions.filter(o => o.locale !== this.localeStr()));
+  protected localeNum    = signal(1_234_567.89);
 
   // Social counter
   protected socialComments = signal(40);
@@ -1582,6 +1638,11 @@ export class DemosComponent implements OnInit {
       this.socialComments.update(v => v + 1);
     }, 6000));
 
+    // Locale number live drift
+    ids.push(setInterval(() => {
+      this.localeNum.update(v => parseFloat((v + Math.random() * 400 - 80).toFixed(2)));
+    }, 2800));
+
     // Transfer rate live oscillation
     let transferPhase = 0;
     ids.push(setInterval(() => {
@@ -1624,8 +1685,7 @@ export class DemosComponent implements OnInit {
     this.transferAmount.set(+(event.target as HTMLInputElement).value);
   }
 
-  protected setLocale(opt: { locale: string; currency: string; label: string }): void {
-    this.localeFmt.set({ style: 'currency', currency: opt.currency });
+  protected setLocale(opt: { locale: string }): void {
     this.localeStr.set(opt.locale);
   }
 
