@@ -7,6 +7,16 @@ Built on Web Animations API + CSS `@property`. Zero dependencies. SSR-safe. Sign
 [![npm](https://img.shields.io/npm/v/ngx-digit-flow)](https://www.npmjs.com/package/ngx-digit-flow)
 [![license](https://img.shields.io/github/license/ayangabryl/ngx-digit-flow)](LICENSE)
 
+## AI skill
+
+Install the `ngx-digit-flow` skill so your AI assistant knows the full API and can wire it into your components:
+
+```bash
+npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow
+```
+
+Works with Claude Code and any agent that supports the [Agent Skills](https://anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) format.
+
 ## Install
 
 ```bash
@@ -105,16 +115,6 @@ import { DigitFlowGroupDirective } from 'ngx-digit-flow';
 Requires CSS `mod()` and `@property`: Chrome 125+, Safari 15.4+, Firefox 118+.
 
 `prefers-reduced-motion` is respected automatically - no extra code needed.
-
-## AI skill
-
-Install the `ngx-digit-flow` skill so your AI assistant knows the full API and can wire it into your components:
-
-```bash
-npx skills add ayangabryl/ngx-digit-flow
-```
-
-Works with Claude Code and any agent that supports the [Agent Skills](https://anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) format.
 
 ## Contributing
 

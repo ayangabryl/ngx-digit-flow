@@ -72,13 +72,13 @@ const STEPS: HeroStep[] = [
         </p>
 
         <div class="installs">
+          <div class="install install--skill">
+            <span class="install-tag">AI skill</span>
+            <code>npx skills add https://github.com/ayangabryl/ngx-digit-flow --skill ngx-digit-flow</code>
+          </div>
           <div class="install">
             <span class="install-tag">npm</span>
             <code>npm install ngx-digit-flow</code>
-          </div>
-          <div class="install install--skill">
-            <span class="install-tag">AI skill</span>
-            <code>npx skills add ayangabryl/ngx-digit-flow</code>
           </div>
         </div>
 
