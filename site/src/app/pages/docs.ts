@@ -534,10 +534,10 @@ export class DocsDemoComponent {
               </div>
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="contVal.update((v) => v + 3)">+3</button>
-              <button class="demo-btn" (click)="contVal.update((v) => v + 7)">+7</button>
-              <button class="demo-btn" (click)="contVal.update((v) => v + 12)">+12</button>
-              <button class="demo-btn" (click)="contVal.set(0)">Reset</button>
+              <button class="demo-btn" (click)="contVal.set(120)">120</button>
+              <button class="demo-btn" (click)="contVal.set(140)">140</button>
+              <button class="demo-btn" (click)="contVal.set(205)">205</button>
+              <button class="demo-btn" (click)="contVal.set(300)">300</button>
             </div>
           </docs-demo>
         </section>
@@ -1357,7 +1357,7 @@ export class DocsComponent implements OnInit, AfterViewInit {
   protected trendMode = signal<number | undefined>(undefined);
 
   // Continuous
-  protected contVal = signal(0);
+  protected contVal = signal(120);
 
   // Stagger
   protected staggerVal = signal(12345);

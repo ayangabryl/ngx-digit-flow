@@ -172,6 +172,44 @@ describe('DigitFlowComponent', () => {
     expect(spinDeltas).toEqual(expect.arrayContaining([-2, -10]));
   });
 
+  it('spins newly inserted digits from zero like number-flow', async () => {
+    fixture.componentRef.setInput('value', 0);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('continuous', true);
+    fixture.componentRef.setInput('value', 12);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spinDeltas = animateCalls
+      .filter((call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']))
+      .map((call) => ((call.keyframes as PropertyIndexedKeyframes)['--_df-d'] as number[])[0]);
+
+    expect(spinDeltas).toEqual(expect.arrayContaining([-1, -2]));
+  });
+
+  it('loops unchanged digits below the first changed position', async () => {
+    fixture.componentRef.setInput('value', 100);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    animateCalls = [];
+    fixture.componentRef.setInput('continuous', true);
+    fixture.componentRef.setInput('value', 205);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const spinDeltas = animateCalls
+      .filter((call) => !Array.isArray(call.keyframes) && Array.isArray(call.keyframes['--_df-d']))
+      .map((call) => ((call.keyframes as PropertyIndexedKeyframes)['--_df-d'] as number[])[0]);
+
+    expect(spinDeltas).toEqual(expect.arrayContaining([-1, -5, -10]));
+  });
+
   it('does not loop unchanged lower digits when continuous mode is disabled', async () => {
     fixture.componentRef.setInput('value', 120);
     fixture.detectChanges();
