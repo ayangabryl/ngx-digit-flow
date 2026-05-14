@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.7 - 2026-05-15
+
+### Changed
+
+- Reduced mobile demo page animation load by pausing live demo card updates while cards are outside the viewport.
+- Skipped digit-flow animation work for hidden or far-offscreen hosts while still updating the displayed value.
+- Updated the site GitHub header control to load its star count from the GitHub API instead of hardcoding the value.
+- Clarified trend documentation around digit path behavior and improved the Trend demo labels.
+
 ## 0.0.6 - 2026-05-15
 
 ### Changed
