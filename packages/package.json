@@ -1,6 +1,17 @@
 {
   "name": "ngx-digit-flow",
   "version": "0.0.1",
+  "description": "Individual digit animations for Angular. Slot-machine / odometer style. Built on Web Animations API.",
+  "keywords": ["angular", "animation", "digit", "number", "counter", "odometer", "slot-machine", "waapi"],
+  "license": "MIT",
+  "homepage": "https://github.com/ayangabryl/ngx-digit-flow#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ayangabryl/ngx-digit-flow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ayangabryl/ngx-digit-flow/issues"
+  },
   "peerDependencies": {
     "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0"
