@@ -46,30 +46,29 @@ export class PriceComponent {
 
 ### Inputs
 
-| Input                     | Type                                                          | Default           | Description                                                                        |
-| ------------------------- | ------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------- |
-| `value`                   | `number`                                                      | required          | The number to display and animate                                                  |
-| `format`                  | `Intl.NumberFormatOptions`                                    | `{}`              | Options forwarded to `Intl.NumberFormat`                                           |
-| `locales`                 | `string \| string[]`                                          | `undefined`       | BCP 47 locale string(s), including localized digit glyphs                          |
-| `prefix`                  | `string`                                                      | `''`              | Text prepended before the number                                                   |
-| `suffix`                  | `string`                                                      | `''`              | Text appended after the number                                                     |
-| `animated`                | `boolean`                                                     | `true`            | Set `false` to disable all animation                                               |
-| `duration`                | `number`                                                      | `variant`         | Animation duration in ms                                                           |
-| `opacityDuration`         | `number`                                                      | `150`             | Fade duration for appearing/disappearing elements                                  |
-| `transformTiming`         | `DigitFlowTiming`                                             | `variant`         | Full WAAPI timing for layout/FLIP animations                                       |
-| `spinTiming`              | `DigitFlowTiming`                                             | `transformTiming` | Full WAAPI timing for digit spin animations                                        |
-| `opacityTiming`           | `DigitFlowTiming`                                             | `opacityDuration` | Full WAAPI timing for fade animations                                              |
-| `variant`                 | `'default' \| 'gaming' \| 'metrics' \| 'finance' \| 'smooth'` | `'default'`       | Pre-configured duration/easing preset                                              |
-| `spinEasing`              | `DigitFlowEasing`                                             | spring            | Named preset (`spring`, `default`, `overshoot`) or CSS easing for digit spin       |
-| `flipEasing`              | `DigitFlowEasing`                                             | spring            | Named preset (`spring`, `default`, `overshoot`) or CSS easing for layout motion    |
-| `trend`                   | `number \| (oldValue, value) => number`                       | auto              | Controls reel direction: `1`, `-1`, `0`, or custom                                 |
-| `continuous`              | `boolean`                                                     | `false`           | Visually ticks through intermediate values by looping unchanged lower-place digits |
-| `digits`                  | `Record<number, { max?: number }>`                            | `{}`              | Configure digit reel ranges by decimal position                                    |
-| `respectMotionPreference` | `boolean`                                                     | `true`            | Disable animations when the user prefers reduced motion                            |
-| `stagger`                 | `number`                                                      | `0`               | Delay in ms between entering/exiting presence animations                           |
-| `colorOnIncrease`         | `string`                                                      | `undefined`       | CSS color flashed when value increases                                             |
-| `colorOnDecrease`         | `string`                                                      | `undefined`       | CSS color flashed when value decreases                                             |
-| `spin3d`                  | `boolean`                                                     | `false`           | Adds a subtle 3D cylinder effect to spinning digits                                |
+| Input                     | Type                                    | Default                 | Description                                                                        |
+| ------------------------- | --------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| `value`                   | `number`                                | required                | The number to display and animate                                                  |
+| `format`                  | `Intl.NumberFormatOptions`              | `{}`                    | Options forwarded to `Intl.NumberFormat`                                           |
+| `locales`                 | `string \| string[]`                    | `undefined`             | BCP 47 locale string(s), including localized digit glyphs                          |
+| `prefix`                  | `string`                                | `''`                    | Text prepended before the number                                                   |
+| `suffix`                  | `string`                                | `''`                    | Text appended after the number                                                     |
+| `animated`                | `boolean`                               | `true`                  | Set `false` to disable all animation                                               |
+| `duration`                | `number`                                | `900`                   | Spin + FLIP animation duration in ms                                               |
+| `opacityDuration`         | `number`                                | `450`                   | Fade duration for appearing/disappearing elements                                  |
+| `transformTiming`         | `DigitFlowTiming`                       | `duration + flipEasing` | Full WAAPI timing for layout/FLIP animations                                       |
+| `spinTiming`              | `DigitFlowTiming`                       | `transformTiming`       | Full WAAPI timing for digit spin animations                                        |
+| `opacityTiming`           | `DigitFlowTiming`                       | `opacityDuration`       | Full WAAPI timing for fade animations                                              |
+| `spinEasing`              | `DigitFlowEasing`                       | spring                  | Named preset (`spring`, `default`, `overshoot`) or CSS easing for digit spin       |
+| `flipEasing`              | `DigitFlowEasing`                       | spring                  | Named preset (`spring`, `default`, `overshoot`) or CSS easing for layout motion    |
+| `trend`                   | `number \| (oldValue, value) => number` | auto                    | Controls reel direction: `1`, `-1`, `0`, or custom                                 |
+| `continuous`              | `boolean`                               | `false`                 | Visually ticks through intermediate values by looping unchanged lower-place digits |
+| `digits`                  | `Record<number, { max?: number }>`      | `{}`                    | Configure digit reel ranges by decimal position                                    |
+| `respectMotionPreference` | `boolean`                               | `true`                  | Disable animations when the user prefers reduced motion                            |
+| `stagger`                 | `number`                                | `0`                     | Delay in ms between entering/exiting presence animations                           |
+| `colorOnIncrease`         | `string`                                | `undefined`             | CSS color flashed when value increases                                             |
+| `colorOnDecrease`         | `string`                                | `undefined`             | CSS color flashed when value decreases                                             |
+| `spin3d`                  | `boolean`                               | `false`                 | Adds a subtle 3D cylinder effect to spinning digits                                |
 
 ### Outputs
 

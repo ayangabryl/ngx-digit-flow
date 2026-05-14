@@ -74,7 +74,7 @@ const INPUTS = [
     name: 'opacityDuration',
     type: 'number',
     required: false,
-    default: 'duration / 2',
+    default: '450',
     desc: 'Fade in/out duration in ms for appearing/disappearing elements.',
   },
   {

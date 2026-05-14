@@ -682,7 +682,7 @@ export class DocsDemoComponent {
                   <tr>
                     <td><code>opacityDuration</code></td>
                     <td><code>number</code></td>
-                    <td><code>duration / 2</code></td>
+                    <td><code>450</code></td>
                     <td>Fade-in / fade-out duration for appearing and exiting elements.</td>
                   </tr>
                   <tr>

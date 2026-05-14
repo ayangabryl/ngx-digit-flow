@@ -61,7 +61,7 @@ Works with Claude Code and any agent that supports the [Agent Skills](https://an
 | `suffix`                  | `string`                                | `''`                    | Text appended after the number                                                        |
 | `animated`                | `boolean`                               | `true`                  | Set `false` to disable all animation                                                  |
 | `duration`                | `number`                                | `900`                   | Spin + FLIP animation duration in ms                                                  |
-| `opacityDuration`         | `number`                                | `duration / 2`          | Fade duration for appearing/disappearing elements                                     |
+| `opacityDuration`         | `number`                                | `450`                   | Fade duration for appearing/disappearing elements                                     |
 | `spinEasing`              | `DigitFlowEasing`                       | spring                  | Named preset (`spring`, `default`, `overshoot`) or CSS easing for digit spin.         |
 | `flipEasing`              | `DigitFlowEasing`                       | spring                  | Named preset (`spring`, `default`, `overshoot`) or CSS easing for FLIP layout motion. |
 | `transformTiming`         | `DigitFlowTiming`                       | `duration + flipEasing` | Full WAAPI timing for layout/FLIP animations. Overrides `duration` and `flipEasing`.  |

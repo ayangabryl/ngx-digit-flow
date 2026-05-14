@@ -247,12 +247,8 @@ export class DigitFlowComponent {
 
     const host = this.elRef.nativeElement as HTMLElement;
     const settings = this.effectiveSettings();
-    const reduced =
-      this.respectMotionPreference() &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const d = reduced ? 0 : settings.duration;
-    const od = reduced ? 0 : settings.opacityDuration;
+    const d = settings.duration;
+    const od = settings.opacityDuration;
 
     const newNumericValue = untracked(() => this.value());
     const trend = this.resolveTrend(this.prevNumericValue, newNumericValue);
@@ -271,13 +267,13 @@ export class DigitFlowComponent {
       ...baseTransformTiming,
       easing: settings.spinEasing,
       ...(settings.spinTiming ?? {}),
-      duration: reduced ? 0 : (settings.spinTiming?.duration ?? baseTransformTiming.duration),
+      duration: settings.spinTiming?.duration ?? baseTransformTiming.duration,
       fill: 'none',
       composite: 'accumulate',
     };
     const flipOpts: KeyframeAnimationOptions = {
       ...baseTransformTiming,
-      duration: reduced ? 0 : baseTransformTiming.duration,
+      duration: baseTransformTiming.duration,
       fill: 'none',
       composite: 'accumulate',
     };
@@ -288,7 +284,6 @@ export class DigitFlowComponent {
       composite: 'accumulate',
       ...(settings.opacityTiming ?? {}),
     };
-    if (reduced) fadeOpts.duration = 0;
 
     // ── Continuous mode: find the first changed digit position.
     // Unchanged digits below that position spin a full reel loop, giving the visual
