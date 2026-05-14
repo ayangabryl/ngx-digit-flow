@@ -2,6 +2,7 @@ export interface NumberPart {
   type: string;
   value: string;
   key: string;
+  numericValue?: number;
 }
 
 export interface FormattedNumber {
@@ -27,3 +28,5 @@ export const EMPTY_FORMATTED: FormattedNumber = {
  * - `smooth`: 750ms material ease (clean, modern)
  */
 export type DigitFlowVariant = 'default' | 'gaming' | 'metrics' | 'finance' | 'smooth';
+
+export type DigitFlowTrend = number | ((oldValue: number, value: number) => number);

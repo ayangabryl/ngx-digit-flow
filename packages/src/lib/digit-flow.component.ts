@@ -15,8 +15,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { EMPTY_FORMATTED, FormattedNumber, DigitFlowVariant } from './digit-flow.types';
-import { formatToData } from './formatter';
+import { EMPTY_FORMATTED, FormattedNumber, DigitFlowTrend, DigitFlowVariant } from './digit-flow.types';
+import { formatToData, getDigitGlyphs } from './formatter';
 
 // ── Easings ──────────────────────────────────────────────────────────────────
 
@@ -82,6 +82,11 @@ export class DigitFlowComponent {
   spinEasing      = input<string | undefined>(undefined);
   /** Custom easing for the FLIP (layout shift) animation. Overrides variant's flipEasing. */
   flipEasing      = input<string | undefined>(undefined);
+  /**
+   * Controls digit direction. Use +1 to force upward reels, -1 for downward reels,
+   * 0 for per-digit shortest direction, or a function for custom trend logic.
+   */
+  trend           = input<DigitFlowTrend | undefined>(undefined);
 
   // ── Feature inputs ────────────────────────────────────────────────────────
   /**
@@ -106,7 +111,7 @@ export class DigitFlowComponent {
   animationsFinish = output<void>();
 
   protected data    = signal<FormattedNumber>(EMPTY_FORMATTED);
-  protected numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  protected digitGlyphs = computed(() => getDigitGlyphs(this.locales(), this.format()));
 
   protected formattedPlainText = computed(() =>
     new Intl.NumberFormat(this.locales(), this.format()).format(this.value())
@@ -260,7 +265,7 @@ export class DigitFlowComponent {
     untracked(() => {
       [...this.data().integer, ...this.data().fraction].forEach(p => {
         if (p.type === 'integer' || p.type === 'fraction') {
-          this.prevDigitValues.set(p.key, parseInt(p.value, 10));
+          this.prevDigitValues.set(p.key, this.getPartDigitValue(p));
         }
       });
     });
@@ -300,7 +305,7 @@ export class DigitFlowComponent {
       : untracked(() => this.value());
     this._targetDisplayValue = null;
 
-    const trend    = Math.sign(newNumericValue - this.prevNumericValue);
+    const trend    = this.resolveTrend(this.prevNumericValue, newNumericValue);
     const staggerMs = this.stagger();
 
     const spinOpts: KeyframeAnimationOptions = {
@@ -437,7 +442,19 @@ export class DigitFlowComponent {
 
   private getDigitValue(key: string): number {
     const part = [...this.data().integer, ...this.data().fraction].find(p => p.key === key);
-    return part ? parseInt(part.value, 10) : 0;
+    return part ? this.getPartDigitValue(part) : 0;
+  }
+
+  private getPartDigitValue(part: { value: string; numericValue?: number }): number {
+    return part.numericValue ?? Number(part.value);
+  }
+
+  private resolveTrend(oldValue: number, newValue: number): number {
+    const configured = this.trend();
+    const trend = typeof configured === 'function'
+      ? configured(oldValue, newValue)
+      : configured ?? Math.sign(newValue - oldValue);
+    return Math.sign(trend);
   }
 
   private getTrendDelta(from: number, to: number, trend: number): number {

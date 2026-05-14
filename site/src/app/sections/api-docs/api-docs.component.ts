@@ -22,7 +22,7 @@ const INPUTS = [
   // ── Core ─────────────────────────────────────────────────────────────────
   { name: 'value',           type: 'number',                              required: true,  default: '—',          desc: 'The number to display and animate to' },
   { name: 'format',          type: 'Intl.NumberFormatOptions',            required: false, default: '{}',         desc: 'Intl.NumberFormat options (currency, percent, compact…)' },
-  { name: 'locales',         type: 'string | string[]',                   required: false, default: 'undefined',  desc: 'BCP 47 locale(s) for number formatting and RTL direction' },
+  { name: 'locales',         type: 'string | string[]',                   required: false, default: 'undefined',  desc: 'BCP 47 locale(s) for number formatting, including localized digit glyphs' },
   { name: 'prefix',          type: 'string',                              required: false, default: "''",         desc: 'Custom text prepended before the number' },
   { name: 'suffix',          type: 'string',                              required: false, default: "''",         desc: 'Custom text appended after the number' },
   { name: 'animated',        type: 'boolean',                             required: false, default: 'true',       desc: 'Enable or disable all digit animations' },
@@ -33,6 +33,7 @@ const INPUTS = [
   { name: 'variant',         type: "'default'|'gaming'|'metrics'|'finance'|'smooth'", required: false, default: "'default'", desc: 'Pre-configured animation preset. Sets duration and easing as a group.' },
   { name: 'spinEasing',      type: 'string',                              required: false, default: 'variant',    desc: 'CSS easing for digit spin. Overrides variant\'s spin easing.' },
   { name: 'flipEasing',      type: 'string',                              required: false, default: 'variant',    desc: 'CSS easing for FLIP layout animation. Overrides variant\'s flip easing.' },
+  { name: 'trend',           type: 'number | (oldValue,value)=>number',    required: false, default: 'auto',       desc: 'Controls reel direction. Use 1, -1, 0, or a custom function.' },
   // ── Features ─────────────────────────────────────────────────────────────
   { name: 'continuous',      type: 'boolean',                             required: false, default: 'false',      desc: 'Ticker mode: animate through every intermediate integer value (max 15 steps).' },
   { name: 'stagger',         type: 'number',                              required: false, default: '0',          desc: 'Milliseconds of delay between each element\'s animation. Creates a cascade effect.' },

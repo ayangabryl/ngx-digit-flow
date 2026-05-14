@@ -418,7 +418,7 @@ export class DocsDemoComponent {
                     <td><code>locales</code></td>
                     <td><code>string | string[]</code></td>
                     <td><code>undefined</code></td>
-                    <td>BCP 47 locale(s) for formatting and RTL direction awareness.</td>
+                    <td>BCP 47 locale(s) for formatting, including localized digit glyphs.</td>
                   </tr>
                   <tr>
                     <td><code>prefix</code></td>
@@ -471,6 +471,12 @@ export class DocsDemoComponent {
                     <td><code>string</code></td>
                     <td><code>variant</code></td>
                     <td>CSS easing for FLIP layout transitions. Overrides the variant's flip easing.</td>
+                  </tr>
+                  <tr>
+                    <td><code>trend</code></td>
+                    <td><code>number | (oldValue, value) =&gt; number</code></td>
+                    <td><code>auto</code></td>
+                    <td>Controls reel direction. Use <code>1</code>, <code>-1</code>, <code>0</code>, or a custom function.</td>
                   </tr>
                   <!-- Features -->
                   <tr class="api-group-row"><td colspan="4"><span class="api-group-divider">Features</span></td></tr>
