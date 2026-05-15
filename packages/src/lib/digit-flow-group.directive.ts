@@ -1,5 +1,10 @@
-import { contentChildren, Directive, effect } from '@angular/core';
+import { contentChildren, Directive, forwardRef } from '@angular/core';
 import { DigitFlowComponent } from './digit-flow.component';
+import {
+  DIGIT_FLOW_GROUP,
+  DigitFlowGroupCoordinator,
+  DigitFlowGroupMember,
+} from './digit-flow-group.token';
 
 /**
  * Wrap multiple ngx-digit-flow components to synchronize their animations.
@@ -14,15 +19,47 @@ import { DigitFlowComponent } from './digit-flow.component';
 @Directive({
   selector: '[ngxDigitFlowGroup]',
   standalone: true,
+  providers: [
+    {
+      provide: DIGIT_FLOW_GROUP,
+      useExisting: forwardRef(() => DigitFlowGroupDirective),
+    },
+  ],
 })
-export class DigitFlowGroupDirective {
+export class DigitFlowGroupDirective implements DigitFlowGroupCoordinator {
   private children = contentChildren(DigitFlowComponent);
+  private pendingUpdates = new Map<DigitFlowGroupMember, () => void>();
+  private flushQueued = false;
 
-  constructor() {
-    effect(() => {
-      // Re-run when children change — currently a no-op hook for future
-      // batch coordination (pause all children, release in same rAF)
-      void this.children();
-    });
+  requestGroupedUpdate(member: DigitFlowGroupMember, applyUpdate: () => void): boolean {
+    if (!member.canGroupAnimateNow()) return false;
+
+    this.pendingUpdates.set(member, applyUpdate);
+    if (!this.flushQueued) {
+      this.flushQueued = true;
+      queueMicrotask(() => this.flushGroupedUpdates());
+    }
+
+    return true;
+  }
+
+  private flushGroupedUpdates(): void {
+    this.flushQueued = false;
+    if (this.pendingUpdates.size === 0) return;
+
+    const members = this.children().filter((child) => child.canGroupAnimateNow());
+
+    for (const member of members) {
+      member.prepareGroupedUpdate();
+    }
+
+    for (const applyUpdate of this.pendingUpdates.values()) {
+      applyUpdate();
+    }
+    this.pendingUpdates.clear();
+
+    for (const member of members) {
+      member.queueGroupedAnimation();
+    }
   }
 }

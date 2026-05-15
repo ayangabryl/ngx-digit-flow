@@ -1,7 +1,10 @@
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DigitFlowComponent } from './digit-flow.component';
+import { DigitFlowGroupDirective } from './digit-flow-group.directive';
 
 interface AnimateCall {
+  target?: Element;
   keyframes: PropertyIndexedKeyframes | Keyframe[];
   options?: number | KeyframeAnimationOptions;
 }
@@ -21,6 +24,7 @@ function finishImmediatelyAnimation(): Animation {
 }
 
 function testAnimation(
+  this: Element,
   keyframes: PropertyIndexedKeyframes | Keyframe[],
   options?: number | KeyframeAnimationOptions,
 ): Animation {
@@ -37,7 +41,7 @@ function testAnimation(
     return finishImmediatelyAnimation();
   }
 
-  animateCalls.push({ keyframes, options });
+  animateCalls.push({ target: this, keyframes, options });
   const colorAnimation = Array.isArray(keyframes) && keyframes.some((frame) => 'color' in frame);
   return {
     finished:
@@ -48,21 +52,40 @@ function testAnimation(
   } as unknown as Animation;
 }
 
+@Component({
+  standalone: true,
+  imports: [DigitFlowComponent, DigitFlowGroupDirective],
+  template: `
+    <div ngxDigitFlowGroup>
+      <ngx-digit-flow [value]="left()" />
+      <ngx-digit-flow [value]="right()" />
+    </div>
+  `,
+})
+class GroupHostComponent {
+  left = signal(9);
+  right = signal(5);
+}
+
 function mockMovingRects(): void {
   let calls = 0;
   Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
     configurable: true,
-    value: () => ({
-      x: 0,
-      y: 0,
-      left: calls++ === 0 ? 20 : 0,
-      top: 0,
-      right: 30,
-      bottom: 20,
-      width: 10,
-      height: 20,
-      toJSON: () => ({}),
-    }),
+    value: function () {
+      const isNumber = this instanceof HTMLElement && this.classList.contains('df-number');
+      const left = isNumber && calls++ === 0 ? 20 : 0;
+      return {
+        x: left,
+        y: 0,
+        left,
+        top: 0,
+        right: left + 10,
+        bottom: 20,
+        width: 10,
+        height: 20,
+        toJSON: () => ({}),
+      };
+    },
   });
 }
 
@@ -703,5 +726,115 @@ describe('DigitFlowComponent', () => {
 
     expect(tensDigit.style.getPropertyValue('--_df-len')).toBe('6');
     expect(renderedTensGlyphs.length).toBe(6);
+  });
+});
+
+describe('DigitFlowGroupDirective', () => {
+  beforeEach(async () => {
+    animateCalls = [];
+    holdColorAnimations = false;
+    holdAllAnimations = false;
+    prefersReducedMotion = false;
+    linearEasingSupported = true;
+    heldAnimationResolvers = [];
+
+    const cssMock = {
+      registerProperty: () => undefined,
+      supports: () => true,
+    };
+    Object.defineProperty(window, 'CSS', {
+      configurable: true,
+      value: cssMock,
+    });
+    Object.defineProperty(globalThis, 'CSS', {
+      configurable: true,
+      value: cssMock,
+    });
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'visible',
+    });
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: () => ({ matches: prefersReducedMotion }),
+    });
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: testAnimation,
+    });
+    Object.defineProperty(Element.prototype, 'animate', {
+      configurable: true,
+      value: testAnimation,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        x: 0,
+        y: 0,
+        left: 0,
+        top: 0,
+        right: 10,
+        bottom: 20,
+        width: 10,
+        height: 20,
+        toJSON: () => ({}),
+      }),
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [GroupHostComponent],
+    }).compileComponents();
+  });
+
+  it('animates unchanged grouped siblings when another grouped value shifts layout', async () => {
+    const groupFixture = TestBed.createComponent(GroupHostComponent);
+    groupFixture.detectChanges();
+    await groupFixture.whenStable();
+
+    const root = groupFixture.nativeElement as HTMLElement;
+    const flows = root.querySelectorAll<HTMLElement>('ngx-digit-flow');
+    const siblingNumber = flows[1].querySelector<HTMLElement>('.df-number')!;
+    const siblingCalls = new WeakMap<Element, number>();
+
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: function () {
+        const isSiblingNumber = this === siblingNumber;
+        const call = siblingCalls.get(this) ?? 0;
+        if (isSiblingNumber) {
+          siblingCalls.set(this, call + 1);
+        }
+        const left = isSiblingNumber && call === 0 ? 20 : isSiblingNumber ? 40 : 0;
+        return {
+          x: left,
+          y: 0,
+          left,
+          top: 0,
+          right: left + 10,
+          bottom: 20,
+          width: 10,
+          height: 20,
+          toJSON: () => ({}),
+        };
+      },
+    });
+
+    animateCalls = [];
+    groupFixture.componentInstance.left.set(1000);
+    groupFixture.detectChanges();
+    await groupFixture.whenStable();
+    groupFixture.detectChanges();
+    await groupFixture.whenStable();
+
+    const siblingLayoutAnimation = animateCalls.find(
+      (call) =>
+        call.target === siblingNumber &&
+        !Array.isArray(call.keyframes) &&
+        Array.isArray(call.keyframes['--_df-dx']),
+    );
+
+    expect(siblingLayoutAnimation?.keyframes).toEqual(
+      expect.objectContaining({ '--_df-dx': ['-20px', '0px'] }),
+    );
   });
 });

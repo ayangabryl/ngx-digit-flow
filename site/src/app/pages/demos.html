@@ -1,0 +1,548 @@
+<div class="demos-page">
+  <header class="page-header">
+    <h1 class="page-title">Demos</h1>
+    <p class="page-sub">Every number is a live <code>ngx-digit-flow</code> instance.</p>
+  </header>
+
+  <div class="bento">
+    <!-- AAPL Stock — 2 cols × 2 rows (big card) -->
+    <div class="card card--trend" data-demo-card="stock">
+      <div class="trend-head">
+        <span class="card-label">{{ ticker }}</span>
+        <span class="trend-badge" [class.up]="trendUp()" [class.down]="!trendUp()">
+          {{ trendUp() ? '▲' : '▼' }}&nbsp;<ngx-digit-flow
+            [value]="trendPctNum()"
+            [format]="trendPctFmt"
+            [suffix]="'%'"
+            [duration]="400"
+          />
+        </span>
+      </div>
+      <div class="trend-price" [class.trend-up]="trendUp()" [class.trend-down]="!trendUp()">
+        <ngx-digit-flow [value]="stockPrice()" [format]="stockFmt" [duration]="600" />
+      </div>
+      <div class="sparkline-wrap">
+        <svg class="sparkline" viewBox="0 0 200 60" preserveAspectRatio="none">
+          <defs>
+            <linearGradient [id]="'spark-fill'" x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset="0%"
+                [attr.stop-color]="trendUp() ? 'oklch(62% 0.18 145)' : 'oklch(62% 0.18 25)'"
+                stop-opacity="0.25"
+              />
+              <stop
+                offset="100%"
+                [attr.stop-color]="trendUp() ? 'oklch(62% 0.18 145)' : 'oklch(62% 0.18 25)'"
+                stop-opacity="0"
+              />
+            </linearGradient>
+          </defs>
+          @if (sparklineArea()) {
+            <path [attr.d]="sparklineArea()" fill="url(#spark-fill)" />
+          }
+          @if (sparklinePoints()) {
+            <polyline
+              [attr.points]="sparklinePoints()"
+              fill="none"
+              [attr.stroke]="trendUp() ? 'oklch(62% 0.18 145)' : 'oklch(62% 0.18 25)'"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+          }
+        </svg>
+      </div>
+      <span class="card-foot-note">NASDAQ · updates every 2 s</span>
+    </div>
+
+    <!-- Countdown -->
+    <div class="card card--countdown" data-demo-card="countdown">
+      <span class="card-label">Countdown</span>
+      <div class="countdown-stage">
+        <svg class="countdown-ring" viewBox="0 0 72 72">
+          <circle class="countdown-ring-bg" cx="36" cy="36" r="28" />
+          <circle
+            class="countdown-ring-fill"
+            cx="36"
+            cy="36"
+            r="28"
+            [style.stroke]="countdownColor()"
+            [style.stroke-dashoffset]="countdownRingOffset()"
+          />
+        </svg>
+        <div class="countdown-center" [style.color]="countdownColor()">
+          <ngx-digit-flow [value]="countdown()" [suffix]="'s'" [duration]="600" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Score -->
+    <div class="card card--score" data-demo-card="score">
+      <div class="score-head">
+        <span class="card-label">Score</span>
+        <span class="score-best"
+          >Best&nbsp;<strong>{{ scoreBest() }}</strong></span
+        >
+      </div>
+      <div class="score-stage">
+        <div
+          class="score-number"
+          [class.trend-up]="scoreTrend() === 'up'"
+          [class.trend-down]="scoreTrend() === 'down'"
+        >
+          <ngx-digit-flow [value]="score()" [duration]="400" />
+        </div>
+        @if (scoreDelta() !== 0) {
+          <span class="score-delta" [class.pos]="scoreDelta() > 0" [class.neg]="scoreDelta() < 0">
+            {{ scoreDelta() > 0 ? '+' + scoreDelta() : scoreDelta() }}
+          </span>
+        }
+      </div>
+      <div class="score-btns">
+        <button class="score-btn score-btn--dec" (click)="changeScore(-1)">−</button>
+        <button class="score-btn score-btn--inc" (click)="changeScore(1)">+</button>
+      </div>
+    </div>
+
+    <!-- XP / Level -->
+    <div class="card card--xp" data-demo-card="xp">
+      <div class="xp-head">
+        <span class="card-label">Experience</span>
+        <span class="xp-level-badge" [class.leveling]="xpLeveling()">
+          Lv&nbsp;<ngx-digit-flow [value]="xpLevel()" [duration]="300" />
+        </span>
+      </div>
+      <div class="xp-display">
+        <ngx-digit-flow class="xp-val" [value]="xpCurrent()" [format]="xpFmt" [duration]="500" />
+        <span class="xp-unit">XP</span>
+      </div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar-track">
+          <div class="xp-bar-fill" [style.width.%]="xpPct()"></div>
+        </div>
+        <span class="xp-pct"><ngx-digit-flow [value]="xpPctDisplay()" [duration]="500" />%</span>
+      </div>
+      <span class="xp-to-next">
+        <ngx-digit-flow
+          class="xp-to-next-num"
+          [value]="xpToNext()"
+          [format]="xpFmt"
+          [duration]="500"
+        />&nbsp;XP to Lv&nbsp;{{ xpLevel() + 1 }}
+      </span>
+      @if (xpLeveling()) {
+        <div class="xp-levelup-overlay">
+          <div class="xp-spark xp-spark-a"></div>
+          <div class="xp-spark xp-spark-b"></div>
+          <div class="xp-spark xp-spark-c"></div>
+          <div class="xp-spark xp-spark-d"></div>
+          <div class="xp-spark xp-spark-e"></div>
+          <div class="xp-levelup-inner">
+            <span class="xp-levelup-icon">⭐</span>
+            <p class="xp-levelup-sub">Level Up!</p>
+            <div class="xp-levelup-lv">
+              Lv&nbsp;<ngx-digit-flow [value]="xpLevel()" [duration]="300" />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Progress -->
+    <div class="card card--progress" data-demo-card="progress">
+      <div class="progress-head">
+        <span class="card-label">Progress</span>
+        <button
+          class="progress-play-btn"
+          (click)="progressPaused.update((v) => !v)"
+          [attr.aria-label]="progressPaused() ? 'Play' : 'Pause'"
+        >
+          @if (progressPaused()) {
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M3 2l7 4-7 4V2z" />
+            </svg>
+          } @else {
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <rect x="2" y="2" width="3" height="8" rx="1" />
+              <rect x="7" y="2" width="3" height="8" rx="1" />
+            </svg>
+          }
+        </button>
+      </div>
+
+      <div class="progress-stage">
+        @if (progressStyle() === 'linear') {
+          <div class="progress-pct">
+            <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" [style.width.%]="progress() * 100"></div>
+          </div>
+        } @else if (progressStyle() === 'steps') {
+          <div class="progress-pct">
+            <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
+          </div>
+          <div class="progress-segs">
+            @for (filled of progressSegments(); track $index) {
+              <div class="progress-seg" [class.filled]="filled"></div>
+            }
+          </div>
+        } @else {
+          <div class="progress-ring-wrap">
+            <svg class="progress-ring" viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="28" />
+              <circle
+                class="ring-fill"
+                cx="36"
+                cy="36"
+                r="28"
+                [style.stroke-dashoffset]="ringOffset()"
+              />
+            </svg>
+            <div class="progress-ring-label">
+              <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="progress-style-tabs">
+        <button [class.active]="progressStyle() === 'linear'" (click)="progressStyle.set('linear')">
+          Linear
+        </button>
+        <button [class.active]="progressStyle() === 'steps'" (click)="progressStyle.set('steps')">
+          Steps
+        </button>
+        <button [class.active]="progressStyle() === 'ring'" (click)="progressStyle.set('ring')">
+          Ring
+        </button>
+      </div>
+    </div>
+
+    <!-- Slider — 2 cols × 1 row -->
+    <div class="card card--slider" data-demo-card="slider">
+      <span class="card-label">Slider</span>
+      <div class="card-center slider-value">
+        <ngx-digit-flow [value]="sliderVal()" [format]="sliderFmt" [duration]="300" />
+      </div>
+      <div class="slider-wrap">
+        <input
+          class="slider-input"
+          type="range"
+          min="0"
+          max="1000000"
+          step="1"
+          [value]="sliderVal()"
+          (input)="onSliderChange($event)"
+        />
+        <div class="slider-labels">
+          <span>$0</span>
+          <span>$1,000,000</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing tiers -->
+    <div class="card card--pricing" data-demo-card="pricing">
+      <span class="card-label">Pricing</span>
+      <div class="pricing-body">
+        <span class="pricing-tier-badge" [class]="'tier-' + pricingTierSlug()">
+          {{ pricingTier() }}
+        </span>
+        <div class="pricing-amount">
+          <ngx-digit-flow [value]="pricingVal()" [format]="pricingFmt" [duration]="700" />
+        </div>
+        <span class="pricing-cycle">per month</span>
+      </div>
+    </div>
+
+    <!-- Temperature toggle -->
+    <div class="card card--temp" data-demo-card="temperature">
+      <span class="card-label">Temperature</span>
+      <div class="temp-display">
+        <div class="temp-value" [style.color]="tempColor()">
+          <ngx-digit-flow
+            [value]="tempDisplay()"
+            [format]="tempFmt"
+            [suffix]="tempUnit()"
+            [duration]="600"
+          />
+        </div>
+        <span class="temp-condition" [style.color]="tempColor()">{{ tempCondition() }}</span>
+      </div>
+      <div class="temp-therm">
+        <div class="temp-therm-track">
+          <div class="temp-therm-dot" [style.left.%]="thermPct()"></div>
+        </div>
+        <div class="temp-therm-labels">
+          <span>−10°</span>
+          <span>45°</span>
+        </div>
+      </div>
+      <div class="temp-btns">
+        <button class="temp-btn" [class.active]="tempCelsius()" (click)="tempCelsius.set(true)">
+          °C
+        </button>
+        <button class="temp-btn" [class.active]="!tempCelsius()" (click)="tempCelsius.set(false)">
+          °F
+        </button>
+      </div>
+    </div>
+
+    <!-- Transfer -->
+    <div class="card card--transfer" data-demo-card="transfer">
+      <div class="transfer-head">
+        <span class="card-label">Transfer</span>
+        <div class="transfer-tabs">
+          @for (pair of transferPairs; track pair.code; let i = $index) {
+            <button [class.active]="transferPairIdx() === i" (click)="setTransferPair(i)">
+              {{ pair.code }}
+            </button>
+          }
+        </div>
+      </div>
+      <div class="transfer-sublabels">
+        <span>You send</span>
+        <span>You receive</span>
+      </div>
+      <div class="transfer-row">
+        <div class="transfer-side">
+          <span class="transfer-code">USD</span>
+          <ngx-digit-flow
+            class="transfer-val"
+            [value]="transferAmount()"
+            [format]="transferSendFmt"
+            [duration]="250"
+          />
+        </div>
+        <svg
+          class="transfer-arrow"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+        <div class="transfer-side transfer-side--recv">
+          <span class="transfer-code">{{ transferPair().code }}</span>
+          <ngx-digit-flow
+            class="transfer-val transfer-val--recv"
+            [value]="transferReceive()"
+            [format]="transferFmt()"
+            [duration]="400"
+          />
+        </div>
+      </div>
+      <input
+        class="transfer-slider"
+        type="range"
+        min="100"
+        max="5000"
+        step="10"
+        [value]="transferAmount()"
+        (input)="onTransferChange($event)"
+      />
+      <div class="transfer-rate">
+        <span class="transfer-rate-text">
+          1 USD =&nbsp;<ngx-digit-flow
+            class="transfer-rate-num"
+            [value]="transferRate()"
+            [format]="transferRateFmt()"
+            [duration]="700"
+          />&nbsp;{{ transferPair().code }}
+        </span>
+        <span class="transfer-live-badge">&#x21BB; live</span>
+      </div>
+    </div>
+
+    <!-- Currency / locale -->
+    <div class="card card--locale" data-demo-card="locale">
+      <span class="card-label">Locale</span>
+      <div class="locale-primary">
+        <span class="locale-flag">{{ localeActive().flag }}</span>
+        <ngx-digit-flow
+          class="locale-primary-val"
+          [value]="localeNum()"
+          [format]="localeFmt()"
+          [locales]="localeStr()"
+          [duration]="700"
+        />
+      </div>
+      <div class="locale-others">
+        @for (opt of localeOthers(); track opt.locale) {
+          <button class="locale-other-row" (click)="setLocale(opt)">
+            <span class="locale-other-flag">{{ opt.flag }}</span>
+            <span class="locale-other-code">{{ opt.label }}</span>
+            <ngx-digit-flow
+              class="locale-other-val"
+              [value]="localeNum()"
+              [format]="opt.localeFmt"
+              [locales]="opt.locale"
+              [duration]="700"
+            />
+            <svg
+              class="locale-chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Social counter -->
+    <div class="card card--social" data-demo-card="social">
+      <span class="card-label">Social</span>
+      <div class="social-post">
+        <img
+          class="social-avatar"
+          src="https://profilio.ai/brand/profilio-logo-32.png"
+          alt="avatar"
+        />
+        <p class="social-body">
+          Numbers that feel alive. ngx-digit-flow makes every counter a micro-experience in Angular.
+        </p>
+      </div>
+      <div class="social-stats">
+        <button class="social-stat">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+          </svg>
+          <ngx-digit-flow [value]="socialComments()" [format]="compactFmt" [duration]="400" />
+        </button>
+        <button class="social-stat">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="17 1 21 5 17 9" />
+            <path d="M3 11V9a4 4 0 014-4h14" />
+            <polyline points="7 23 3 19 7 15" />
+            <path d="M21 13v2a4 4 0 01-4 4H3" />
+          </svg>
+          <ngx-digit-flow [value]="socialReposts()" [format]="compactFmt" [duration]="400" />
+        </button>
+        <button
+          class="social-stat social-stat--heart"
+          [class.liked]="socialLiked()"
+          (click)="toggleLike()"
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            [attr.fill]="socialLiked() ? 'currentColor' : 'none'"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+            />
+          </svg>
+          <ngx-digit-flow [value]="socialLikes()" [format]="compactFmt" [duration]="400" />
+        </button>
+        <button class="social-stat">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <ngx-digit-flow [value]="socialViews()" [format]="compactFmt" [duration]="400" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Cart -->
+    <div class="card card--cart" data-demo-card="cart">
+      <span class="card-label">Cart</span>
+      <div class="cart-items">
+        <div class="cart-item">
+          <span class="cart-name">Pro Plan</span>
+          <div class="cart-right">
+            <div class="cart-qty-ctrl">
+              <button class="cart-qty-btn" (click)="cartQty1.update((v) => (v > 0 ? v - 1 : 0))">
+                −
+              </button>
+              <ngx-digit-flow class="cart-qty-num" [value]="cartQty1()" [duration]="200" />
+              <button class="cart-qty-btn" (click)="cartQty1.update((v) => v + 1)">+</button>
+            </div>
+            <ngx-digit-flow
+              class="cart-price"
+              [value]="cartQty1() * 29.99"
+              [format]="cartFmt"
+              [duration]="350"
+            />
+          </div>
+        </div>
+        <div class="cart-item">
+          <span class="cart-name">Add-on</span>
+          <div class="cart-right">
+            <div class="cart-qty-ctrl">
+              <button class="cart-qty-btn" (click)="cartQty2.update((v) => (v > 0 ? v - 1 : 0))">
+                −
+              </button>
+              <ngx-digit-flow class="cart-qty-num" [value]="cartQty2()" [duration]="200" />
+              <button class="cart-qty-btn" (click)="cartQty2.update((v) => v + 1)">+</button>
+            </div>
+            <ngx-digit-flow
+              class="cart-price"
+              [value]="cartQty2() * 9.99"
+              [format]="cartFmt"
+              [duration]="350"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="cart-divider"></div>
+      <div class="cart-total">
+        <span class="cart-total-label">Total</span>
+        <ngx-digit-flow
+          class="cart-total-val"
+          [value]="cartTotal()"
+          [format]="cartFmt"
+          [duration]="500"
+        />
+      </div>
+    </div>
+  </div>
+</div>

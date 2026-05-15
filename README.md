@@ -15,6 +15,26 @@ Built on Web Animations API + CSS `@property`. No animation libraries. SSR-safe.
 npm install ngx-digit-flow
 ```
 
+## Quick start
+
+Import the standalone component and bind it to a number.
+
+```typescript
+import { Component, signal } from '@angular/core';
+import { DigitFlowComponent } from 'ngx-digit-flow';
+
+@Component({
+  selector: 'app-price',
+  imports: [DigitFlowComponent],
+  template: `
+    <ngx-digit-flow [value]="price()" [format]="{ style: 'currency', currency: 'USD' }" />
+  `,
+})
+export class PriceComponent {
+  price = signal(182.5);
+}
+```
+
 ## AI skill
 
 Install the `ngx-digit-flow` skill so your AI assistant knows the full API and can wire it into your components:
@@ -68,7 +88,6 @@ export class PriceComponent {
 | `stagger`                 | `number`                                | `0`                     | Delay in ms between entering/exiting presence animations                             |
 | `colorOnIncrease`         | `string`                                | `undefined`             | CSS color flashed when value increases                                               |
 | `colorOnDecrease`         | `string`                                | `undefined`             | CSS color flashed when value decreases                                               |
-| `spin3d`                  | `boolean`                               | `false`                 | Adds a subtle 3D cylinder effect to spinning digits                                  |
 
 ### Outputs
 
@@ -125,7 +144,7 @@ score = signal(0);
 <button (click)="score.update(v => v + 1)">+</button>
 ```
 
-**Group directive** (sync multiple instances)
+**Group directive** (coordinate related counters)
 
 ```typescript
 import { DigitFlowGroupDirective } from 'ngx-digit-flow';
@@ -140,6 +159,10 @@ import { DigitFlowGroupDirective } from 'ngx-digit-flow';
   <ngx-digit-flow [value]="seconds" />
 </div>
 ```
+
+Use `ngxDigitFlowGroup` when separate numbers form one visual unit. The directive batches
+their pre-update snapshots so unchanged siblings can still animate layout shifts caused by
+another value changing.
 
 ## Browser support
 

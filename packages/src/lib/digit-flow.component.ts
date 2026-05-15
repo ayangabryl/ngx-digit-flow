@@ -25,6 +25,7 @@ import {
 } from './digit-flow.types';
 import { formatToData, getDigitGlyphs } from './formatter';
 import { canAnimateDigitFlow } from './capabilities';
+import { DIGIT_FLOW_GROUP } from './digit-flow-group.token';
 
 // ── Easings ──────────────────────────────────────────────────────────────────
 
@@ -130,6 +131,7 @@ export class DigitFlowComponent {
   private platformId = inject(PLATFORM_ID);
   private elRef = inject(ElementRef<HTMLElement>);
   private destroyRef = inject(DestroyRef);
+  private group = inject(DIGIT_FLOW_GROUP, { optional: true });
 
   // Snapshot state — captured BEFORE each re-render
   private prevRects = new Map<string, DOMRect>();
@@ -179,13 +181,21 @@ export class DigitFlowComponent {
         return;
       }
 
-      if (isPlatformBrowser(this.platformId)) {
-        this.snapshot();
-      }
+      const canAnimateThisUpdate =
+        isPlatformBrowser(this.platformId) && this.animated() && this.canAnimateNow();
 
-      untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
-      if (isPlatformBrowser(this.platformId) && this.animated()) {
+      if (canAnimateThisUpdate) {
+        const handledByGroup = this.group?.requestGroupedUpdate(this, () => {
+          untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
+        });
+        if (handledByGroup) return;
+
+        this.snapshot();
+        untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
         this._pending = true;
+      } else {
+        untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
+        this.prevNumericValue = v;
       }
     });
 
@@ -202,6 +212,18 @@ export class DigitFlowComponent {
   }
 
   // ─── Snapshot ─────────────────────────────────────────────────────────────
+
+  canGroupAnimateNow(): boolean {
+    return isPlatformBrowser(this.platformId) && this.animated() && this.canAnimateNow();
+  }
+
+  prepareGroupedUpdate(): void {
+    this.snapshot();
+  }
+
+  queueGroupedAnimation(): void {
+    this._pending = true;
+  }
 
   private snapshot(): void {
     const host = this.elRef.nativeElement as HTMLElement;
