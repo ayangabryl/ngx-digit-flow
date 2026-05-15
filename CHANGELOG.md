@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.9 - 2026-05-15
+
+### Fixed
+
+- Fixed `DigitFlowGroupDirective` not finding `ngx-digit-flow` components nested inside wrapper elements (e.g. label+value cells). The `contentChildren` query now uses `{ descendants: true }`, so snapshots and animation queuing work correctly regardless of DOM depth.
+
+### Changed
+
+- Replaced the km/h suffix demo in docs with a premium SaaS pricing plan widget that demonstrates both `[prefix]` and `[suffix]` together with color flash.
+- Added a spin animation to the Trigger buttons in the duration, easing, and stagger demos for visual click feedback.
+- Fixed mobile overflow in the duration comparison grid — items now wrap instead of clipping on narrow viewports.
+
 ## 0.0.8 - 2026-05-15
 
 ### Added
