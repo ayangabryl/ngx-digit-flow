@@ -152,11 +152,19 @@ export class DigitFlowComponent {
   private _live: Animation[] = [];
   private _spinCount = new Map<HTMLElement, number>();
   private _animationsFinishAbort?: AbortController;
+  private _pendingCanAnimate = false;
+  private _pendingHostFont = '';
+  private _pendingHostColor = '';
+  private _pendingKeyedEls: Array<{ el: HTMLElement; key: string; newRect: DOMRect }> = [];
+  private _pendingNumberRect: DOMRect | null = null;
+  private _isNearViewport = true;
+  private _viewportObserver?: IntersectionObserver;
 
   constructor() {
     this.destroyRef.onDestroy(() => {
       this._destroyed = true;
       this._animationsFinishAbort?.abort();
+      this._viewportObserver?.disconnect();
       for (const a of this._live) {
         try {
           a.cancel();
@@ -200,11 +208,27 @@ export class DigitFlowComponent {
     });
 
     if (isPlatformBrowser(this.platformId)) {
+      // Use IntersectionObserver so viewport visibility is tracked off the main thread.
+      // The _isNearViewport flag is updated asynchronously; isHostNearViewport() reads it
+      // instead of calling getBoundingClientRect(), which forces a synchronous layout flush.
+      if (typeof IntersectionObserver !== 'undefined') {
+        this._viewportObserver = new IntersectionObserver(
+          (entries) => {
+            this._isNearViewport = entries[entries.length - 1].isIntersecting;
+          },
+          { rootMargin: '240px' },
+        );
+        this._viewportObserver.observe(this.elRef.nativeElement);
+      }
+
       afterEveryRender({
-        read: () => {
+        earlyRead: () => {
+          if (this._pending) this.readAnimationState();
+        },
+        write: () => {
           if (this._pending) {
             this._pending = false;
-            this.runAnimations();
+            this.fireAnimations();
           }
         },
       });
@@ -264,22 +288,52 @@ export class DigitFlowComponent {
 
   // ─── Animation ────────────────────────────────────────────────────────────
 
-  private runAnimations(): void {
+  // earlyRead phase: all instances collect DOM measurements before any write fires.
+  // Angular guarantees every earlyRead callback runs before any write callback,
+  // so concurrent digit-flow updates never interleave reads with writes.
+  private readAnimationState(): void {
+    if (this._destroyed) {
+      this._pendingCanAnimate = false;
+      return;
+    }
+    if (!this.canAnimateNow()) {
+      this._pendingCanAnimate = false;
+      return;
+    }
+    this._pendingCanAnimate = true;
+    const host = this.elRef.nativeElement as HTMLElement;
+    const hostCs = getComputedStyle(host);
+    this._pendingHostFont = hostCs.font;
+    this._pendingHostColor = hostCs.color;
+    this._pendingKeyedEls = [];
+    host.querySelectorAll<HTMLElement>('[data-key]').forEach((el) => {
+      this._pendingKeyedEls.push({
+        el,
+        key: el.getAttribute('data-key')!,
+        newRect: el.getBoundingClientRect(),
+      });
+    });
+    const number = host.querySelector<HTMLElement>('.df-number');
+    this._pendingNumberRect = number ? number.getBoundingClientRect() : null;
+  }
+
+  // write phase: uses measurements from readAnimationState — no getBoundingClientRect calls.
+  private fireAnimations(): void {
     if (this._destroyed) return;
 
     const host = this.elRef.nativeElement as HTMLElement;
-    const settings = this.effectiveSettings();
-    const d = settings.duration;
-    const od = settings.opacityDuration;
-
     const newNumericValue = untracked(() => this.value());
-    const trend = this.resolveTrend(this.prevNumericValue, newNumericValue);
-    const staggerMs = this.stagger();
 
-    if (!this.canAnimateNow()) {
+    if (!this._pendingCanAnimate) {
       this.prevNumericValue = newNumericValue;
       return;
     }
+
+    const settings = this.effectiveSettings();
+    const d = settings.duration;
+    const od = settings.opacityDuration;
+    const trend = this.resolveTrend(this.prevNumericValue, newNumericValue);
+    const staggerMs = this.stagger();
 
     const baseTransformTiming = settings.transformTiming ?? {
       duration: d,
@@ -309,8 +363,7 @@ export class DigitFlowComponent {
 
     // ── Continuous mode: find the first changed digit position.
     // Unchanged digits below that position spin a full reel loop, giving the visual
-    // illusion of ticking through intermediate values — same technique as
-    // No step-chaining needed; it's one animation.
+    // illusion of ticking through intermediate values.
     const continuousStartPos =
       this.continuous() && d > 0 && trend !== 0 ? this.getContinuousStartPos() : undefined;
 
@@ -319,10 +372,8 @@ export class DigitFlowComponent {
     let elemIdx = 0;
     const number = host.querySelector<HTMLElement>('.df-number');
 
-    host.querySelectorAll<HTMLElement>('[data-key]').forEach((el) => {
-      const key = el.getAttribute('data-key')!;
+    for (const { el, key, newRect } of this._pendingKeyedEls) {
       newKeys.add(key);
-      const newRect = el.getBoundingClientRect();
       const prevRect = this.prevRects.get(key);
       const staggerDelay = staggerMs > 0 ? elemIdx * staggerMs : 0;
       elemIdx++;
@@ -388,13 +439,13 @@ export class DigitFlowComponent {
           );
         }
       }
-    });
+    }
 
     // Ghost exits
     let exitIdx = 0;
     this.prevRects.forEach((rect, key) => {
       if (newKeys.has(key)) return;
-      const ghost = this.buildGhost(key, rect, host);
+      const ghost = this.buildGhost(key, rect, this._pendingHostFont, this._pendingHostColor);
       host.appendChild(ghost);
       ghost.style.setProperty('--_df-d-opacity', '-0.999');
       const staggerDelay = staggerMs > 0 ? exitIdx * staggerMs : 0;
@@ -406,8 +457,8 @@ export class DigitFlowComponent {
       a.finished.then(() => ghost.remove()).catch(() => ghost.remove());
     });
 
-    if (number) {
-      const rect = number.getBoundingClientRect();
+    if (number && this._pendingNumberRect) {
+      const rect = this._pendingNumberRect;
       const dx = this.prevNumberLeft - rect.left;
       const width = rect.width || number.offsetWidth;
       const dWidth = this.prevNumberWidth - width;
@@ -508,12 +559,13 @@ export class DigitFlowComponent {
   }
 
   private isHostNearViewport(host: HTMLElement): boolean {
+    if (this._viewportObserver) return this._isNearViewport;
+
+    // Fallback for environments without IntersectionObserver.
     const rect = host.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return false;
-
     const win = host.ownerDocument.defaultView;
     if (!win) return true;
-
     const margin = 240;
     return (
       rect.bottom >= -margin &&
@@ -608,14 +660,13 @@ export class DigitFlowComponent {
     }
   }
 
-  private buildGhost(key: string, rect: DOMRect, host: HTMLElement): HTMLElement {
+  private buildGhost(key: string, rect: DOMRect, font: string, color: string): HTMLElement {
     const ghost = document.createElement('span');
-    const cs = getComputedStyle(host);
     ghost.style.cssText =
       `position:fixed;left:${rect.left}px;top:${rect.top}px;` +
       `width:${rect.width}px;height:${rect.height}px;` +
       `pointer-events:none;overflow:hidden;display:inline-flex;` +
-      `align-items:center;font:${cs.font};color:${cs.color}`;
+      `align-items:center;font:${font};color:${color}`;
     ghost.className = 'df-ghost';
 
     const savedHTML = this.prevInnerHTML.get(key);
