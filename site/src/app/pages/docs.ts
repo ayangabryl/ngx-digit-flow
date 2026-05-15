@@ -282,15 +282,26 @@ export class DocsDemoComponent {
             formatted number. They animate in/out with the same fade transitions as separators.
           </p>
 
-          <docs-demo label="Suffix — km/h" [code]="codePrefixSuffix">
-            <div slot="number" class="demo-number-wrap">
-              <ngx-digit-flow [value]="suffixVal()" [suffix]="' km/h'" [duration]="700" />
+          <docs-demo label="Pricing plan — prefix &amp; suffix" [code]="codePrefixSuffix">
+            <div slot="number" class="demo-plan-stage">
+              <div class="demo-plan-badge">{{ planName() }}</div>
+              <div class="demo-plan-pricing">
+                <ngx-digit-flow
+                  [value]="planPrice()"
+                  [prefix]="'$'"
+                  [suffix]="'/mo'"
+                  [duration]="600"
+                  colorOnIncrease="#22c55e"
+                  colorOnDecrease="#f97316"
+                />
+              </div>
+              <div class="demo-plan-desc">{{ planDesc() }}</div>
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="suffixVal.set(0)">0</button>
-              <button class="demo-btn" (click)="suffixVal.set(60)">60</button>
-              <button class="demo-btn" (click)="suffixVal.set(120)">120</button>
-              <button class="demo-btn" (click)="suffixVal.set(299)">299</button>
+              <button class="demo-btn" [class.active]="planPrice() === 9" (click)="setPlan('Starter', 9, '3 projects · 1 seat')">Starter</button>
+              <button class="demo-btn" [class.active]="planPrice() === 29" (click)="setPlan('Pro', 29, 'Unlimited projects · 5 seats')">Pro</button>
+              <button class="demo-btn" [class.active]="planPrice() === 79" (click)="setPlan('Team', 79, 'SSO · audit log · 20 seats')">Team</button>
+              <button class="demo-btn" [class.active]="planPrice() === 199" (click)="setPlan('Enterprise', 199, 'Custom SLA · unlimited seats')">Enterprise</button>
             </div>
           </docs-demo>
         </section>
@@ -313,7 +324,7 @@ export class DocsDemoComponent {
               }
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="triggerDur()">Trigger ↻</button>
+              <button class="demo-btn trigger-btn" [class.spinning]="activeTrigger() === 'dur'" (click)="triggerDur()">Trigger <span class="trigger-icon">↻</span></button>
             </div>
           </docs-demo>
         </section>
@@ -438,7 +449,7 @@ export class DocsDemoComponent {
               </div>
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="triggerEasing()">Trigger ↻</button>
+              <button class="demo-btn trigger-btn" [class.spinning]="activeTrigger() === 'easing'" (click)="triggerEasing()">Trigger <span class="trigger-icon">↻</span></button>
             </div>
           </docs-demo>
 
@@ -585,7 +596,7 @@ export class DocsDemoComponent {
               </div>
             </div>
             <div slot="controls">
-              <button class="demo-btn" (click)="triggerStagger()">Trigger ↻</button>
+              <button class="demo-btn trigger-btn" [class.spinning]="activeTrigger() === 'stagger'" (click)="triggerStagger()">Trigger <span class="trigger-icon">↻</span></button>
             </div>
           </docs-demo>
         </section>
@@ -1023,6 +1034,54 @@ export class DocsDemoComponent {
         margin: 0 4px;
       }
 
+      /* Trigger button spin */
+      .trigger-icon {
+        display: inline-block;
+      }
+
+      @keyframes spin-trigger {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      .trigger-btn.spinning .trigger-icon {
+        animation: spin-trigger 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Plan widget (prefix/suffix demo) */
+      .demo-plan-stage {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .demo-plan-badge {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: oklch(42% 0.18 255);
+        background: oklch(93% 0.015 255);
+        padding: 4px 12px;
+        border-radius: 100px;
+      }
+
+      .demo-plan-pricing {
+        font-size: 3.2rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1;
+      }
+
+      .demo-plan-desc {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--dim);
+        letter-spacing: 0;
+      }
+
       /* Duration demo */
       .demo-dur-grid {
         display: flex;
@@ -1304,7 +1363,9 @@ export class DocsDemoComponent {
           padding: 32px 20px 60px;
         }
         .demo-dur-grid {
-          gap: 20px;
+          gap: 16px 24px;
+          flex-wrap: wrap;
+          justify-content: center;
         }
         .demo-scoreboard {
           gap: 12px;
@@ -1363,8 +1424,13 @@ export class DocsComponent implements OnInit, AfterViewInit {
     maximumFractionDigits: 1,
   } as Intl.NumberFormatOptions;
 
-  // Suffix
-  protected suffixVal = signal(120);
+  // Plan (prefix/suffix demo)
+  protected planPrice = signal(29);
+  protected planName = signal('Pro');
+  protected planDesc = signal('Unlimited projects · 5 seats');
+
+  // Active trigger for spin animation
+  protected activeTrigger = signal<string | null>(null);
 
   // Duration
   protected durVal = signal(42);
@@ -1437,19 +1503,33 @@ export class DocsComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {}
 
+  protected setPlan(name: string, price: number, desc: string): void {
+    this.planName.set(name);
+    this.planPrice.set(price);
+    this.planDesc.set(desc);
+  }
+
+  private spinTrigger(key: string): void {
+    this.activeTrigger.set(key);
+    setTimeout(() => this.activeTrigger.set(null), 600);
+  }
+
   protected triggerDur(): void {
     this.durIdx = (this.durIdx + 1) % this.durValues.length;
     this.durVal.set(this.durValues[this.durIdx]);
+    this.spinTrigger('dur');
   }
 
   protected triggerEasing(): void {
     this.easingIdx = (this.easingIdx + 1) % this.easingValues.length;
     this.easingVal.set(this.easingValues[this.easingIdx]);
+    this.spinTrigger('easing');
   }
 
   protected triggerStagger(): void {
     this.staggerIdx = (this.staggerIdx + 1) % this.staggerValues.length;
     this.staggerVal.set(this.staggerValues[this.staggerIdx]);
+    this.spinTrigger('stagger');
   }
 
   protected setGroupDemo(home: number, away: number): void {
@@ -1505,11 +1585,14 @@ export class MyComponent {}`;
 />
 <!-- Renders: 15.4K -->`;
 
-  protected codePrefixSuffix = `<!-- suffix -->
-<ngx-digit-flow [value]="speed" [suffix]="' km/h'" />
-
-<!-- prefix -->
-<ngx-digit-flow [value]="price" [prefix]="'$'" />`;
+  protected codePrefixSuffix = `<!-- prefix + suffix -->
+<ngx-digit-flow
+  [value]="planPrice"
+  [prefix]="'$'"
+  [suffix]="'/mo'"
+  colorOnIncrease="#22c55e"
+  colorOnDecrease="#f97316"
+/>`;
 
   protected codeDuration = `<!-- Three instances, same value, different speeds -->
 <div ngxDigitFlowGroup>
