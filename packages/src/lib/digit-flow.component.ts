@@ -155,9 +155,11 @@ export class DigitFlowComponent {
   private _pendingCanAnimate = false;
   private _pendingHostFont = '';
   private _pendingHostColor = '';
-  private _pendingKeyedEls: Array<{ el: HTMLElement; key: string; newRect: DOMRect }> = [];
+  private _pendingKeyedEls: Array<{ el: HTMLElement; key: string; newRect: DOMRect | null }> = [];
   private _pendingNumberRect: DOMRect | null = null;
   private _pendingNumberOffsetWidth = 0;
+  private _prevKeySignature = '';
+  private _pendingIsStructural = false;
   private _isNearViewport = true;
   private _viewportObserver?: IntersectionObserver;
 
@@ -303,20 +305,35 @@ export class DigitFlowComponent {
     }
     this._pendingCanAnimate = true;
     const host = this.elRef.nativeElement as HTMLElement;
-    const hostCs = getComputedStyle(host);
-    this._pendingHostFont = hostCs.font;
-    this._pendingHostColor = hostCs.color;
+
+    // Collect elements cheaply — querySelectorAll with no DOM measurement.
     this._pendingKeyedEls = [];
     host.querySelectorAll<HTMLElement>('[data-key]').forEach((el) => {
-      this._pendingKeyedEls.push({
-        el,
-        key: el.getAttribute('data-key')!,
-        newRect: el.getBoundingClientRect(),
-      });
+      this._pendingKeyedEls.push({ el, key: el.getAttribute('data-key')!, newRect: null });
     });
-    const number = host.querySelector<HTMLElement>('.df-number');
-    this._pendingNumberRect = number ? number.getBoundingClientRect() : null;
-    this._pendingNumberOffsetWidth = number ? number.offsetWidth : 0;
+
+    // Structural = digit count or set changed. Only structural updates need position
+    // measurements (FLIP) or ghost setup. Value-only updates only need spin delta.
+    const currentSig = this._pendingKeyedEls.map((e) => e.key).join(',');
+    const isStructural = currentSig !== this._prevKeySignature;
+    this._pendingIsStructural = isStructural;
+
+    if (isStructural) {
+      this._prevKeySignature = currentSig;
+      const hostCs = getComputedStyle(host);
+      this._pendingHostFont = hostCs.font;
+      this._pendingHostColor = hostCs.color;
+      for (const item of this._pendingKeyedEls) {
+        item.newRect = item.el.getBoundingClientRect();
+      }
+      const number = host.querySelector<HTMLElement>('.df-number');
+      this._pendingNumberRect = number ? number.getBoundingClientRect() : null;
+      this._pendingNumberOffsetWidth = number ? number.offsetWidth : 0;
+    } else {
+      // Value-only update: no position measurements needed.
+      this._pendingNumberRect = null;
+      this._pendingNumberOffsetWidth = 0;
+    }
   }
 
   // write phase: uses measurements from readAnimationState — no getBoundingClientRect calls.
@@ -396,6 +413,7 @@ export class DigitFlowComponent {
           continuousStartPos >= digitPos;
         const delta = isLowerUnchanged ? this.getDigitLength(key) * trend : rawDelta;
 
+        // Spin runs on every update — no position measurement required.
         if (delta !== 0 && d > 0) {
           this.incrementSpin(el);
           const a = el.animate({ '--_df-d': [-delta, 0] } as PropertyIndexedKeyframes, spinOpts);
@@ -403,42 +421,48 @@ export class DigitFlowComponent {
           a.finished.then(() => this.decrementSpin(el)).catch(() => this.decrementSpin(el));
         }
 
-        if (prevRect) {
-          const dx = prevRect.left - newRect.left;
-          if (Math.abs(dx) > 0.5) {
+        // FLIP and fade-in only when rects were measured (structural update).
+        if (newRect) {
+          if (prevRect) {
+            const dx = prevRect.left - newRect.left;
+            if (Math.abs(dx) > 0.5) {
+              batch.push(
+                el.animate(
+                  [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
+                  flipOpts,
+                ),
+              );
+            }
+          } else {
             batch.push(
               el.animate(
-                [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
-                flipOpts,
+                { '--_df-d-opacity': [-0.9999, 0] } as PropertyIndexedKeyframes,
+                this.addStaggerDelay(fadeOpts, staggerDelay),
               ),
             );
           }
-        } else {
-          batch.push(
-            el.animate(
-              { '--_df-d-opacity': [-0.9999, 0] } as PropertyIndexedKeyframes,
-              this.addStaggerDelay(fadeOpts, staggerDelay),
-            ),
-          );
         }
       } else {
-        if (prevRect) {
-          const dx = prevRect.left - newRect.left;
-          if (Math.abs(dx) > 0.5) {
+        // Non-digit elements (separators, prefix, suffix): FLIP/fade-in only on structural.
+        if (newRect) {
+          if (prevRect) {
+            const dx = prevRect.left - newRect.left;
+            if (Math.abs(dx) > 0.5) {
+              batch.push(
+                el.animate(
+                  [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
+                  flipOpts,
+                ),
+              );
+            }
+          } else {
             batch.push(
               el.animate(
-                [{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }],
-                flipOpts,
+                { '--_df-d-opacity': [-0.9999, 0] } as PropertyIndexedKeyframes,
+                this.addStaggerDelay(fadeOpts, staggerDelay),
               ),
             );
           }
-        } else {
-          batch.push(
-            el.animate(
-              { '--_df-d-opacity': [-0.9999, 0] } as PropertyIndexedKeyframes,
-              this.addStaggerDelay(fadeOpts, staggerDelay),
-            ),
-          );
         }
       }
     }

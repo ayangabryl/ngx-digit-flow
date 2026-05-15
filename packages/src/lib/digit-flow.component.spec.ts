@@ -119,6 +119,7 @@ describe('DigitFlowComponent', () => {
   }
 
   beforeEach(async () => {
+    resetCapabilityCache();
     animateCalls = [];
     holdColorAnimations = false;
     holdAllAnimations = false;
@@ -733,6 +734,7 @@ describe('DigitFlowComponent', () => {
 
 describe('DigitFlowGroupDirective', () => {
   beforeEach(async () => {
+    resetCapabilityCache();
     animateCalls = [];
     holdColorAnimations = false;
     holdAllAnimations = false;
