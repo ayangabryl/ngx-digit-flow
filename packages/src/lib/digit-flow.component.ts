@@ -111,8 +111,11 @@ export class DigitFlowComponent {
   protected data = signal<FormattedNumber>(EMPTY_FORMATTED);
   protected digitGlyphs = computed(() => getDigitGlyphs(this.locales(), this.format()));
 
+  // Derive accessible text from data() parts — avoids a second Intl.NumberFormat call per tick.
   protected formattedPlainText = computed(() =>
-    new Intl.NumberFormat(this.locales(), this.format()).format(this.value()),
+    [...this.data().pre, ...this.data().integer, ...this.data().fraction, ...this.data().post]
+      .map((p) => p.value)
+      .join(''),
   );
 
   protected effectiveSettings = computed(() => {
@@ -197,12 +200,15 @@ export class DigitFlowComponent {
 
       if (canAnimateThisUpdate) {
         const handledByGroup = this.group?.requestGroupedUpdate(this, () => {
-          untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
+          const gd = formatToData(v, fmt, loc, pfx, sfx);
+          untracked(() => this.data.set(gd));
         });
         if (handledByGroup) return;
 
-        this.snapshot();
-        untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
+        const newData = formatToData(v, fmt, loc, pfx, sfx);
+        const isStructural = this.computeKeySig(newData) !== this._prevKeySignature;
+        this.snapshot(isStructural);
+        untracked(() => this.data.set(newData));
         this._pending = true;
       } else {
         untracked(() => this.data.set(formatToData(v, fmt, loc, pfx, sfx)));
@@ -245,29 +251,17 @@ export class DigitFlowComponent {
   }
 
   prepareGroupedUpdate(): void {
-    this.snapshot();
+    this.snapshot(true);
   }
 
   queueGroupedAnimation(): void {
     this._pending = true;
   }
 
-  private snapshot(): void {
-    const host = this.elRef.nativeElement as HTMLElement;
-    this.prevRects.clear();
-    this.prevInnerHTML.clear();
-    this.prevDigitD.clear();
-    this.prevDigitCurrent.clear();
+  private snapshot(isStructural: boolean): void {
+    // Digit values come from the data model — no DOM reads needed even for value-only updates.
     this.prevDigitValues.clear();
     this.prevDigitOrder = [];
-
-    const number = host.querySelector<HTMLElement>('.df-number');
-    if (number) {
-      const numberRect = number.getBoundingClientRect();
-      this.prevNumberLeft = numberRect.left;
-      this.prevNumberWidth = numberRect.width;
-    }
-
     untracked(() => {
       [...this.data().integer, ...this.data().fraction].forEach((p) => {
         if (p.type === 'integer' || p.type === 'fraction') {
@@ -276,6 +270,22 @@ export class DigitFlowComponent {
         }
       });
     });
+
+    if (!isStructural) return;
+
+    // Structural update: capture BEFORE positions for FLIP and ghost fade-outs.
+    const host = this.elRef.nativeElement as HTMLElement;
+    this.prevRects.clear();
+    this.prevInnerHTML.clear();
+    this.prevDigitD.clear();
+    this.prevDigitCurrent.clear();
+
+    const number = host.querySelector<HTMLElement>('.df-number');
+    if (number) {
+      const numberRect = number.getBoundingClientRect();
+      this.prevNumberLeft = numberRect.left;
+      this.prevNumberWidth = numberRect.width;
+    }
 
     host.querySelectorAll<HTMLElement>('[data-key]').forEach((el) => {
       const key = el.getAttribute('data-key')!;
@@ -555,6 +565,12 @@ export class DigitFlowComponent {
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  private computeKeySig(data: FormattedNumber): string {
+    return [...data.pre, ...data.integer, ...data.fraction, ...data.post]
+      .map((p) => p.key)
+      .join(',');
+  }
 
   private getDigitValue(key: string): number {
     const part = [...this.data().integer, ...this.data().fraction].find((p) => p.key === key);
