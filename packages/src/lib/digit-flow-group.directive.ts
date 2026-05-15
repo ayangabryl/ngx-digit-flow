@@ -27,7 +27,7 @@ import {
   ],
 })
 export class DigitFlowGroupDirective implements DigitFlowGroupCoordinator {
-  private children = contentChildren(DigitFlowComponent);
+  private children = contentChildren(DigitFlowComponent, { descendants: true });
   private pendingUpdates = new Map<DigitFlowGroupMember, () => void>();
   private flushQueued = false;
 
