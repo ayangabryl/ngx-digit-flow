@@ -1962,11 +1962,15 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
       /* ── Responsive ─────────────────────────── */
       @media (max-width: 900px) {
         .demos-page {
-          padding: 32px 20px 48px;
+          padding: 28px 16px 40px;
         }
         .bento {
           grid-template-columns: repeat(2, 1fr);
           grid-template-rows: none;
+          gap: 10px;
+        }
+        .card {
+          padding: 16px 18px;
         }
         .card--trend {
           grid-column: 1 / 3;
@@ -2020,7 +2024,8 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
           font-size: 3rem;
         }
         .sparkline-wrap {
-          height: 52px;
+          height: 48px;
+          margin: 0 -2px 6px;
         }
         .card-center {
           font-size: 2.8rem;
@@ -2028,11 +2033,25 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
         .slider-value {
           font-size: 2.8rem;
         }
+        .page-title {
+          font-size: 24px;
+        }
+        .page-sub {
+          font-size: 13px;
+        }
       }
 
-      @media (max-width: 520px) {
+      @media (max-width: 640px) {
+        .demos-page {
+          padding: 20px 12px 32px;
+        }
         .bento {
           grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .card {
+          padding: 14px 16px;
+          border-radius: 16px;
         }
         .card--trend,
         .card--countdown,
@@ -2048,6 +2067,55 @@ import { DigitFlowComponent } from 'ngx-digit-flow';
         .card--cart {
           grid-column: 1 / 2;
           grid-row: auto;
+        }
+        .page-header {
+          margin-bottom: 20px;
+        }
+        .page-title {
+          font-size: 20px;
+        }
+        .page-sub {
+          font-size: 12px;
+        }
+        .card-label {
+          font-size: 10px;
+        }
+        .card-center {
+          font-size: 2.2rem;
+        }
+        .slider-value {
+          font-size: 2.2rem;
+        }
+        .trend-price {
+          font-size: 2.4rem;
+        }
+        .sparkline-wrap {
+          height: 40px;
+          margin: 0 -2px 4px;
+        }
+        .social-post {
+          gap: 8px;
+          margin-top: 8px;
+        }
+        .social-avatar {
+          width: 28px;
+          height: 28px;
+        }
+        .social-body {
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        .cart-items {
+          gap: 8px;
+        }
+        .xp-head {
+          margin-bottom: 2px;
+        }
+        .progress-head {
+          margin-bottom: 2px;
+        }
+        .transfer-head {
+          margin-bottom: 8px;
         }
       }
     `,
@@ -2121,9 +2189,11 @@ export class DemosComponent implements OnInit, AfterViewInit {
     const range = max - min || 1;
     const w = 200,
       h = 56;
-    return prices
+    const step = Math.max(1, Math.floor(prices.length / 15));
+    const sampled = prices.filter((_, i) => i % step === 0 || i === prices.length - 1);
+    return sampled
       .map((p, i) => {
-        const x = (i / (prices.length - 1)) * w;
+        const x = (i / (sampled.length - 1)) * w;
         const y = h - ((p - min) / range) * (h - 6) - 3;
         return `${x.toFixed(1)},${y.toFixed(1)}`;
       })
@@ -2138,8 +2208,10 @@ export class DemosComponent implements OnInit, AfterViewInit {
     const range = max - min || 1;
     const w = 200,
       h = 56;
-    const pts = prices.map((p, i) => {
-      const x = (i / (prices.length - 1)) * w;
+    const step = Math.max(1, Math.floor(prices.length / 15));
+    const sampled = prices.filter((_, i) => i % step === 0 || i === prices.length - 1);
+    const pts = sampled.map((p, i) => {
+      const x = (i / (sampled.length - 1)) * w;
       const y = h - ((p - min) / range) * (h - 6) - 3;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     });
@@ -2321,156 +2393,150 @@ export class DemosComponent implements OnInit, AfterViewInit {
   private cardObserver?: IntersectionObserver;
 
   ngAfterViewInit(): void {
-    if (typeof IntersectionObserver === 'undefined') return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setTimeout(() => {
+        this.assumeCardsVisible = false;
+      }, 8000);
+      return;
+    }
 
-    this.assumeCardsVisible = false;
-    const cards = this.elRef.nativeElement.querySelectorAll<HTMLElement>('[data-demo-card]');
-    this.cardObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const id = (entry.target as HTMLElement).dataset['demoCard'];
-          if (!id) continue;
-          if (entry.isIntersecting) {
-            this.visibleCards.add(id);
-          } else {
-            this.visibleCards.delete(id);
+    requestAnimationFrame(() => {
+      this.assumeCardsVisible = false;
+      const cards = this.elRef.nativeElement.querySelectorAll<HTMLElement>('[data-demo-card]');
+      this.cardObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            const id = (entry.target as HTMLElement).dataset['demoCard'];
+            if (!id) continue;
+            if (entry.isIntersecting) {
+              this.visibleCards.add(id);
+            } else {
+              this.visibleCards.delete(id);
+            }
           }
-        }
-      },
-      { root: null, rootMargin: '320px 0px', threshold: 0 },
-    );
+        },
+        { root: null, rootMargin: '200px 0px', threshold: 0 },
+      );
 
-    cards.forEach((card) => this.cardObserver?.observe(card));
+      cards.forEach((card) => this.cardObserver?.observe(card));
+    });
     this.destroyRef.onDestroy(() => this.cardObserver?.disconnect());
   }
 
   ngOnInit() {
     const ids: ReturnType<typeof setInterval>[] = [];
+    let isMobile = window.innerWidth < 640;
 
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('countdown')) return;
-        this.countdown.update((v) => (v <= 0 ? 30 : v - 1));
-      }, 600),
-    );
+    const countdownInterval = setInterval(() => {
+      if (!this.shouldRunCard('countdown')) return;
+      this.countdown.update((v) => (v <= 0 ? 30 : v - 1));
+    }, 600);
+    ids.push(countdownInterval);
 
-    // XP gain
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('xp')) return;
-        const gained = Math.floor(Math.random() * 70 + 50);
-        const next = this.xpCurrent() + gained;
-        if (next >= this.xpRequired) {
-          this.xpLevel.update((l) => l + 1);
-          this.xpCurrent.set(next - this.xpRequired);
-          this.xpLeveling.set(true);
-          if (this.xpLevelingTimer) clearTimeout(this.xpLevelingTimer);
-          this.xpLevelingTimer = setTimeout(() => {
-            this.xpLeveling.set(false);
-            this.xpLevelingTimer = null;
-          }, 500);
-        } else {
-          this.xpCurrent.set(next);
-        }
-      }, 900),
-    );
+    const xpInterval = setInterval(() => {
+      if (!this.shouldRunCard('xp')) return;
+      const gained = Math.floor(Math.random() * 70 + 50);
+      const next = this.xpCurrent() + gained;
+      if (next >= this.xpRequired) {
+        this.xpLevel.update((l) => l + 1);
+        this.xpCurrent.set(next - this.xpRequired);
+        this.xpLeveling.set(true);
+        if (this.xpLevelingTimer) clearTimeout(this.xpLevelingTimer);
+        this.xpLevelingTimer = setTimeout(() => {
+          this.xpLeveling.set(false);
+          this.xpLevelingTimer = null;
+        }, 500);
+      } else {
+        this.xpCurrent.set(next);
+      }
+    }, 900);
+    ids.push(xpInterval);
 
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('progress')) return;
-        if (!this.progressPaused()) {
-          this.progress.update((v) => (v >= 1 ? 0 : parseFloat((v + 0.025).toFixed(3))));
-        }
-      }, 200),
-    );
+    const progressInterval = setInterval(() => {
+      if (!this.shouldRunCard('progress')) return;
+      if (!this.progressPaused()) {
+        this.progress.update((v) => (v >= 1 ? 0 : parseFloat((v + 0.025).toFixed(3))));
+      }
+    }, 200);
+    ids.push(progressInterval);
 
-    // Stock ticker + sparkline history
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('stock')) return;
-        const prev = this.stockPrice();
-        const change = (Math.random() - 0.48) * 4;
-        const next = Math.max(100, parseFloat((prev + change).toFixed(2)));
-        const pct = parseFloat(Math.abs(((next - prev) / prev) * 100).toFixed(2));
-        this.trendUp.set(next >= prev);
-        this.trendPctNum.set(pct);
-        this.stockPrice.set(next);
-        this.priceHistory.update((h) => [...h.slice(-29), next]);
-      }, 2000),
-    );
+    const stockInterval = setInterval(() => {
+      if (!this.shouldRunCard('stock')) return;
+      const prev = this.stockPrice();
+      const change = (Math.random() - 0.48) * 4;
+      const next = Math.max(100, parseFloat((prev + change).toFixed(2)));
+      const pct = parseFloat(Math.abs(((next - prev) / prev) * 100).toFixed(2));
+      this.trendUp.set(next >= prev);
+      this.trendPctNum.set(pct);
+      this.stockPrice.set(next);
+      this.priceHistory.update((h) => [...h.slice(-29), next]);
+    }, isMobile ? 3000 : 2000);
+    ids.push(stockInterval);
 
-    // Pricing tier cycle
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('pricing')) return;
-        this.pricingIdx = (this.pricingIdx + 1) % this.pricingTiers.length;
-        const tier = this.pricingTiers[this.pricingIdx];
-        this.pricingTier.set(tier.label);
-        this.pricingVal.set(tier.price);
-      }, 2500),
-    );
+    const pricingInterval = setInterval(() => {
+      if (!this.shouldRunCard('pricing')) return;
+      this.pricingIdx = (this.pricingIdx + 1) % this.pricingTiers.length;
+      const tier = this.pricingTiers[this.pricingIdx];
+      this.pricingTier.set(tier.label);
+      this.pricingVal.set(tier.price);
+    }, 2500);
+    ids.push(pricingInterval);
 
-    // Temperature oscillation
     let tempPhase = 0;
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('temperature')) return;
-        tempPhase += 0.15;
-        const c = parseFloat((22 + Math.sin(tempPhase) * 8).toFixed(1));
-        this.tempC.set(c);
-      }, 800),
-    );
+    const tempInterval = setInterval(() => {
+      if (!this.shouldRunCard('temperature')) return;
+      tempPhase += 0.15;
+      const c = parseFloat((22 + Math.sin(tempPhase) * 8).toFixed(1));
+      this.tempC.set(c);
+    }, 800);
+    ids.push(tempInterval);
 
-    // Social counter live increments
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('social')) return;
-        this.socialLikes.update((v) => v + Math.floor(Math.random() * 12 + 4));
-        this.socialViews.update((v) => v + Math.floor(Math.random() * 300 + 80));
-      }, 1200),
-    );
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('social')) return;
-        this.socialReposts.update((v) => v + Math.floor(Math.random() * 3 + 1));
-      }, 3500),
-    );
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('social')) return;
-        this.socialComments.update((v) => v + 1);
-      }, 6000),
-    );
+    const socialLikeInterval = setInterval(() => {
+      if (!this.shouldRunCard('social')) return;
+      this.socialLikes.update((v) => v + Math.floor(Math.random() * 12 + 4));
+      this.socialViews.update((v) => v + Math.floor(Math.random() * 300 + 80));
+    }, isMobile ? 1800 : 1200);
+    ids.push(socialLikeInterval);
 
-    // Locale number live drift
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('locale')) return;
-        this.localeNum.update((v) => parseFloat((v + Math.random() * 400 - 80).toFixed(2)));
-      }, 2800),
-    );
+    const socialRepostInterval = setInterval(() => {
+      if (!this.shouldRunCard('social')) return;
+      this.socialReposts.update((v) => v + Math.floor(Math.random() * 3 + 1));
+    }, 3500);
+    ids.push(socialRepostInterval);
 
-    // Transfer rate live oscillation
+    const socialCommentInterval = setInterval(() => {
+      if (!this.shouldRunCard('social')) return;
+      this.socialComments.update((v) => v + 1);
+    }, 6000);
+    ids.push(socialCommentInterval);
+
+    const localeInterval = setInterval(() => {
+      if (!this.shouldRunCard('locale')) return;
+      this.localeNum.update((v) => parseFloat((v + Math.random() * 400 - 80).toFixed(2)));
+    }, 2800);
+    ids.push(localeInterval);
+
     let transferPhase = 0;
-    ids.push(
-      setInterval(() => {
-        if (!this.shouldRunCard('transfer')) return;
-        const pair = this.transferPairs[this.transferPairIdx()];
-        transferPhase += 0.1;
-        const base = pair.baseRate;
-        const jpy = pair.code === 'JPY';
-        const rate = jpy
-          ? parseFloat((base + Math.sin(transferPhase) * base * 0.003).toFixed(2))
-          : parseFloat((base + Math.sin(transferPhase) * base * 0.003).toFixed(4));
-        this.transferRate.set(rate);
-      }, 1100),
-    );
+    const transferInterval = setInterval(() => {
+      if (!this.shouldRunCard('transfer')) return;
+      const pair = this.transferPairs[this.transferPairIdx()];
+      transferPhase += 0.1;
+      const base = pair.baseRate;
+      const jpy = pair.code === 'JPY';
+      const rate = jpy
+        ? parseFloat((base + Math.sin(transferPhase) * base * 0.003).toFixed(2))
+        : parseFloat((base + Math.sin(transferPhase) * base * 0.003).toFixed(4));
+      this.transferRate.set(rate);
+    }, isMobile ? 1500 : 1100);
+    ids.push(transferInterval);
 
-    this.destroyRef.onDestroy(() => {
+    const handleDestroy = () => {
       ids.forEach((id) => clearInterval(id));
       if (this.scoreTrendTimer) clearTimeout(this.scoreTrendTimer);
       if (this.xpLevelingTimer) clearTimeout(this.xpLevelingTimer);
-    });
+    };
+
+    this.destroyRef.onDestroy(handleDestroy);
   }
 
   protected changeScore(delta: number): void {
