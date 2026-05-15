@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.10 - 2026-05-16
+
+### Changed
+
+- Split animation pipeline into `earlyRead` and `write` phases using Angular's `afterEveryRender` so all instances on the page collect DOM measurements before any WAAPI write fires — eliminating cross-component layout interleaving.
+- Replaced `getBoundingClientRect` in the viewport visibility check with an `IntersectionObserver` (rootMargin: 240px) so `canAnimateNow()` is an off-thread flag read instead of a forced synchronous reflow.
+- Cached `Intl.NumberFormat` instances per unique locale/options pair — ICU object allocation now pays once per config instead of on every value change.
+- Cached static WAAPI capability checks on first call and `prefers-reduced-motion` on media query `change` events, eliminating `matchMedia` + `CSS.supports` calls on every animation tick.
+
 ## 0.0.9 - 2026-05-15
 
 ### Fixed
