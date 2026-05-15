@@ -130,7 +130,7 @@ score = signal(0);
 <button (click)="score.update(v => v + 1)">+</button>
 ```
 
-**Group directive** (sync multiple instances)
+**Group directive** (coordinate related counters)
 
 ```typescript
 import { DigitFlowGroupDirective } from 'ngx-digit-flow';
@@ -145,6 +145,10 @@ import { DigitFlowGroupDirective } from 'ngx-digit-flow';
   <ngx-digit-flow [value]="seconds" />
 </div>
 ```
+
+Use `ngxDigitFlowGroup` when separate numbers form one visual unit. The directive batches
+their pre-update snapshots so unchanged siblings can still animate layout shifts caused by
+another value changing.
 
 ## Browser support
 

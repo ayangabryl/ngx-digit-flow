@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.0.8 - 2026-05-15
+
+### Added
+
+- Added real `DigitFlowGroupDirective` batching so related counters snapshot together and unchanged siblings can animate layout shifts caused by another grouped value.
+- Added test coverage for grouped layout-shift animation behavior.
+
+### Changed
+
+- Split the demo page into standard Angular `templateUrl` and `styleUrl` files.
+- Updated the docs group preview to show a clearer scoreboard width-shift example.
+- Updated README, package README, site docs, and the bundled agent skill for the current group behavior.
+
+### Fixed
+
+- Fixed the Vercel production build failure by reducing the demo page component stylesheet below the `anyComponentStyle` error budget.
+- Avoided expensive DOM snapshot work for hidden, reduced-motion, non-animated, or far-offscreen digit-flow updates while still updating displayed values.
+
 ## 0.0.7 - 2026-05-15
 
 ### Changed

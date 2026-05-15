@@ -159,3 +159,6 @@ When adding `ngx-digit-flow` to an Angular component:
   <ngx-digit-flow [value]="minutes()" [digits]="{ 1: { max: 5 } }" />
 </div>
 ```
+
+- Use grouping when separate counters form one visual unit. The directive batches pre-update
+  snapshots so unchanged siblings can still animate layout shifts caused by another grouped value.

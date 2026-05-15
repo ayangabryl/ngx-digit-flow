@@ -349,17 +349,24 @@ export class DocsDemoComponent {
           <h2 class="section-heading">Group Directive</h2>
           <p class="section-desc">
             Wrap multiple <code>ngx-digit-flow</code> instances in
-            <code>[ngxDigitFlowGroup]</code> to declare that they form a logical unit (e.g.
-            hours:minutes:seconds). Angular schedules their renders together.
+            <code>[ngxDigitFlowGroup]</code> to declare that they form a logical unit (e.g. a
+            scoreboard, clock, or compact KPI row). The directive batches their pre-update snapshots
+            so unchanged siblings can still animate layout shifts caused by another value changing.
           </p>
 
-          <docs-demo label="ngxDigitFlowGroup — clock" [code]="codeGroup">
-            <div slot="number" class="demo-clock" ngxDigitFlowGroup>
-              <ngx-digit-flow [value]="clockH()" [duration]="700" />
-              <span class="clock-sep">:</span>
-              <ngx-digit-flow [value]="clockM()" [duration]="700" />
-              <span class="clock-sep">:</span>
-              <ngx-digit-flow [value]="clockS()" [duration]="700" />
+          <docs-demo label="ngxDigitFlowGroup — width shift" [code]="codeGroup">
+            <div slot="number" class="demo-scoreboard" ngxDigitFlowGroup>
+              <span class="demo-team demo-team--home">HOME</span>
+              <ngx-digit-flow [value]="groupHome()" [duration]="650" />
+              <span class="demo-score-sep">-</span>
+              <ngx-digit-flow [value]="groupAway()" [duration]="650" />
+              <span class="demo-team">AWAY</span>
+            </div>
+            <div slot="controls">
+              <button class="demo-btn" (click)="setGroupHome(9)">1 digit</button>
+              <button class="demo-btn" (click)="setGroupHome(10)">2 digits</button>
+              <button class="demo-btn" (click)="setGroupHome(99)">wide 2</button>
+              <button class="demo-btn" (click)="setGroupHome(100)">3 digits</button>
             </div>
           </docs-demo>
         </section>
@@ -1042,19 +1049,31 @@ export class DocsDemoComponent {
         letter-spacing: -0.03em;
       }
 
-      /* Clock demo */
-      .demo-clock {
-        display: flex;
+      /* Group demo */
+      .demo-scoreboard {
+        display: inline-flex;
         align-items: baseline;
-        gap: 4px;
+        gap: 12px;
         font-size: 2.5rem;
         font-weight: 800;
         letter-spacing: -0.03em;
       }
 
-      .clock-sep {
+      .demo-team {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
         color: var(--dim);
-        margin: 0 2px;
+      }
+
+      .demo-team--home {
+        color: var(--ink);
+      }
+
+      .demo-score-sep {
+        font-size: 1.8rem;
+        color: var(--dim);
       }
 
       /* Output demo */
@@ -1287,7 +1306,10 @@ export class DocsDemoComponent {
         .demo-dur-grid {
           gap: 20px;
         }
-        .demo-clock {
+        .demo-scoreboard {
+          gap: 12px;
+        }
+        .demo-scoreboard {
           font-size: 1.8rem;
         }
         .docs-sidebar {
@@ -1358,10 +1380,9 @@ export class DocsComponent implements OnInit, AfterViewInit {
   protected animVal = signal(0);
   protected isAnimated = signal(true);
 
-  // Clock (group demo)
-  protected clockH = signal(0);
-  protected clockM = signal(0);
-  protected clockS = signal(0);
+  // Group demo
+  protected groupHome = signal(9);
+  protected groupAway = signal(8);
 
   // Outputs
   protected outputVal = signal(0);
@@ -1414,21 +1435,7 @@ export class DocsComponent implements OnInit, AfterViewInit {
     this.activeSection.set(id);
   }
 
-  ngOnInit() {
-    const now = new Date();
-    this.clockH.set(now.getHours());
-    this.clockM.set(now.getMinutes());
-    this.clockS.set(now.getSeconds());
-
-    const clockId = setInterval(() => {
-      const d = new Date();
-      this.clockH.set(d.getHours());
-      this.clockM.set(d.getMinutes());
-      this.clockS.set(d.getSeconds());
-    }, 1000);
-
-    this.destroyRef.onDestroy(() => clearInterval(clockId));
-  }
+  ngOnInit() {}
 
   protected triggerDur(): void {
     this.durIdx = (this.durIdx + 1) % this.durValues.length;
@@ -1443,6 +1450,16 @@ export class DocsComponent implements OnInit, AfterViewInit {
   protected triggerStagger(): void {
     this.staggerIdx = (this.staggerIdx + 1) % this.staggerValues.length;
     this.staggerVal.set(this.staggerValues[this.staggerIdx]);
+  }
+
+  protected setGroupDemo(home: number, away: number): void {
+    this.groupHome.set(home);
+    this.groupAway.set(away);
+  }
+
+  protected setGroupHome(home: number): void {
+    this.groupHome.set(home);
+    this.groupAway.set(8);
   }
 
   protected onStart(): void {
@@ -1509,11 +1526,11 @@ export class MyComponent {}`;
   protected codeGroup = `import { DigitFlowGroupDirective } from 'ngx-digit-flow';
 
 <div ngxDigitFlowGroup>
-  <ngx-digit-flow [value]="hours"   />
-  <span>:</span>
-  <ngx-digit-flow [value]="minutes" />
-  <span>:</span>
-  <ngx-digit-flow [value]="seconds" />
+  <span>HOME</span>
+  <ngx-digit-flow [value]="homeScore" />
+  <span>-</span>
+  <ngx-digit-flow [value]="awayScore" />
+  <span>AWAY</span>
 </div>`;
 
   protected codeOutputs = `<ngx-digit-flow
@@ -1574,5 +1591,5 @@ export class MyComponent {}`;
   protected codeGroupImport = `import { DigitFlowGroupDirective } from 'ngx-digit-flow';
 
 // selector: [ngxDigitFlowGroup]
-// Wrap multiple ngx-digit-flow elements that form a logical unit.`;
+// Batches related counters so layout shifts animate as one unit.`;
 }
