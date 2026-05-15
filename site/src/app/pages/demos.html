@@ -168,14 +168,14 @@
       <div class="progress-stage">
         @if (progressStyle() === 'linear') {
           <div class="progress-pct">
-            <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="150" />
+            <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
           </div>
           <div class="progress-bar-track">
             <div class="progress-bar-fill" [style.width.%]="progress() * 100"></div>
           </div>
         } @else if (progressStyle() === 'steps') {
           <div class="progress-pct">
-            <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="150" />
+            <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
           </div>
           <div class="progress-segs">
             @for (filled of progressSegments(); track $index) {
@@ -195,7 +195,7 @@
               />
             </svg>
             <div class="progress-ring-label">
-              <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="150" />
+              <ngx-digit-flow [value]="progress()" [format]="progressFmt" [duration]="220" />
             </div>
           </div>
         }

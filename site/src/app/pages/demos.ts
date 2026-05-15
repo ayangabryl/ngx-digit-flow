@@ -387,7 +387,7 @@ export class DemosComponent implements OnInit, AfterViewInit {
           this.progress.update((v) => (v >= 1 ? 0 : parseFloat((v + step).toFixed(3))));
         }
       },
-      mobileInterval(200, 800),
+      mobileInterval(280, 800),
     );
     ids.push(progressInterval);
 
