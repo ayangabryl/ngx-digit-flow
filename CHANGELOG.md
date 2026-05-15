@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.11 - 2026-05-16
+
+### Fixed
+
+- Moved `offsetWidth` read out of the `write` phase and into `earlyRead` — it was a layout-forcing DOM read that slipped through the 0.0.10 refactor, reintroducing the thrashing it aimed to eliminate.
+- Guarded `matchMedia` `addEventListener` call against environments that return a bare mock object (e.g. SSR-like test environments).
+- Exported `resetCapabilityCache()` so test suites can clear the static capability cache between runs.
+
 ## 0.0.10 - 2026-05-16
 
 ### Changed
