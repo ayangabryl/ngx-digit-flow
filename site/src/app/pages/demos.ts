@@ -289,6 +289,8 @@ export class DemosComponent implements OnInit, AfterViewInit {
   private visibleCards = new Set<string>();
   private assumeCardsVisible = true;
   private cardObserver?: IntersectionObserver;
+  private isMobileViewport = false;
+  private pageVisible = true;
 
   ngAfterViewInit(): void {
     if (typeof IntersectionObserver === 'undefined') {
@@ -313,7 +315,11 @@ export class DemosComponent implements OnInit, AfterViewInit {
             }
           }
         },
-        { root: null, rootMargin: '200px 0px', threshold: 0 },
+        {
+          root: null,
+          rootMargin: this.isMobileViewport ? '0px 0px -18% 0px' : '200px 0px',
+          threshold: this.isMobileViewport ? 0.35 : 0,
+        },
       );
 
       cards.forEach((card) => this.cardObserver?.observe(card));
@@ -323,39 +329,66 @@ export class DemosComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     const ids: ReturnType<typeof setInterval>[] = [];
-    let isMobile = window.innerWidth < 640;
+    const doc = this.elRef.nativeElement.ownerDocument;
+    const win = doc.defaultView;
+    const mobileQuery = win?.matchMedia('(max-width: 640px)');
+    const updateMobileState = () => {
+      this.isMobileViewport = mobileQuery?.matches ?? (win?.innerWidth ?? 1024) < 640;
+    };
+    updateMobileState();
+    mobileQuery?.addEventListener('change', updateMobileState);
 
-    const countdownInterval = setInterval(() => {
-      if (!this.shouldRunCard('countdown')) return;
-      this.countdown.update((v) => (v <= 0 ? 30 : v - 1));
-    }, 600);
+    const updatePageVisibility = () => {
+      this.pageVisible = doc.visibilityState === 'visible';
+    };
+    updatePageVisibility();
+    doc.addEventListener('visibilitychange', updatePageVisibility);
+    const mobileInterval = (desktopMs: number, mobileMs: number) =>
+      this.isMobileViewport ? mobileMs : desktopMs;
+
+    const countdownInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('countdown')) return;
+        this.countdown.update((v) => (v <= 0 ? 30 : v - 1));
+      },
+      mobileInterval(600, 1000),
+    );
     ids.push(countdownInterval);
 
-    const xpInterval = setInterval(() => {
-      if (!this.shouldRunCard('xp')) return;
-      const gained = Math.floor(Math.random() * 70 + 50);
-      const next = this.xpCurrent() + gained;
-      if (next >= this.xpRequired) {
-        this.xpLevel.update((l) => l + 1);
-        this.xpCurrent.set(next - this.xpRequired);
-        this.xpLeveling.set(true);
-        if (this.xpLevelingTimer) clearTimeout(this.xpLevelingTimer);
-        this.xpLevelingTimer = setTimeout(() => {
-          this.xpLeveling.set(false);
-          this.xpLevelingTimer = null;
-        }, 500);
-      } else {
-        this.xpCurrent.set(next);
-      }
-    }, 900);
+    const xpInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('xp')) return;
+        const gained = this.isMobileViewport
+          ? Math.floor(Math.random() * 45 + 35)
+          : Math.floor(Math.random() * 70 + 50);
+        const next = this.xpCurrent() + gained;
+        if (next >= this.xpRequired) {
+          this.xpLevel.update((l) => l + 1);
+          this.xpCurrent.set(next - this.xpRequired);
+          this.xpLeveling.set(true);
+          if (this.xpLevelingTimer) clearTimeout(this.xpLevelingTimer);
+          this.xpLevelingTimer = setTimeout(() => {
+            this.xpLeveling.set(false);
+            this.xpLevelingTimer = null;
+          }, 500);
+        } else {
+          this.xpCurrent.set(next);
+        }
+      },
+      mobileInterval(900, 2600),
+    );
     ids.push(xpInterval);
 
-    const progressInterval = setInterval(() => {
-      if (!this.shouldRunCard('progress')) return;
-      if (!this.progressPaused()) {
-        this.progress.update((v) => (v >= 1 ? 0 : parseFloat((v + 0.025).toFixed(3))));
-      }
-    }, 200);
+    const progressInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('progress')) return;
+        if (!this.progressPaused()) {
+          const step = this.isMobileViewport ? 0.05 : 0.025;
+          this.progress.update((v) => (v >= 1 ? 0 : parseFloat((v + step).toFixed(3))));
+        }
+      },
+      mobileInterval(200, 800),
+    );
     ids.push(progressInterval);
 
     const stockInterval = setInterval(
@@ -368,28 +401,35 @@ export class DemosComponent implements OnInit, AfterViewInit {
         this.trendUp.set(next >= prev);
         this.trendPctNum.set(pct);
         this.stockPrice.set(next);
-        this.priceHistory.update((h) => [...h.slice(-29), next]);
+        const historyLimit = this.isMobileViewport ? 15 : 29;
+        this.priceHistory.update((h) => [...h.slice(-historyLimit), next]);
       },
-      isMobile ? 3000 : 2000,
+      mobileInterval(2000, 5000),
     );
     ids.push(stockInterval);
 
-    const pricingInterval = setInterval(() => {
-      if (!this.shouldRunCard('pricing')) return;
-      this.pricingIdx = (this.pricingIdx + 1) % this.pricingTiers.length;
-      const tier = this.pricingTiers[this.pricingIdx];
-      this.pricingTier.set(tier.label);
-      this.pricingVal.set(tier.price);
-    }, 2500);
+    const pricingInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('pricing')) return;
+        this.pricingIdx = (this.pricingIdx + 1) % this.pricingTiers.length;
+        const tier = this.pricingTiers[this.pricingIdx];
+        this.pricingTier.set(tier.label);
+        this.pricingVal.set(tier.price);
+      },
+      mobileInterval(2500, 4500),
+    );
     ids.push(pricingInterval);
 
     let tempPhase = 0;
-    const tempInterval = setInterval(() => {
-      if (!this.shouldRunCard('temperature')) return;
-      tempPhase += 0.15;
-      const c = parseFloat((22 + Math.sin(tempPhase) * 8).toFixed(1));
-      this.tempC.set(c);
-    }, 800);
+    const tempInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('temperature')) return;
+        tempPhase += 0.15;
+        const c = parseFloat((22 + Math.sin(tempPhase) * 8).toFixed(1));
+        this.tempC.set(c);
+      },
+      mobileInterval(800, 2200),
+    );
     ids.push(tempInterval);
 
     const socialLikeInterval = setInterval(
@@ -398,26 +438,35 @@ export class DemosComponent implements OnInit, AfterViewInit {
         this.socialLikes.update((v) => v + Math.floor(Math.random() * 12 + 4));
         this.socialViews.update((v) => v + Math.floor(Math.random() * 300 + 80));
       },
-      isMobile ? 1800 : 1200,
+      mobileInterval(1200, 5000),
     );
     ids.push(socialLikeInterval);
 
-    const socialRepostInterval = setInterval(() => {
-      if (!this.shouldRunCard('social')) return;
-      this.socialReposts.update((v) => v + Math.floor(Math.random() * 3 + 1));
-    }, 3500);
+    const socialRepostInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('social')) return;
+        this.socialReposts.update((v) => v + Math.floor(Math.random() * 3 + 1));
+      },
+      mobileInterval(3500, 8000),
+    );
     ids.push(socialRepostInterval);
 
-    const socialCommentInterval = setInterval(() => {
-      if (!this.shouldRunCard('social')) return;
-      this.socialComments.update((v) => v + 1);
-    }, 6000);
+    const socialCommentInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('social')) return;
+        this.socialComments.update((v) => v + 1);
+      },
+      mobileInterval(6000, 12000),
+    );
     ids.push(socialCommentInterval);
 
-    const localeInterval = setInterval(() => {
-      if (!this.shouldRunCard('locale')) return;
-      this.localeNum.update((v) => parseFloat((v + Math.random() * 400 - 80).toFixed(2)));
-    }, 2800);
+    const localeInterval = setInterval(
+      () => {
+        if (!this.shouldRunCard('locale')) return;
+        this.localeNum.update((v) => parseFloat((v + Math.random() * 400 - 80).toFixed(2)));
+      },
+      mobileInterval(2800, 6000),
+    );
     ids.push(localeInterval);
 
     let transferPhase = 0;
@@ -433,12 +482,14 @@ export class DemosComponent implements OnInit, AfterViewInit {
           : parseFloat((base + Math.sin(transferPhase) * base * 0.003).toFixed(4));
         this.transferRate.set(rate);
       },
-      isMobile ? 1500 : 1100,
+      mobileInterval(1100, 4500),
     );
     ids.push(transferInterval);
 
     const handleDestroy = () => {
       ids.forEach((id) => clearInterval(id));
+      mobileQuery?.removeEventListener('change', updateMobileState);
+      doc.removeEventListener('visibilitychange', updatePageVisibility);
       if (this.scoreTrendTimer) clearTimeout(this.scoreTrendTimer);
       if (this.xpLevelingTimer) clearTimeout(this.xpLevelingTimer);
     };
@@ -461,6 +512,8 @@ export class DemosComponent implements OnInit, AfterViewInit {
   }
 
   private shouldRunCard(id: string): boolean {
+    if (!this.pageVisible) return false;
+    if (this.isMobileViewport) return this.visibleCards.has(id);
     return this.assumeCardsVisible || this.visibleCards.has(id);
   }
 
