@@ -5,6 +5,24 @@ const PRE_TYPES = new Set(['currency', 'literal', 'minusSign', 'plusSign', 'nan'
 // Parts that belong after the fraction/integer
 const POST_TYPES = new Set(['percentSign', 'unit']);
 
+// Intl.NumberFormat construction is expensive (full ICU object allocation).
+// Cache instances keyed by serialized (locales, options) so rapid value
+// changes don't repeatedly pay that cost.
+const formatterCache = new Map<string, Intl.NumberFormat>();
+
+function getCachedFormatter(
+  locales: string | string[] | undefined,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat {
+  const key = JSON.stringify(locales) + ':' + JSON.stringify(options);
+  let fmt = formatterCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(locales, options);
+    formatterCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 export interface DigitGlyph {
   value: number;
   glyph: string;
@@ -14,7 +32,7 @@ export function getDigitGlyphs(
   locales?: string | string[],
   options: Intl.NumberFormatOptions = {},
 ): DigitGlyph[] {
-  const formatter = new Intl.NumberFormat(locales, {
+  const formatter = getCachedFormatter(locales, {
     numberingSystem: options.numberingSystem,
     useGrouping: false,
     maximumFractionDigits: 0,
@@ -40,7 +58,7 @@ export function formatToData(
   prefix = '',
   suffix = '',
 ): FormattedNumber {
-  const formatter = new Intl.NumberFormat(locales, options);
+  const formatter = getCachedFormatter(locales, options);
   const digitValues = getDigitValueMap(locales, options);
   const parts = formatter.formatToParts(value);
 
