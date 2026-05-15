@@ -157,6 +157,7 @@ export class DigitFlowComponent {
   private _pendingHostColor = '';
   private _pendingKeyedEls: Array<{ el: HTMLElement; key: string; newRect: DOMRect }> = [];
   private _pendingNumberRect: DOMRect | null = null;
+  private _pendingNumberOffsetWidth = 0;
   private _isNearViewport = true;
   private _viewportObserver?: IntersectionObserver;
 
@@ -315,6 +316,7 @@ export class DigitFlowComponent {
     });
     const number = host.querySelector<HTMLElement>('.df-number');
     this._pendingNumberRect = number ? number.getBoundingClientRect() : null;
+    this._pendingNumberOffsetWidth = number ? number.offsetWidth : 0;
   }
 
   // write phase: uses measurements from readAnimationState — no getBoundingClientRect calls.
@@ -460,7 +462,7 @@ export class DigitFlowComponent {
     if (number && this._pendingNumberRect) {
       const rect = this._pendingNumberRect;
       const dx = this.prevNumberLeft - rect.left;
-      const width = rect.width || number.offsetWidth;
+      const width = rect.width || this._pendingNumberOffsetWidth;
       const dWidth = this.prevNumberWidth - width;
       number.style.setProperty('--_df-width', String(width || this.prevNumberWidth || 1));
       if (Math.abs(dx) > 0.5 || Math.abs(dWidth) > 0.5) {

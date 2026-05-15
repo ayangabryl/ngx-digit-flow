@@ -27,10 +27,17 @@ function getPrefersReducedMotion(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
   const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
   _prefersReducedMotion = mq.matches;
-  mq.addEventListener('change', (e) => {
-    _prefersReducedMotion = e.matches;
-  });
+  if (typeof mq.addEventListener === 'function') {
+    mq.addEventListener('change', (e) => {
+      _prefersReducedMotion = e.matches;
+    });
+  }
   return _prefersReducedMotion;
+}
+
+export function resetCapabilityCache(): void {
+  _staticCapable = undefined;
+  _prefersReducedMotion = undefined;
 }
 
 export function canAnimateDigitFlow(options: DigitFlowCapabilityOptions = {}): boolean {

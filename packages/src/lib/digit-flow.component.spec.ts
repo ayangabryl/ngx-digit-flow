@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DigitFlowComponent } from './digit-flow.component';
 import { DigitFlowGroupDirective } from './digit-flow-group.directive';
+import { resetCapabilityCache } from './capabilities';
 
 interface AnimateCall {
   target?: Element;
@@ -124,6 +125,7 @@ describe('DigitFlowComponent', () => {
     prefersReducedMotion = false;
     linearEasingSupported = true;
     heldAnimationResolvers = [];
+    resetCapabilityCache();
 
     const cssMock = {
       registerProperty: () => undefined,
@@ -737,6 +739,7 @@ describe('DigitFlowGroupDirective', () => {
     prefersReducedMotion = false;
     linearEasingSupported = true;
     heldAnimationResolvers = [];
+    resetCapabilityCache();
 
     const cssMock = {
       registerProperty: () => undefined,
