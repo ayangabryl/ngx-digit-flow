@@ -155,7 +155,6 @@ export class DigitFlowComponent {
   private _live: Animation[] = [];
   private _spinCount = new Map<HTMLElement, number>();
   private _spinAnims = new Map<HTMLElement, Animation>();
-  private _pendingSpinD = new Map<HTMLElement, number>();
   private _animationsFinishAbort?: AbortController;
   private _pendingCanAnimate = false;
   private _pendingHostFont = '';
@@ -182,7 +181,6 @@ export class DigitFlowComponent {
       }
       this._live = [];
       this._spinAnims.clear();
-      this._pendingSpinD.clear();
     });
 
     effect(() => {
@@ -332,18 +330,6 @@ export class DigitFlowComponent {
     const isStructural = currentSig !== this._prevKeySignature;
     this._pendingIsStructural = isStructural;
 
-    // For elements with an active spin animation, read the current mid-flight --_df-d value
-    // so the write phase can cancel the old animation and continue from the same reel position
-    // instead of restarting from zero (which would stack accumulated deltas visually).
-    // getComputedStyle on a registered <number> custom property is a style read, not a layout flush.
-    this._pendingSpinD.clear();
-    for (const { el } of this._pendingKeyedEls) {
-      if (this._spinAnims.has(el)) {
-        const d = parseFloat(getComputedStyle(el).getPropertyValue('--_df-d').trim()) || 0;
-        this._pendingSpinD.set(el, d);
-      }
-    }
-
     if (isStructural) {
       this._prevKeySignature = currentSig;
       const hostCs = getComputedStyle(host);
@@ -439,23 +425,21 @@ export class DigitFlowComponent {
         const delta = isLowerUnchanged ? this.getDigitLength(key) * trend : rawDelta;
 
         // Spin runs on every update — no position measurement required.
-        // Cancel any in-flight spin and continue from the current mid-flight reel position
-        // so rapid updates (e.g. slider drag) don't stack dozens of composite animations.
+        // Cancel any in-flight spin before starting a new one so rapid updates
+        // (e.g. slider drag) never stack accumulated composite animations.
+        // Starting from -delta always positions the reel at the old digit value,
+        // which is the correct semantic start for any spin regardless of history.
         if (delta !== 0 && d > 0) {
           const prevSpin = this._spinAnims.get(el);
-          const currentD = this._pendingSpinD.get(el) ?? 0;
           if (prevSpin) {
             prevSpin.cancel();
             this._spinAnims.delete(el);
             this._spinCount.delete(el);
             el.classList.remove('is-spinning');
           }
-          // Start from (currentD − delta) so the reel continues without a visible jump.
-          // Math: currentD − delta = (accumulated progress) + (new change), animate to 0.
           this.incrementSpin(el);
-          const startD = currentD - delta;
           const a = el.animate(
-            { '--_df-d': [startD, 0] } as PropertyIndexedKeyframes,
+            { '--_df-d': [-delta, 0] } as PropertyIndexedKeyframes,
             { ...spinOpts, composite: 'replace' },
           );
           this._spinAnims.set(el, a);
